@@ -9,8 +9,10 @@ footer {
     padding: 50px;
 }
 
-nav {
-    overflow: hidden;
-    
-    
+nav a {
+    color: white;
+    text-decoration: none;
+    padding: 14px 20px;
+    display: inline-block;
+    border: 2px solid white;
 }
