@@ -21,11 +21,15 @@
             <form action="dodawanie_filmow.php" method="POST">
         <p>
             <label for="tytul">tytuł:</label><br>
-            <input type="text" id="tytul" name="tytul">
+            <input type="text" id="tytul" autocomplete="off">
+            <div id="podpowiedzi"></div>
+            <div id="podgladOkladki">
+            <img id="okladka" src="" alt="Okładka filmu">
+</div>
         </p>
         <p>
-            <label for="gatunek">Gatunek:</label><br>
-            <input type="text" id="gatunek" name="gatunek">
+            <label>Gatunek:</label><br>
+            <input type="text" id="gatunek">
         </p>
         <p>
             <label for="rok">Rok produkcji:</label><br>
@@ -77,8 +81,9 @@
         </p>
     </form>
         </main>
-
+<script src="script_api.js"></script>
     <footer>
+        
         <p>Autorzy: Przemysław Gałęziowski i Filip Mały</p>
 </body>
 </html>
