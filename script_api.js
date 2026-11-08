@@ -1,65 +1,141 @@
-const API_KEY = "138317b9";//AI
 
-function szukajFilmu() {
+const API_KEY = "138317b9";
 
-    let nazwa = document.getElementById("szukajFilm").value;
+const tytul = document.getElementById("tytul");
+const podpowiedzi = document.getElementById("podpowiedzi");
 
-    if (nazwa.trim() === "") {
-        alert("Wpisz nazwę filmu!");
+let opoznienie;
+
+// Wyszukiwanie filmów podczas wpisywania
+tytul.addEventListener("input", function () {
+
+    clearTimeout(opoznienie);
+
+    let nazwa = tytul.value.trim();
+
+    podpowiedzi.innerHTML = "";
+
+    // Ukrywanie poprzedniej okładki
+    document.getElementById("okladka").style.display = "none";
+
+    if (nazwa.length < 2) {
         return;
     }
 
-    fetch(`https://www.omdbapi.com/?apikey=${API_KEY}&s=${encodeURIComponent(nazwa)}&type=movie`)
-        .then(response => response.json())
-        .then(dane => {
+    opoznienie = setTimeout(async function () {
 
-            let wyniki = document.getElementById("wyniki");
-            wyniki.innerHTML = "";
+        try {
+
+            let odpowiedz = await fetch(
+                `https://www.omdbapi.com/?apikey=${API_KEY}&s=${encodeURIComponent(nazwa)}&type=movie`
+            );
+
+            let dane = await odpowiedz.json();
+
+            podpowiedzi.innerHTML = "";
 
             if (dane.Response === "False") {
-                wyniki.innerHTML = "Nie znaleziono filmów!";
                 return;
             }
 
-            dane.Search.forEach(film => {
+            dane.Search.forEach(function (film) {
 
-                wyniki.innerHTML += `
-                    <div class="film">
-                        <img src="${film.Poster !== "N/A" ? film.Poster : ""}" width="150">
+                let element = document.createElement("div");
 
-                        <h3>${film.Title}</h3>
+                element.className = "podpowiedz";
 
-                        <p>Rok: ${film.Year}</p>
+                let obraz = film.Poster !== "N/A" ? film.Poster : "";
 
-                        <button onclick="szczegolyFilmu('${film.imdbID}')">
-                            Szczegóły
-                        </button>
-                    </div>
-                `;
+                element.innerHTML = `
+                    <img src="${obraz}" alt="Plakat"
+                     onerror="this.style.display='none'">
+
+                 <div>
+                <strong>${film.Title}</strong>
+             <p>${film.Year}</p>
+    </div>
+`;
+
+                element.addEventListener("click", function () {
+                    pobierzFilm(film.imdbID);
+                });
+
+                podpowiedzi.appendChild(element);
 
             });
 
-        })
-        .catch(error => {
-            console.log(error);
-            alert("Wystąpił błąd podczas pobierania filmów.");
-        });
+        } catch (blad) {
+            console.log("Błąd API:", blad);
+        }
+
+    }, 400);
+
+});
+
+
+// Pobieranie informacji o wybranym filmie
+async function pobierzFilm(id) {
+
+    try {
+
+        let odpowiedz = await fetch(
+            `https://www.omdbapi.com/?apikey=${API_KEY}&i=${id}&plot=full`
+        );
+
+        let film = await odpowiedz.json();
+
+        if (film.Response === "False") {
+            alert("Nie udało się pobrać filmu!");
+            return;
+        }
+
+        // Uzupełnianie formularza
+
+        document.getElementById("tytul").value = film.Title;
+        document.getElementById("gatunek").value = film.Genre;
+        document.getElementById("rok").value = film.Year;
+        document.getElementById("ocena").value = film.imdbRating;
+        document.getElementById("rezyser").value = film.Director;
+
+        document.getElementById("czas_trwania").value =
+            film.Runtime.replace(" min", "");
+
+        document.getElementById("jezyk").value = film.Language;
+        document.getElementById("produkcja").value = film.Production;
+        document.getElementById("nagrody").value = film.Awards;
+        document.getElementById("opis").value = film.Plot;
+
+        // Wyświetlanie okładki filmu
+
+        let okladka = document.getElementById("okladka");
+
+        if (film.Poster && film.Poster !== "N/A") {
+
+            okladka.src = film.Poster;
+            okladka.style.display = "block";
+
+        } else {
+
+            okladka.src = "";
+            okladka.style.display = "none";
+
+        }
+
+        // Pola do ręcznego uzupełnienia
+
+        document.getElementById("ilosc_dostepnych").value = "";
+        document.getElementById("budzet").value = "";
+        document.getElementById("cena").value = "";
+
+        // Usuwanie podpowiedzi
+
+        podpowiedzi.innerHTML = "";
+
+    } catch (blad) {
+
+        console.log("Błąd:", blad);
+        alert("Problem z połączeniem z API!");
+
+    }
+
 }
-
-function szczegolyFilmu(id) {
-
-    fetch(`https://www.omdbapi.com/?apikey=${API_KEY}&i=${id}&plot=full`)
-        .then(response => response.json())
-        .then(film => {
-
-            alert(
-                "Tytuł: " + film.Title +
-                "\nRok: " + film.Year +
-                "\nGatunek: " + film.Genre +
-                "\nReżyser: " + film.Director +
-                "\nOcena IMDb: " + film.imdbRating +
-                "\nOpis: " + film.Plot
-            );
-
-        });
-}//AI END
