@@ -1,7 +1,7 @@
 CREATE TABLE uzytkownicy (
 	id INT AUTO_INCREMENT PRIMARY KEY,
 	nazwa VARCHAR(20) NOT NULL UNIQUE,
-	password VARCHAR(100) NOT NULL,
+	haslo VARCHAR(100) NOT NULL,
 	czy_admin BIT NOT NULL
 );
 

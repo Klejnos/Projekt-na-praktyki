@@ -33,7 +33,7 @@
 
                             unset($_SESSION['blad']);
                             $result -> free();
-                            header('Location: index.php');
+                            header('Location: index.html');
                         }
                         else {
                             $_SESSION['blad'] = '<span style="color: red">Nieprawidłowy login lub hasło</span>';

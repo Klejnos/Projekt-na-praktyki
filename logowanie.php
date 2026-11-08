@@ -21,8 +21,13 @@
         <input type="password" name="haslo">
         <input type="submit" value="Zaloguj się">
     </form>
+
+    <a href="rejestracja.php">Zarejestruj się</a>
 <?php
-    if (isset($_SESSION['blad'])) echo $_SESSION['blad'];
+    if (isset($_SESSION['blad'])) {
+        echo $_SESSION['blad'];
+        unset($_SESSION['blad']);
+    }
 ?>
 </body>
 </html>

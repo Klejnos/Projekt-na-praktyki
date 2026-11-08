@@ -5,7 +5,7 @@
         $nazwa = $_POST['nazwa'];
         $nazwa = htmlentities($nazwa, ENT_QUOTES , "UTF-8");
 
-        if ((strlen($nickname) < 3) || (strlen($nickname) > 20)) {
+        if ((strlen($nazwa) < 3) || (strlen($nazwa) > 20)) {
             $ok = false;
             $_SESSION['e_nazwa'] = "Nazwa musi posiadać od 3 do 20 znaków";
         }
@@ -15,14 +15,14 @@
             $_SESSION['e_nazwa'] = "Nazwa może składać się tylko z liter i cyfr (bez polskich znaków)";
         }
 
-        $haslo1 = $_POST['haslo1'];
-        $haslo2 = $_POST['haslo2'];
+        $haslo1 = $_POST['haslo1'] ?? ''; // sprawdza czy zmienna istnieje i czy nie posiada wartości null
+        $haslo2 = $_POST['haslo2'] ?? '';
         $haslo1 = htmlentities($haslo1, ENT_QUOTES , "UTF-8");
         $haslo2 = htmlentities($haslo2, ENT_QUOTES , "UTF-8");
 
         if ((strlen($haslo1) < 8) || (strlen($haslo1) > 20)) {
             $ok = false;
-            $_SESSION['e_haslo'] = "Hasło musi posiadać od 3 do 20 znaków";
+            $_SESSION['e_haslo'] = "Hasło musi posiadać od 8 do 20 znaków";
         }
 
         if ($haslo1 != $haslo2) {
@@ -32,9 +32,9 @@
 
         $haslo_hash = password_hash($haslo1, PASSWORD_DEFAULT);
 
-        $czy_admin = true;
+        $czy_admin = 1;
         if (!isset($_POST['czy_admin'])) {
-            $czy_admin = false;
+            $czy_admin = 0;
         }
 
         require_once "polaczenie.php";
@@ -55,7 +55,7 @@
                 }
 
                 if ($ok) {
-                    if ($polaczenie -> query("insert into uzytkownicy values (null, '$nazwa', '$haslo_hash', '$czy_admin'")) {
+                    if ($polaczenie -> query("insert into uzytkownicy values (null, '$nazwa', '$haslo_hash', '$czy_admin')")) {
                         $_SESSION['udana_rejestracja'] = true;
                         header('Location: witam.php');
                     }
@@ -63,7 +63,7 @@
                         throw new Exception($polaczenie -> error);
                     }
                 }
-
+                $result -> free();
                 $polaczenie -> close();
             }
         }
@@ -103,9 +103,9 @@
         <input type="password" name="haslo2">
 
         <?php
-            if (isset($_SESSION['e_nazwa'])) {
-                echo '<div class="error">'.$_SESSION['e_nazwa']."</div>";
-                unset($_SESSION['e_nazwa']);
+            if (isset($_SESSION['e_haslo'])) {
+                echo '<div class="error">'.$_SESSION['e_haslo']."</div>";
+                unset($_SESSION['e_haslo']);
             }
         ?>
 
