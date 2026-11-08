@@ -1,5 +1,5 @@
 
-const API_KEY = "138317b9";
+const API_KEY = "138317b9";//AI
 
 const tytul = document.getElementById("tytul");
 const podpowiedzi = document.getElementById("podpowiedzi");
