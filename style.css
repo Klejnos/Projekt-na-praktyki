@@ -16,6 +16,12 @@ nav a {
     display: inline-block;
     border: 2px solid white;
 }
+
+.error {
+    color: red;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
 #podpowiedzi {
     width: 350px;
     position: absolute;
