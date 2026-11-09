@@ -16,7 +16,7 @@
 </head>
 <body>
     <header>
-        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="przycisk" href="dodawanie_filmoww.php">Dodaj film</a><h2 class="konto">Konto</h2></h1>
+        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="przycisk" href="dodawanie_filmow.php">Dodaj film</a><h2 class="konto">Konto</h2></h1>
     </header>
     <nav>
             <a href="index.php">Strona główna</a> 
@@ -37,8 +37,79 @@
 
         <p class="biblioteka">
             <span>Biblioteka filmów:</span>
-            //nie ma jeszcze filmów w bazie danych :( 
-            </p>
+        </p>
+
+        <?php
+            require_once "polaczenie.php";
+
+            $polaczenie = new mysqli($host, $db_user, $db_password, $db_name);
+
+            if (!$polaczenie->connect_errno) {
+                $polaczenie->set_charset("utf8mb4");
+
+                $wynik = $polaczenie->query(
+                    "SELECT id, tytul, gatunek, rok, ocena, cena, okladka FROM filmy ORDER BY id DESC"
+                );
+
+                if ($wynik) {
+                    if ($wynik->num_rows === 0) {
+                        echo '<p class="biblioteka"><span>Brak filmów w bazie danych.</span></p>';
+                    } else {
+                        echo '<div class="film-grid">';
+
+                        while ($film = $wynik->fetch_assoc()) {
+                            echo '<a class="film-card" href="film.php?id=' . (int) $film['id'] . '">';
+
+                            if (!empty($film['okladka'])) {
+                                echo '<img class="film-cover" src="' . htmlspecialchars($film['okladka']) . '" alt="Okładka filmu ' . htmlspecialchars($film['tytul']) . '">';
+                            } else {
+                                echo '<div class="film-cover film-cover--empty"><span>Brak okładki</span></div>';
+                            }
+
+                            echo '<div class="film-info">';
+                            echo '<b>' . htmlspecialchars($film['tytul']) . '</b>';
+
+                            $podtytul = [];
+
+                            if ($film['gatunek']) {
+                                $podtytul[] = htmlspecialchars($film['gatunek']);
+                            }
+
+                            if ($film['rok']) {
+                                $podtytul[] = (int) $film['rok'];
+                            }
+
+                            if ($podtytul) {
+                                echo '<span>' . implode(' · ', $podtytul) . '</span>';
+                            }
+
+                            $szczegoly = [];
+
+                            if ($film['ocena'] !== null) {
+                                $szczegoly[] = 'Ocena: ' . number_format((float) $film['ocena'], 1, ',', '');
+                            }
+
+                            if ($film['cena'] !== null) {
+                                $szczegoly[] = 'Cena: ' . number_format((float) $film['cena'], 2, ',', ' ') . ' zł';
+                            }
+
+                            if ($szczegoly) {
+                                echo '<span>' . implode(' | ', $szczegoly) . '</span>';
+                            }
+
+                            echo '</div>';
+                            echo '</a>';
+                        }
+
+                        echo '</div>';
+                    }
+
+                    $wynik->free();
+                }
+
+                $polaczenie->close();
+            }
+        ?>
     </main>
 
     
