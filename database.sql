@@ -2,7 +2,7 @@ CREATE TABLE uzytkownicy (
 	id INT AUTO_INCREMENT PRIMARY KEY,
 	nazwa VARCHAR(20) NOT NULL UNIQUE,
 	haslo VARCHAR(100) NOT NULL,
-	czy_admin BIT NOT NULL
+	czy_admin TINYINT(1) NOT NULL DEFAULT 0
 );
 
 CREATE TABLE typy_plyt (
@@ -26,12 +26,39 @@ CREATE TABLE filmy (
     cena DECIMAL(6,2),
     opis TEXT,
 	typ_plyty_id INT,
+
 	FOREIGN KEY (typ_plyty_id) REFERENCES typy_plyt(id) 
 	ON DELETE SET NULL -- w przypadku usunięcia typu płyty, nie usunie filmu
 	ON UPDATE CASCADE -- przy zamianie id wszystkie rekordy zostaną zakutalizowane
 );
 
-CREATE TABLE wypozyczenia (
+-- nie jestem pewny czy ta tabela jest skończona
+CREATE TABLE albumy (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	tytul VARCHAR(50) NOT NULL,
+	typ_plyty_id INT,
+
+	FOREIGN KEY (typ_plyty_id) REFERENCES typy_plyt(id)
+	ON DELETE SET NULL
+	ON UPDATE CASCADE
+);
+
+-- tabela do muzyki
+CREATE TABLE muzyka (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	tytul VARCHAR(50) NOT NULL,
+	gatunek VARCHAR(50),
+	rok INT,
+	ilosc_dostepnych INT,
+	cena DECIMAL(6,2),
+	album_id INT,
+
+	FOREIGN KEY (album_id) REFERENCES albumy(id)
+	ON DELETE SET NULL
+	ON UPDATE CASCADE
+);
+
+CREATE TABLE wypozyczenia_filmy (
 	uzytkownicy_id INT NOT NULL,
 	film_id INT NOT NULL,
 	data_wypozyczenia DATETIME NOT NULL,
@@ -45,3 +72,18 @@ CREATE TABLE wypozyczenia (
 	ON DELETE CASCADE -- w przypadku usunięcia filmu, usuwa wypozyczenia, których się znalazł
 	ON UPDATE CASCADE
 );
+
+CREATE TABLE wypozyczenia_muzyka (
+	uzytkownicy_id INT NOT NULL,
+	muzyka_id INT NOT NULL,
+	data_wypozyczenia DATETIME NOT NULL,
+	data_zwrotu DATETIME,
+
+	PRIMARY KEY (uzytkownicy_id, muzyka_id),
+	FOREIGN KEY (uzytkownicy_id) REFERENCES uzytkownicy(id)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE,
+	FOREIGN KEY (muzyka_id) REFERENCES muzyka(id)
+	ON DELETE CASCADE
+	ON UPDATE CASCADE
+)
