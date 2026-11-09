@@ -1,7 +1,7 @@
 <?php
     session_start();
     if (!isset($_SESSION['zalogowany']) || $_SESSION['zalogowany'] == false) {
-        header('Location: logowanie.html');
+        header('Location: logowanie.php');
         exit();
     }
 
@@ -15,7 +15,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="assets/css/style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Twoje konto</title>
 </head>
