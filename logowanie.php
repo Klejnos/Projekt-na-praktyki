@@ -19,7 +19,7 @@
         <input type="text" name="nazwa">
         <label for="haslo">Hasło:</label><br>
         <input type="password" name="haslo">
-        <input type="submit" value="Zaloguj się">
+        <button type="submit">Zaloguj się</button>
     </form>
 
     <a href="rejestracja.php">Zarejestruj się</a>

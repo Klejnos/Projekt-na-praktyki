@@ -86,4 +86,6 @@ CREATE TABLE wypozyczenia_muzyka (
 	FOREIGN KEY (muzyka_id) REFERENCES muzyka(id)
 	ON DELETE CASCADE
 	ON UPDATE CASCADE
-)
+);
+
+INSERT INTO typy_plyt (nazwa) VALUES ('CD'), ('DVD'), ('Blu-ray'), ('VHS');

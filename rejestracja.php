@@ -88,7 +88,7 @@
 
     <form method="post">
         <label for="nazwa">Nazwa:</label><br>
-        <input type="text" name="nazwa" placeholder="Nazwa nie powinna zawierać polskich znaków">
+        <input type="text" name="nazwa" placeholder="Bez polskich znaków">
 
         <?php
             if (isset($_SESSION['e_nazwa'])) {
@@ -98,7 +98,7 @@
         ?>
 
         <label for="haslo1">Haslo:</label><br>
-        <input type="password" name="haslo1" placeholder="Hasło powinno zawierać od 8 do 20 znaków">
+        <input type="password" name="haslo1" placeholder="8 - 20 naków">
 
         <label for="haslo2">Powtórz haslo:</label><br>
         <input type="password" name="haslo2">
@@ -115,12 +115,7 @@
             Zarejestruj jako admin
         </label>
 
-
-
-        <br><input type="submit" value="Zarejestruj się">
+        <br><button type="submit">Zarejestruj się</button>
     </form>
-    
 </body>
 </html>
-
-<!-- sprawdzenie czy dziala -->

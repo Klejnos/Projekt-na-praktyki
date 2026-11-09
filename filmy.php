@@ -16,7 +16,7 @@
 </head>
 <body>
     <header>
-        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="przycisk" href="dodawanie_filmow.html">Dodaj film</a><h2 class="konto">Konto</h2></h1>
+        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="przycisk" href="dodawanie_filmoww.php">Dodaj film</a><h2 class="konto">Konto</h2></h1>
     </header>
     <nav>
             <a href="index.php">Strona główna</a> 
