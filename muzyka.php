@@ -1,7 +1,7 @@
 <?php
     session_start();
     if (!isset($_SESSION['zalogowany']) || $_SESSION['zalogowany'] == false) {
-        header('Location: logowanie.html');
+        header('Location: logowanie.php');
         exit();
     }
 ?>
@@ -10,7 +10,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="style_filmy.css">
+    <link rel="stylesheet" href="assets/css/style_filmy.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wypożyczalnia filmów DVD oraz muzyki CD</title>
 </head>
@@ -20,10 +20,10 @@
         
     </header>
     <nav>
-            <a href="index.html">Strona główna</a> 
-            <a href="filmy.html">Filmy</a>
-            <a href="muzyka.html">Muzyka</a>
-            <a href="kontakt.html">Kontakt</a>
+            <a href="index.php">Strona główna</a> 
+            <a href="filmy.php">Filmy</a>
+            <a href="muzyka.php">Muzyka</a>
+            <a href="kontakt.php">Kontakt</a>
     </nav>
     <main>
         <p class="srodek"><span>Muzyka dostępna w naszej wypożyczalni:</span>
