@@ -58,7 +58,7 @@ try {
         <body>
             <main>
                 <h2>Film został pomyślnie dodany do bazy danych!</h2>
-                <a href='index.html'>Powrót do strony głównej</a>
+                <a href='index.php'>Powrót do strony głównej</a>
             </main>
         </body>
         </html>";
