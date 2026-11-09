@@ -143,6 +143,12 @@ button {
     color: #ddd;
 }
 
+.film-original {
+    font-size: 12px;
+    color: #bbb;
+    font-style: italic;
+}
+
 .film-page {
     display: flex;
     gap: 30px;

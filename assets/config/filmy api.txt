@@ -1,3 +1,3 @@
 https://www.omdbapi.com/
 
-klucz api: 138317b9
+klucz API: przeniesiony do assets/config/klucze.php

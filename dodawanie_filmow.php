@@ -14,22 +14,25 @@
             }
             else {
                 $tytul = $polaczenie -> real_escape_string($_POST['tytul'] ?? '');
+                $tytul_oryginalny = $polaczenie -> real_escape_string($_POST['tytul_oryginalny'] ?? '');
                 $gatunek = $polaczenie -> real_escape_string($_POST['gatunek'] ?? '');
-                $rok = ($_POST['rok'] !== '') ? (int)$_POST['rok'] : "NULL";
-                $ocena = ($_POST['ocena'] !== '') ? (float)$_POST['ocena'] : "NULL";
+                $rok = (($_POST['rok'] ?? '') !== '') ? (int)$_POST['rok'] : "NULL";
+                $ocena = (($_POST['ocena'] ?? '') !== '') ? (float)$_POST['ocena'] : "NULL";
                 $rezyser = $polaczenie -> real_escape_string($_POST['rezyser'] ?? '');
-                $czas_trwania = ($_POST['czas_trwania'] !== '') ? (int)$_POST['czas_trwania'] : "NULL";
+                $czas_trwania = (($_POST['czas_trwania'] ?? '') !== '') ? (int)$_POST['czas_trwania'] : "NULL";
                 $jezyk = $polaczenie -> real_escape_string($_POST['jezyk'] ?? '');
-                $ilosc_dostepnych = ($_POST['ilosc_dostepnych'] !== '') ? (int)$_POST['ilosc_dostepnych'] : "NULL";
-                $budzet = ($_POST['budzet'] !== '') ? (float)$_POST['budzet'] : "NULL";
+                $ilosc_dostepnych = (($_POST['ilosc_dostepnych'] ?? '') !== '') ? (int)$_POST['ilosc_dostepnych'] : "NULL";
+                $budzet = (($_POST['budzet'] ?? '') !== '') ? (float)$_POST['budzet'] : "NULL";
                 $produkcja = $polaczenie -> real_escape_string($_POST['produkcja'] ?? '');
                 $nagrody = $polaczenie -> real_escape_string($_POST['nagrody'] ?? '');
-                $cena = ($_POST['cena'] !== '') ? (float)$_POST['cena'] : "NULL";
+                $cena = (($_POST['cena'] ?? '') !== '') ? (float)$_POST['cena'] : "NULL";
                 $opis = $polaczenie -> real_escape_string($_POST['opis'] ?? '');
                 $okladka = $polaczenie -> real_escape_string($_POST['okladka'] ?? '');
-                $typ_plyty = ($_POST['typ_plyty'] !== '') ? (int)$_POST['typ_plyty'] : "NULL";
+                $tmdb_id = (($_POST['tmdb_id'] ?? '') !== '') ? (int)$_POST['tmdb_id'] : "NULL";
+                $imdb_id = $polaczenie -> real_escape_string($_POST['imdb_id'] ?? '');
+                $typ_plyty = (($_POST['typ_plyty'] ?? '') !== '') ? (int)$_POST['typ_plyty'] : "NULL";
 
-                $q = "insert into filmy (tytul, gatunek, rok, ocena, rezyser, czas_trwania, jezyk, ilosc_dostepnych, budzet, produkcja, nagrody, cena, opis, okladka, typ_plyty_id) values ('$tytul', '$gatunek', $rok, $ocena, '$rezyser', $czas_trwania, '$jezyk', $ilosc_dostepnych, $budzet, '$produkcja', '$nagrody', $cena, '$opis', '$okladka', $typ_plyty)";
+                $q = "insert into filmy (tytul, tytul_oryginalny, gatunek, rok, ocena, rezyser, czas_trwania, jezyk, ilosc_dostepnych, budzet, produkcja, nagrody, cena, opis, okladka, tmdb_id, imdb_id, typ_plyty_id) values ('$tytul', '$tytul_oryginalny', '$gatunek', $rok, $ocena, '$rezyser', $czas_trwania, '$jezyk', $ilosc_dostepnych, $budzet, '$produkcja', '$nagrody', $cena, '$opis', '$okladka', $tmdb_id, '$imdb_id', $typ_plyty)";
 
                 if ($polaczenie -> query($q)) {
                     header("Location: filmy.php");
@@ -70,6 +73,10 @@
             <form method="POST">
                 <label for="tytul">tytuł:</label>
                 <input type="text" name="tytul" id="tytul" autocomplete="off"><br>
+
+                <input type="hidden" name="tytul_oryginalny" id="tytul_oryginalny" value="">
+                <input type="hidden" name="tmdb_id" id="tmdb_id" value="">
+                <input type="hidden" name="imdb_id" id="imdb_id" value="">
 
                 <div id="podpowiedzi"></div>
                 <div id="podgladOkladki">

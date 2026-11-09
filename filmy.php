@@ -48,7 +48,7 @@
                 $polaczenie->set_charset("utf8mb4");
 
                 $wynik = $polaczenie->query(
-                    "SELECT id, tytul, gatunek, rok, ocena, cena, okladka FROM filmy ORDER BY id DESC"
+                    "SELECT id, tytul, tytul_oryginalny, gatunek, rok, ocena, cena, okladka FROM filmy ORDER BY id DESC"
                 );
 
                 if ($wynik) {
@@ -68,6 +68,10 @@
 
                             echo '<div class="film-info">';
                             echo '<b>' . htmlspecialchars($film['tytul']) . '</b>';
+
+                            if (!empty($film['tytul_oryginalny']) && $film['tytul_oryginalny'] !== $film['tytul']) {
+                                echo '<span class="film-original">' . htmlspecialchars($film['tytul_oryginalny']) . '</span>';
+                            }
 
                             $podtytul = [];
 

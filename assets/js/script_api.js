@@ -1,10 +1,25 @@
-
-const API_KEY = "138317b9";//AI
+const API_URL = "api_film.php";
 
 const tytul = document.getElementById("tytul");
 const podpowiedzi = document.getElementById("podpowiedzi");
 
 let opoznienie;
+
+// Bezpieczne wypisywanie tekstu w HTML
+function escapeHtml(tekst) {
+    const div = document.createElement("div");
+    div.textContent = tekst ?? "";
+    return div.innerHTML;
+}
+
+// Ustawianie wartości pola, jeśli istnieje
+function ustawWartosc(id, wartosc) {
+    const element = document.getElementById(id);
+
+    if (element) {
+        element.value = wartosc ?? "";
+    }
+}
 
 // Wyszukiwanie filmów podczas wpisywania
 tytul.addEventListener("input", function () {
@@ -18,10 +33,11 @@ tytul.addEventListener("input", function () {
     // Ukrywanie poprzedniej okładki
     document.getElementById("okladka").style.display = "none";
 
-    let ukrytaOkladka = document.getElementById("okladka_url");
-    if (ukrytaOkladka) {
-        ukrytaOkladka.value = "";
-    }
+    // Czyszczenie danych z poprzednio wybranego filmu
+    ustawWartosc("okladka_url", "");
+    ustawWartosc("tytul_oryginalny", "");
+    ustawWartosc("tmdb_id", "");
+    ustawWartosc("imdb_id", "");
 
     if (nazwa.length < 2) {
         return;
@@ -32,37 +48,42 @@ tytul.addEventListener("input", function () {
         try {
 
             let odpowiedz = await fetch(
-                `https://www.omdbapi.com/?apikey=${API_KEY}&s=${encodeURIComponent(nazwa)}&type=movie`
+                `${API_URL}?action=search&q=${encodeURIComponent(nazwa)}`
             );
 
             let dane = await odpowiedz.json();
 
             podpowiedzi.innerHTML = "";
 
-            if (dane.Response === "False") {
+            if (!dane.ok || !dane.results || dane.results.length === 0) {
                 return;
             }
 
-            dane.Search.forEach(function (film) {
+            dane.results.forEach(function (film) {
 
                 let element = document.createElement("div");
 
                 element.className = "podpowiedz";
 
-                let obraz = film.Poster !== "N/A" ? film.Poster : "";
+                let obraz = film.okladka || "";
+
+                let oryginalny = (film.tytul_oryginalny && film.tytul_oryginalny !== film.tytul)
+                    ? `<p>${escapeHtml(film.tytul_oryginalny)}</p>`
+                    : "";
 
                 element.innerHTML = `
-                    <img src="${obraz}" alt="Plakat"
+                    <img src="${escapeHtml(obraz)}" alt="Plakat"
                      onerror="this.style.display='none'">
 
                  <div>
-                <strong>${film.Title}</strong>
-             <p>${film.Year}</p>
+                <strong>${escapeHtml(film.tytul)}</strong>
+                ${oryginalny}
+                <p>${escapeHtml(film.rok)}</p>
     </div>
 `;
 
                 element.addEventListener("click", function () {
-                    pobierzFilm(film.imdbID);
+                    pobierzFilm(film.tmdb_id);
                 });
 
                 podpowiedzi.appendChild(element);
@@ -84,42 +105,47 @@ async function pobierzFilm(id) {
     try {
 
         let odpowiedz = await fetch(
-            `https://www.omdbapi.com/?apikey=${API_KEY}&i=${id}&plot=full`
+            `${API_URL}?action=details&id=${encodeURIComponent(id)}`
         );
 
-        let film = await odpowiedz.json();
+        let dane = await odpowiedz.json();
 
-        if (film.Response === "False") {
-            alert("Nie udało się pobrać filmu!");
+        if (!dane.ok || !dane.film) {
+            alert("Nie udało się pobrać szczegółów filmu!");
             return;
         }
 
+        let film = dane.film;
+
         // Uzupełnianie formularza
 
-        document.getElementById("tytul").value = film.Title;
-        document.getElementById("gatunek").value = film.Genre;
-        document.getElementById("rok").value = film.Year;
-        document.getElementById("ocena").value = film.imdbRating;
-        document.getElementById("rezyser").value = film.Director;
+        ustawWartosc("tytul", film.tytul);
+        ustawWartosc("tytul_oryginalny", film.tytul_oryginalny);
+        ustawWartosc("tmdb_id", film.tmdb_id);
+        ustawWartosc("imdb_id", film.imdb_id);
+        ustawWartosc("gatunek", film.gatunek);
+        ustawWartosc("rok", film.rok);
+        ustawWartosc("ocena", film.ocena);
+        ustawWartosc("rezyser", film.rezyser);
+        ustawWartosc("czas_trwania", film.czas_trwania);
+        ustawWartosc("jezyk", film.jezyk);
+        ustawWartosc("produkcja", film.produkcja);
+        ustawWartosc("nagrody", film.nagrody);
+        ustawWartosc("opis", film.opis);
+        ustawWartosc("budzet", film.budzet);
 
-        document.getElementById("czas_trwania").value =
-            film.Runtime.replace(" min", "");
+        // Pola do ręcznego uzupełnienia
 
-        document.getElementById("jezyk").value = film.Language;
-        document.getElementById("produkcja").value = film.Production;
-        document.getElementById("nagrody").value = film.Awards;
-        document.getElementById("opis").value = film.Plot;
+        ustawWartosc("ilosc_dostepnych", "");
+        ustawWartosc("cena", "");
 
         // Wyświetlanie okładki filmu
 
         let okladka = document.getElementById("okladka");
 
-        let okladkaUrl = (film.Poster && film.Poster !== "N/A") ? film.Poster : "";
+        let okladkaUrl = film.okladka || "";
 
-        let ukrytaOkladka = document.getElementById("okladka_url");
-        if (ukrytaOkladka) {
-            ukrytaOkladka.value = okladkaUrl;
-        }
+        ustawWartosc("okladka_url", okladkaUrl);
 
         if (okladkaUrl) {
 
@@ -132,12 +158,6 @@ async function pobierzFilm(id) {
             okladka.style.display = "none";
 
         }
-
-        // Pola do ręcznego uzupełnienia
-
-        document.getElementById("ilosc_dostepnych").value = "";
-        document.getElementById("budzet").value = "";
-        document.getElementById("cena").value = "";
 
         // Usuwanie podpowiedzi
 

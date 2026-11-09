@@ -81,6 +81,10 @@
                 <h2><?= htmlspecialchars($film['tytul']) ?></h2>
 
                 <?php
+                    if (!empty($film['tytul_oryginalny']) && $film['tytul_oryginalny'] !== $film['tytul']) {
+                        pole('Tytuł oryginalny', $film['tytul_oryginalny']);
+                    }
+
                     pole('Gatunek', $film['gatunek']);
                     pole('Rok', $film['rok']);
                     pole('Ocena', $film['ocena'] !== null ? number_format((float) $film['ocena'], 1, ',', '') : null);

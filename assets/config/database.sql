@@ -13,6 +13,7 @@ CREATE TABLE typy_plyt (
 CREATE TABLE filmy (
     id INT AUTO_INCREMENT PRIMARY KEY,
     tytul VARCHAR(150) NOT NULL,
+    tytul_oryginalny VARCHAR(150),
     gatunek VARCHAR(50),
     rok INT,
     ocena DECIMAL(3,1),
@@ -26,6 +27,8 @@ CREATE TABLE filmy (
     cena DECIMAL(6,2),
     opis TEXT,
     okladka VARCHAR(500),
+    tmdb_id INT,
+    imdb_id VARCHAR(20),
 	typ_plyty_id INT,
 
 	FOREIGN KEY (typ_plyty_id) REFERENCES typy_plyt(id) 
