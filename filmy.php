@@ -1,7 +1,7 @@
 <?php
     session_start();
     if (!isset($_SESSION['zalogowany']) || $_SESSION['zalogowany'] == false) {
-        header('Location: logowanie.html');
+        header('Location: logowanie.php');
         exit();
     }
 ?>
@@ -19,10 +19,10 @@
         <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="przycisk" href="dodawanie_filmow.html">Dodaj film</a><h2 class="konto">Konto</h2></h1>
     </header>
     <nav>
-            <a href="index.html">Strona główna</a> 
-            <a href="filmy.html">Filmy</a>
-            <a href="muzyka.html">Muzyka</a>
-            <a href="kontakt.html">Kontakt</a>
+            <a href="index.php">Strona główna</a> 
+            <a href="filmy.php">Filmy</a>
+            <a href="muzyka.php">Muzyka</a>
+            <a href="kontakt.php">Kontakt</a>
     </nav>
     <main>
         <p class="srodek"><span>Filmy dostępne w naszej wypożyczalni:</span>
@@ -44,6 +44,6 @@
     
     <footer>
         <p>Autorzy: Przemysław Gałęziowski i Filip Klein</p>
-        <script src="script.js"></script>
+        <script src="assets/js/script.js"></script>
 </body>
 </html>
