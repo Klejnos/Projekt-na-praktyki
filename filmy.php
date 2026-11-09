@@ -37,7 +37,7 @@
 
         <p class="biblioteka">
             <span>Biblioteka filmów:</span>
-            
+            //nie ma jeszcze filmów w bazie danych :( 
             </p>
     </main>
 
