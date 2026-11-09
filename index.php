@@ -1,3 +1,11 @@
+<?php
+    session_start();
+    if (!isset($_SESSION['zalogowany']) || $_SESSION['zalogowany'] == false) {
+        header('Location: logowanie.html');
+        exit();
+    }
+?>
+
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -17,16 +25,12 @@
             <a href="kontakt.html">Kontakt</a>
     </nav>
     <main>
-        <h2>Kontakt</h2>
-        <p>Jeśli masz pytania lub potrzebujesz pomocy, skontaktuj się z nami:</p>
-        <ul>
-            <a href="sms:+48574152486">Wyślij SMS na numer +48 574 152 486</a><br>
-            <a href="mailto:kontakt@twojadomena.pl">Email: kontakt@twojadomena.pl</a><br>
-            <a href="https://www.google.com/maps/search/?api=1&query=ul.+Rajska+4,+80-850+Gdańsk" target="_blank" rel="noopener noreferrer"> ul. Rajska 4, 80-850 Gdańsk
-</a>
-        </ul>
-    </main>
+            <h2>Witamy w naszej wypożyczalni!</h2>
+            <p>Oferujemy szeroki wybór filmów DVD, VHS, BLU-RAY oraz muzyki CD do wypożyczenia. Znajdziesz u nas najnowsze hity kinowe, klasyki filmowe oraz różnorodne gatunki muzyczne.</p>
+            <p>Oto kilka najlepszych ofert:</p>
+        </main>
+
     <footer>
-        <p>Autorzy: Przemysław Gałęziowski i Filip Klein</p>
+        <p>Autorzy: Przemysław Gałęziowski i Filip Mały</p>
 </body>
 </html>

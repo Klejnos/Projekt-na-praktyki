@@ -36,6 +36,7 @@
         if (!isset($_POST['czy_admin'])) {
             $czy_admin = 0;
         }
+        $_SESSION[$czy_admin];
 
         require_once "polaczenie.php";
 
