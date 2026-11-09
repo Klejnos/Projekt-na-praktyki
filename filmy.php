@@ -10,7 +10,7 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="style_filmy.css">
+    <link rel="stylesheet" href="assets/css/style_filmy.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wypożyczalnia filmów DVD oraz muzyki CD</title>
 </head>

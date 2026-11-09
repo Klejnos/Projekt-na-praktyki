@@ -89,7 +89,7 @@
         </p>
     </form>
         </main>
-<script src="script_api.js"></script>
+<script src="assets/js/script_api.js"></script>
     <footer>
         
         <p>Autorzy: Przemysław Gałęziowski i Filip Mały</p>
