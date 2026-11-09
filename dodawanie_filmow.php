@@ -26,9 +26,10 @@
                 $nagrody = $polaczenie -> real_escape_string($_POST['nagrody'] ?? '');
                 $cena = ($_POST['cena'] !== '') ? (float)$_POST['cena'] : "NULL";
                 $opis = $polaczenie -> real_escape_string($_POST['opis'] ?? '');
+                $okladka = $polaczenie -> real_escape_string($_POST['okladka'] ?? '');
                 $typ_plyty = ($_POST['typ_plyty'] !== '') ? (int)$_POST['typ_plyty'] : "NULL";
 
-                $q = "insert into filmy values(null, '$tytul', '$gatunek', $rok, $ocena, '$rezyser', $czas_trwania, '$jezyk', $ilosc_dostepnych, $budzet, '$produkcja', '$nagrody', $cena, '$opis', $typ_plyty)";
+                $q = "insert into filmy (tytul, gatunek, rok, ocena, rezyser, czas_trwania, jezyk, ilosc_dostepnych, budzet, produkcja, nagrody, cena, opis, okladka, typ_plyty_id) values ('$tytul', '$gatunek', $rok, $ocena, '$rezyser', $czas_trwania, '$jezyk', $ilosc_dostepnych, $budzet, '$produkcja', '$nagrody', $cena, '$opis', '$okladka', $typ_plyty)";
 
                 if ($polaczenie -> query($q)) {
                     header("Location: filmy.php");
@@ -72,7 +73,8 @@
 
                 <div id="podpowiedzi"></div>
                 <div id="podgladOkladki">
-                <img id="okladka" src="" alt="Okładka filmu"></div>
+                <img id="okladka" src="" alt="Okładka filmu">
+                <input type="hidden" name="okladka" id="okladka_url" value=""></div>
             
                 <label>Gatunek:</label>
                 <input type="text" name="gatunek" id="gatunek"><br>

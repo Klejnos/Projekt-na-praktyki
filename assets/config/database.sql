@@ -25,6 +25,7 @@ CREATE TABLE filmy (
     nagrody TEXT,
     cena DECIMAL(6,2),
     opis TEXT,
+    okladka VARCHAR(500),
 	typ_plyty_id INT,
 
 	FOREIGN KEY (typ_plyty_id) REFERENCES typy_plyt(id) 

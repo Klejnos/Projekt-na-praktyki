@@ -18,6 +18,11 @@ tytul.addEventListener("input", function () {
     // Ukrywanie poprzedniej okładki
     document.getElementById("okladka").style.display = "none";
 
+    let ukrytaOkladka = document.getElementById("okladka_url");
+    if (ukrytaOkladka) {
+        ukrytaOkladka.value = "";
+    }
+
     if (nazwa.length < 2) {
         return;
     }
@@ -109,9 +114,16 @@ async function pobierzFilm(id) {
 
         let okladka = document.getElementById("okladka");
 
-        if (film.Poster && film.Poster !== "N/A") {
+        let okladkaUrl = (film.Poster && film.Poster !== "N/A") ? film.Poster : "";
 
-            okladka.src = film.Poster;
+        let ukrytaOkladka = document.getElementById("okladka_url");
+        if (ukrytaOkladka) {
+            ukrytaOkladka.value = okladkaUrl;
+        }
+
+        if (okladkaUrl) {
+
+            okladka.src = okladkaUrl;
             okladka.style.display = "block";
 
         } else {

@@ -21,7 +21,7 @@
 </head>
 <body>
     <a href="index.php">Powrót</a>
-    <a href="dodawanie_filmoww.php">Dodaj film</a>
+    <a href="dodawanie_filmow.php">Dodaj film</a>
     <a href="dodawanie_muzyka.php">Dodaj muzykę</a>
     <!-- lista wypozyczen -->
 </body>
