@@ -35,6 +35,7 @@
                 $q = "insert into filmy (tytul, tytul_oryginalny, gatunek, rok, ocena, rezyser, czas_trwania, jezyk, ilosc_dostepnych, budzet, produkcja, nagrody, cena, opis, okladka, tmdb_id, imdb_id, typ_plyty_id) values ('$tytul', '$tytul_oryginalny', '$gatunek', $rok, $ocena, '$rezyser', $czas_trwania, '$jezyk', $ilosc_dostepnych, $budzet, '$produkcja', '$nagrody', $cena, '$opis', '$okladka', $tmdb_id, '$imdb_id', $typ_plyty)";
 
                 if ($polaczenie -> query($q)) {
+                    $_SESSION['dodano_film'] = true;
                     header("Location: filmy.php");
                 }
                 else {

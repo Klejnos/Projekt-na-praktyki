@@ -15,6 +15,13 @@
     <title>Wypożyczalnia filmów DVD oraz muzyki CD</title>
 </head>
 <body>
+    <?php
+        if (isset($_SESSION['dodano_film']) && $_SESSION['dodano_film'] === true) {
+            echo '<div class="sukces">Film został pomyślnie dodany do bazy danych.</div>';
+            unset($_SESSION['dodano_film']);
+        }
+    ?>
+
     <header>
         <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="przycisk" href="dodawanie_filmow.php">Dodaj film</a><h2 class="konto">Konto</h2></h1>
     </header>

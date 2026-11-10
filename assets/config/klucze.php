@@ -4,3 +4,4 @@
 
 $tmdb_api_key = '146c30b3adbdf183fbb989d68226cb40';
 $omdb_api_key = '138317b9';
+?>
