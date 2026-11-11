@@ -39,7 +39,13 @@ CREATE TABLE filmy (
 -- nie jestem pewny czy ta tabela jest skończona
 CREATE TABLE albumy (
 	id INT AUTO_INCREMENT PRIMARY KEY,
-	tytul VARCHAR(50) NOT NULL,
+	tytul VARCHAR(150) NOT NULL,
+	wykonawca VARCHAR(150),
+	rok INT,
+	gatunek VARCHAR(100),
+	okladka VARCHAR(500),
+	discogs_id INT,
+	discogs_uri VARCHAR(255),
 	typ_plyty_id INT,
 
 	FOREIGN KEY (typ_plyty_id) REFERENCES typy_plyt(id)
@@ -50,8 +56,8 @@ CREATE TABLE albumy (
 -- tabela do muzyki
 CREATE TABLE muzyka (
 	id INT AUTO_INCREMENT PRIMARY KEY,
-	tytul VARCHAR(50) NOT NULL,
-	gatunek VARCHAR(50),
+	tytul VARCHAR(150) NOT NULL,
+	gatunek VARCHAR(100),
 	rok INT,
 	ilosc_dostepnych INT,
 	cena DECIMAL(6,2),

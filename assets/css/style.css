@@ -30,6 +30,12 @@ nav a {
     color: white;
 }
 
+#podgladOkladki img {
+    display: none;
+    max-width: 200px;
+    margin-top: 10px;
+}
+
 .podpowiedz {
     display: flex;
     align-items: center;
