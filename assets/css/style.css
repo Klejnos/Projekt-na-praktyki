@@ -17,6 +17,79 @@ nav a {
     border: 2px solid white;
 }
 
+.konto {
+    position: absolute;
+    top: 1px;
+    right: 20px;
+    padding: 5px;
+    border: 2px solid white;
+    color: white;
+    text-decoration: none;
+    background-color: rgb(46, 43, 51);
+}
+
+.konto:hover {
+    background-color: white;
+    color: rgb(46, 43, 51);
+}
+
+.przycisk {
+    display: inline-block;
+    background-color: rgb(46, 43, 51);
+    color: white;
+    border: 2px solid white;
+    padding: 10px;
+    font-size: 16px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.przycisk:hover {
+    background-color: white;
+    color: rgb(46, 43, 51);
+}
+
+button {
+    background-color: rgb(46, 43, 51);
+    color: white;
+    border: 2px solid white;
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: white;
+    color: rgb(46, 43, 51);
+}
+
+/* ---------- Kontakt ---------- */
+
+.kontakt-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.kontakt-box {
+    flex: 1 1 250px;
+    border: 2px solid white;
+    padding: 15px;
+}
+
+.kontakt-box h3 {
+    margin-top: 0;
+}
+
+.kontakt-box a {
+    color: white;
+}
+
+.kontakt-box a:hover {
+    color: #ccc;
+}
+
 .error {
     color: red;
     margin-top: 10px;

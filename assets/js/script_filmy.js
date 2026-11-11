@@ -1,9 +1,19 @@
-const czyZalogowanyAdmin = true;
-document.addEventListener("DOMContentLoaded", () => {
-    const formularz = document.getElementById("formularz");
-    const addBtn = document.getElementById("addBtn");
+document.addEventListener("DOMContentLoaded", function () {
+    const sortowanie = document.getElementById("sortowanie");
 
-    if (czyZalogowanyAdmin) {
-        addBtn.classList.remove("ukryty");
+    if (!sortowanie) {
+        return;
     }
+
+    sortowanie.addEventListener("change", function () {
+        const url = new URL(window.location.href);
+
+        if (sortowanie.value === "default") {
+            url.searchParams.delete("sort");
+        } else {
+            url.searchParams.set("sort", sortowanie.value);
+        }
+
+        window.location.href = url.toString();
+    });
 });

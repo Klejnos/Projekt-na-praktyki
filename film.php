@@ -57,7 +57,7 @@
 </head>
 <body>
     <header>
-        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="przycisk" href="dodawanie_filmow.php">Dodaj film</a><h2 class="konto">Konto</h2></h1>
+        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="przycisk" href="dodawanie_filmow.php">Dodaj film</a><a class="konto" href="<?= (!empty($_SESSION['czy_admin'])) ? 'konto_admin.php' : 'konto_uzytkownik.php' ?>">Konto</a></h1>
     </header>
     <nav>
             <a href="index.php">Strona główna</a>
@@ -100,7 +100,11 @@
                     pole('Opis', $film['opis']);
                 ?>
 
-                <p><a class="przycisk" href="filmy.php">Powrót do filmów</a></p>
+                <p>
+                    <a class="przycisk" href="edytuj_film.php?id=<?= (int) $film['id'] ?>">Edytuj film</a>
+                    <a class="przycisk" href="usun_film.php?id=<?= (int) $film['id'] ?>" onclick="return confirm('Czy na pewno usunąć ten film?');">Usuń film</a>
+                    <a class="przycisk" href="filmy.php">Powrót do filmów</a>
+                </p>
             </div>
         </div>
     </main>

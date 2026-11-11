@@ -57,6 +57,7 @@
     }
 
     $czyAdmin = isset($_SESSION['czy_admin']) && (int) $_SESSION['czy_admin'] === 1;
+    $kontoLink = $czyAdmin ? 'konto_admin.php' : 'konto_uzytkownik.php';
 ?>
 
 <!DOCTYPE html>
@@ -68,9 +69,23 @@
     <title>Muzyka | Wypożyczalnia</title>
 </head>
 <body>
+    <?php
+        $komunikaty = [
+            'dodano_muzyke' => 'Muzyka została pomyślnie dodana do bazy danych.',
+            'edytowano_muzyke' => 'Album został zaktualizowany.',
+            'usunieto_muzyke' => 'Album został usunięty.',
+        ];
+
+        foreach ($komunikaty as $klucz => $tekst) {
+            if (!empty($_SESSION[$klucz])) {
+                echo '<div class="sukces">' . $tekst . '</div>';
+                unset($_SESSION[$klucz]);
+            }
+        }
+    ?>
+
     <header>
-        <h1>Wypożyczalnia filmów DVD oraz muzyki CD <h2 class="konto">Konto</h2></h1>
-        
+        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="przycisk" href="dodawanie_muzyka.php">Dodaj muzykę</a><a class="konto" href="<?= $kontoLink ?>">Konto</a></h1>
     </header>
     <nav>
             <a href="index.php">Strona główna</a> 
@@ -90,51 +105,55 @@
 
         <p class="biblioteka">
             <span>Biblioteka albumów:</span>
-            <?php if ($czyAdmin): ?>
-                <a class="przycisk" href="dodawanie_muzyka.php">Dodaj album</a>
-            <?php endif; ?>
         </p>
 
         <?php if (count($albumy) > 0): ?>
             <div class="film-grid">
                 <?php foreach ($albumy as $album): ?>
-                    <?php
-                        $discogsUri = $album['discogs_uri'] ?? '';
-                        $tag = $discogsUri !== '' ? 'a' : 'div';
-                        $atrybuty = $discogsUri !== ''
-                            ? ' href="' . htmlspecialchars($discogsUri, ENT_QUOTES, 'UTF-8') . '" target="_blank" rel="noopener noreferrer"'
-                            : '';
+                    <div class="film-card-wrap">
+                        <?php
+                            $discogsUri = $album['discogs_uri'] ?? '';
+                            $tag = $discogsUri !== '' ? 'a' : 'div';
+                            $atrybuty = $discogsUri !== ''
+                                ? ' href="' . htmlspecialchars($discogsUri, ENT_QUOTES, 'UTF-8') . '" target="_blank" rel="noopener noreferrer"'
+                                : '';
 
-                        echo '<' . $tag . ' class="film-card"' . $atrybuty . '>';
-                    ?>
+                            echo '<' . $tag . ' class="film-card"' . $atrybuty . '>';
+                        ?>
 
-                    <?php if (!empty($album['okladka'])): ?>
-                        <img class="film-cover" src="<?= htmlspecialchars($album['okladka']) ?>" alt="Okładka albumu <?= htmlspecialchars($album['tytul']) ?>">
-                    <?php else: ?>
-                        <div class="film-cover film-cover--empty"><span>Brak okładki</span></div>
-                    <?php endif; ?>
-
-                    <div class="film-info">
-                        <b><?= htmlspecialchars($album['tytul']) ?></b>
-
-                        <?php if (!empty($album['wykonawca'])): ?>
-                            <span class="film-original"><?= htmlspecialchars($album['wykonawca']) ?></span>
+                        <?php if (!empty($album['okladka'])): ?>
+                            <img class="film-cover" src="<?= htmlspecialchars($album['okladka']) ?>" alt="Okładka albumu <?= htmlspecialchars($album['tytul']) ?>">
+                        <?php else: ?>
+                            <div class="film-cover film-cover--empty"><span>Brak okładki</span></div>
                         <?php endif; ?>
 
-                        <span>
-                            <?= htmlspecialchars($album['gatunek'] ?: 'Muzyka') ?><?= $album['rok'] ? ' · ' . (int) $album['rok'] : '' ?>
-                        </span>
+                        <div class="film-info">
+                            <b><?= htmlspecialchars($album['tytul']) ?></b>
 
-                        <span>
-                            <?= htmlspecialchars($album['typ'] ?: 'brak typu') ?><?= $album['ilosc_dostepnych'] !== null ? ' · dostępne: ' . (int) $album['ilosc_dostepnych'] : '' ?>
-                        </span>
+                            <?php if (!empty($album['wykonawca'])): ?>
+                                <span class="film-original"><?= htmlspecialchars($album['wykonawca']) ?></span>
+                            <?php endif; ?>
 
-                        <span>
-                            Cena: <?= $album['cena'] !== null ? number_format((float) $album['cena'], 2, ',', ' ') . ' zł' : '—' ?>
-                        </span>
+                            <span>
+                                <?= htmlspecialchars($album['gatunek'] ?: 'Muzyka') ?><?= $album['rok'] ? ' · ' . (int) $album['rok'] : '' ?>
+                            </span>
+
+                            <span>
+                                <?= htmlspecialchars($album['typ'] ?: 'brak typu') ?><?= $album['ilosc_dostepnych'] !== null ? ' · dostępne: ' . (int) $album['ilosc_dostepnych'] : '' ?>
+                            </span>
+
+                            <span>
+                                Cena: <?= $album['cena'] !== null ? number_format((float) $album['cena'], 2, ',', ' ') . ' zł' : '—' ?>
+                            </span>
+                        </div>
+
+                        <?= '</' . $tag . '>' ?>
+
+                        <div class="admin-actions">
+                            <a class="przycisk" href="edytuj_muzyka.php?id=<?= (int) $album['id'] ?>">Edytuj</a>
+                            <a class="przycisk" href="usun_muzyka.php?id=<?= (int) $album['id'] ?>" onclick="return confirm('Czy na pewno usunąć ten album?');">Usuń</a>
+                        </div>
                     </div>
-
-                    <?= '</' . $tag . '>' ?>
                 <?php endforeach; ?>
             </div>
         <?php else: ?>

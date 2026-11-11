@@ -68,6 +68,14 @@ nav a {
     padding: 5px;
     right: 20px;
     border: 2px solid white;
+    color: white;
+    text-decoration: none;
+    background-color: rgb(46, 43, 51);
+}
+
+.konto:hover {
+    background-color: white;
+    color: rgb(46, 43, 51);
 }
 
 button {
@@ -82,12 +90,51 @@ button {
 }
 
 .przycisk {
+    display: inline-block;
     background-color: rgb(46, 43, 51);
     color: white;
     border: 2px solid white;
     padding: 10px;
     font-size: 16px;
     left: 20px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.przycisk:hover {
+    background-color: white;
+    color: rgb(46, 43, 51);
+}
+
+.film-card-wrap {
+    display: flex;
+    flex-direction: column;
+    width: 200px;
+}
+
+.film-card-wrap .film-card {
+    width: 100%;
+    flex: 1;
+}
+
+.admin-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.admin-actions .przycisk {
+    flex: 1;
+    padding: 6px 8px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.sukces {
+    border: 2px solid #8f8;
+    color: #8f8;
+    padding: 10px;
+    margin-bottom: 20px;
 }
 
 .film-grid {
@@ -177,6 +224,10 @@ button {
 
 @media (max-width: 560px) {
     .film-card {
+        width: 150px;
+    }
+
+    .film-card-wrap {
         width: 150px;
     }
 
