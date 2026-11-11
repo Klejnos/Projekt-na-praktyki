@@ -4,6 +4,7 @@
         header('Location: logowanie.php');
         exit();
     }
+    
 
     require_once "polaczenie.php";
 
@@ -27,6 +28,7 @@
                 $film = $wynik->fetch_assoc();
                 $wynik->free();
             }
+            $typ = "film";
 
             $polaczenie->close();
         }
@@ -57,7 +59,7 @@
 </head>
 <body>
     <header>
-        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="przycisk" href="dodawanie_filmow.php">Dodaj film</a><a class="konto" href="<?= (!empty($_SESSION['czy_admin'])) ? 'konto_admin.php' : 'konto_uzytkownik.php' ?>">Konto</a></h1>
+        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="konto" href="konto.php">Konto</a></h1>
     </header>
     <nav>
             <a href="index.php">Strona główna</a>
@@ -103,6 +105,7 @@
                 <p>
                     <a class="przycisk" href="edytuj_film.php?id=<?= (int) $film['id'] ?>">Edytuj film</a>
                     <a class="przycisk" href="usun_film.php?id=<?= (int) $film['id'] ?>" onclick="return confirm('Czy na pewno usunąć ten film?');">Usuń film</a>
+                    <button><a href="wypozycz.php?id=<?= (int) $film['id'] ?>&typ=<?= $typ ?>">Wypożycz film</a></button>
                     <a class="przycisk" href="filmy.php">Powrót do filmów</a>
                 </p>
             </div>

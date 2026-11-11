@@ -14,7 +14,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Osadnicy - gra przeglądarkowa</title>
+    <title>Wypożyczalnia</title>
 </head>
 <body>
     <p>Dziękujemy za zarejestrowanie się</p>

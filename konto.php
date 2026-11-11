@@ -5,19 +5,20 @@
         exit();
     }
 
+    $czy_admin = true;
     if (!isset($_SESSION['czy_admin']) || (int) $_SESSION['czy_admin'] !== 1) {
-        header('Location: konto_uzytkownik.php');
-        exit();
+        $czy_admin = false;
     }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="assets/css/style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel administratora | Wypożyczalnia</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <title>Twoje konto</title>
 </head>
 <body>
     <header>
@@ -30,22 +31,22 @@
             <a href="kontakt.php">Kontakt</a>
     </nav>
     <main>
-        <h2>Panel administratora</h2>
-        <p>Witaj, <?= htmlspecialchars($_SESSION['nazwa']) ?>!</p>
+        <?php if($czy_admin) : ?>
+            <h2>Panel administratora</h2>
+        <?php endif; ?>
+        
+        <h2>Witaj, <?= htmlspecialchars($_SESSION['nazwa']) ?></h2>
 
-        <p>
-            <a class="przycisk" href="dodawanie_filmow.php">Dodaj film</a>
-            <a class="przycisk" href="dodawanie_muzyka.php">Dodaj muzykę</a>
-        </p>
+        <?php if($czy_admin): ?>
+            <button><a href="dodawanie_filmow.php">Dodaj film</a></button>
+            <button><a href="dodawanie_muzyka.php">Dodaj muzykę</a></button>
+        <?php endif; ?>
 
-        <p>
-            <a class="przycisk" href="filmy.php">Zarządzaj filmami</a>
-            <a class="przycisk" href="muzyka.php">Zarządzaj muzyką</a>
-        </p>
-
-        <p>
-            <a class="przycisk" href="wylogowanie.php">Wyloguj się</a>
-        </p>
+        <button><a href="filmy.php">Przeglądaj filmy</a></button>
+        <button><a href="muzyka.php">Przeglądaj muzykę</a></button>
+        
+        <button><a href="wylogowanie.php">Wyloguj się</a></button>
+        
     </main>
 
     <footer>

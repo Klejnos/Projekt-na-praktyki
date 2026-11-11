@@ -50,7 +50,7 @@
             }
             $wynik->free();
         }
-
+        $typ = "muzyka";
         $polaczenie->close();
     } catch (Exception $e) {
         // Strona pokaże stan pusty, jeśli baza jest niedostępna.
@@ -85,7 +85,7 @@
     ?>
 
     <header>
-        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="przycisk" href="dodawanie_muzyka.php">Dodaj muzykę</a><a class="konto" href="<?= $kontoLink ?>">Konto</a></h1>
+        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="konto" href="konto.php">Konto</a></h1>
     </header>
     <nav>
             <a href="index.php">Strona główna</a> 
@@ -151,6 +151,7 @@
 
                         <div class="admin-actions">
                             <a class="przycisk" href="edytuj_muzyka.php?id=<?= (int) $album['id'] ?>">Edytuj</a>
+                            <button><a href="wypozycz.php?id=<?= (int) $album['id'] ?>&typ=<?= $typ ?>">Wypożycz album</a></button>
                             <a class="przycisk" href="usun_muzyka.php?id=<?= (int) $album['id'] ?>" onclick="return confirm('Czy na pewno usunąć ten album?');">Usuń</a>
                         </div>
                     </div>
