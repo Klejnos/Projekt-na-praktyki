@@ -36,7 +36,6 @@
         if (!isset($_POST['czy_admin'])) {
             $czy_admin = 0;
         }
-        $_SESSION[$czy_admin];
 
         require_once "polaczenie.php";
 
@@ -56,9 +55,10 @@
                 }
 
                 if ($ok) {
-                    if ($polaczenie -> query("insert into uzytkownicy values (null, '$nazwa', '$haslo_hash', '$czy_admin')")) {
+                    if ($polaczenie -> query("INSERT INTO uzytkownicy VALUES (null, '$nazwa', '$haslo_hash', '$czy_admin')")) {
                         $_SESSION['udana_rejestracja'] = true;
                         header('Location: witam.php');
+                        exit();
                     }
                     else {
                         throw new Exception($polaczenie -> error);
@@ -82,10 +82,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zarejestruj się</title>
-    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-
+    <script src="assets/js/pokaz_haslo.js"></script>
     <form method="post">
         <label for="nazwa">Nazwa:</label><br>
         <input type="text" name="nazwa" placeholder="Bez polskich znaków">
@@ -95,27 +94,27 @@
                 echo '<div class="error">'.$_SESSION['e_nazwa']."</div>";
                 unset($_SESSION['e_nazwa']);
             }
-        ?>
+        ?><br>
 
         <label for="haslo1">Haslo:</label><br>
-        <input type="password" name="haslo1" placeholder="8 - 20 naków">
+        <input type="password" id="haslo1" name="haslo1" placeholder="8 - 20 znaków"><br>
 
         <label for="haslo2">Powtórz haslo:</label><br>
-        <input type="password" name="haslo2">
+        <input type="password" id="haslo2" name="haslo2">
+        <button type="button" id="przycisk_pokazHaslo">Pokaż hasło</button>
 
         <?php
             if (isset($_SESSION['e_haslo'])) {
                 echo '<div class="error">'.$_SESSION['e_haslo']."</div>";
                 unset($_SESSION['e_haslo']);
             }
-        ?>
+        ?><br>
 
-        <label for="czy_admin">
-            <input name="czy_admin" type="checkbox">
-            Zarejestruj jako admin
+        <label>
+            <input name="czy_admin" type="checkbox">Zarejestruj jako admin
         </label>
 
-        <br><button type="submit">Zarejestruj się</button>
+        <br><br><button type="submit">Zarejestruj się</button>
     </form>
 </body>
 </html>

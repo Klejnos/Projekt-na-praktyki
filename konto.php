@@ -9,6 +9,21 @@
     if (!isset($_SESSION['czy_admin']) || (int) $_SESSION['czy_admin'] !== 1) {
         $czy_admin = false;
     }
+
+    require_once "polaczenie.php";
+    try {
+        $polaczenie = new mysqli($host, $db_user, $db_password, $db_name);
+    }
+    catch (Exception $e) {
+        echo "Błąd serwera";
+    }
+
+    function pole(string $etykieta, $wartosc): void
+    {
+        if ($wartosc !== null && $wartosc !== '') {
+            echo '<p><b>' . $etykieta . ':</b> ' . htmlspecialchars((string) $wartosc) . '</p>';
+        }
+    }
 ?>
 
 
@@ -17,7 +32,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="assets/css/style.css">
     <title>Twoje konto</title>
 </head>
 <body>
@@ -44,8 +58,96 @@
 
         <button><a href="filmy.php">Przeglądaj filmy</a></button>
         <button><a href="muzyka.php">Przeglądaj muzykę</a></button>
+
+        <h2>Twoje wypożyczenia - filmy:</h2>
+        <?php
+            $id = $_SESSION['id'];
+            $q = $polaczenie -> query("SELECT f.*, t.nazwa AS nazwa_typu, w.* FROM filmy f LEFT JOIN typy_plyt t ON f.typ_plyty_id = t.id JOIN wypozyczenia_filmy w ON w.film_id = f.id WHERE w.uzytkownicy_id = '$id'");
+            $typ = 'film';
+            if ($q && $q -> num_rows > 0) {
+                while ($wiersz = $q -> fetch_assoc()) {
+                    ?>
+
+                    <div class="film-page">
+                        <?php if (!empty($wiersz['okladka'])): ?>
+                            <img class="film-page-cover" src="<?= htmlspecialchars($wiersz['okladka']) ?>" alt="Okładka filmu <?= htmlspecialchars($wiersz['tytul']) ?>">
+                        <?php else: ?>
+                            <div class="film-page-cover film-cover--empty"><span>Brak okładki</span></div>
+                        <?php endif; ?>
+
+                        <div class="film-page-info">
+                            <h2><?= htmlspecialchars($wiersz['tytul']) ?></h2>
+
+                            <?php
+                                if (!empty($wiersz['tytul_oryginalny']) && $wiersz['tytul_oryginalny'] !== $wiersz['tytul']) {
+                                    pole('Tytuł oryginalny', $wiersz['tytul_oryginalny']);
+                                }
+
+                                pole('Gatunek', $wiersz['gatunek']);
+                                pole('Rok', $wiersz['rok']);
+                                pole('Ocena', $wiersz['ocena'] !== null ? number_format((float) $wiersz['ocena'], 1, ',', '') : null);
+                                pole('Reżyser', $wiersz['rezyser']);
+                                pole('Czas trwania', $wiersz['czas_trwania'] !== null ? $wiersz['czas_trwania'] . ' min' : null);
+                                pole('Język', $wiersz['jezyk']);
+                                pole('Typ płyty', $wiersz['nazwa_typu']);
+                                pole('Data wypożyczenia', $wiersz['data_wypozyczenia']);
+                                pole('Cena', $wiersz['cena'] !== null ? number_format((float) $wiersz['cena'], 2, ',', ' ') . ' zł' : null);
+                                pole('Opis', $wiersz['opis']);
+                            ?>
+                            <br><button><a href="zwrot.php?id=<?= (int) $wiersz['film_id'] ?>&typ=<?= $typ?>">Zwróć film</a></button>
+                            <button><a href="przedluz_termin.php?id=<?= (int) $wiersz['film_id'] ?>&typ=<?= $typ ?>">Przedłuż termin odania</a></button>
+                        </div>
+                    </div>
+                    <hr>
+        <?php
+                }
+            }
+            else {
+                echo "<h3>Nie masz aktualnie wypożyczonych żadnych filmów</h3>";
+            }
+        ?>
+
+        <br><br><br><h2>Twoje wypozyczenia - muzyka:</h2>
+        <?php
+            $q_muzyka = $polaczenie -> query("SELECT m.*, a.wykonawca, a.okladka, w.data_wypozyczenia, w.muzyka_id 
+            FROM muzyka m LEFT JOIN albumy a ON m.album_id = a.id 
+            JOIN wypozyczenia_muzyka w ON w.muzyka_id = m.id WHERE w.uzytkownicy_id = '$id'");
+            $typ = 'muzyka';
+            if ($q_muzyka && $q_muzyka -> num_rows > 0) {
+                while ($wiersz_m = $q_muzyka -> fetch_assoc()) {
+                    ?>
+                    <div class="film-page">
+                        <?php if (!empty($wiersz_m['okladka'])): ?>
+                            <img class="film-page-cover" src="<?= htmlspecialchars($wiersz_m['okladka']) ?>" alt="Okładka albumu <?= htmlspecialchars($wiersz_m['tytul']) ?>">
+                        <?php else: ?>
+                            <div class="film-page-cover film-cover--empty"><span>Brak okładki</span></div>
+                        <?php endif; ?>
+                        
+                        <div class="film-page-info">
+                            <h2><?= htmlspecialchars($wiersz_m['tytul']) ?></h2>
+
+                            <?php
+                                if (!empty($wiersz_m['wykonawca'])) {
+                                    pole('Wykonawca', $wiersz_m['wykonawca']);
+                                }
+                                pole('Gatunek', $wiersz_m['gatunek']);
+                                pole('Rok', $wiersz_m['rok']);
+                                pole('Data wypożyczenia', $wiersz_m['data_wypozyczenia']);
+                                pole('Cena', $wiersz_m['cena'] !== null ? number_format((float) $wiersz_m['cena'], 2, ',', ' ') . ' zł' : null);
+                            ?>
+                            <button><a href="zwrot.php?id=<?= (int) $wiersz_m['muzyka_id'] ?>&typ=<?= $typ?>">Zwróć muzykę</a></button>
+                            <button><a href="przedluz_termin.php?id= <?= (int) $wiersz_m['muzyka_id'] ?>&typ=<?= $typ ?>">Przedłuż termin odania</a></button>
+                        </div>
+                    </div>
+        <?php
+                }
+            }
+            else {
+                echo "<h3>Nie masz wypożyczonych żadnych albumów muzycznych</h3>";
+            }
+        ?>
         
-        <button><a href="wylogowanie.php">Wyloguj się</a></button>
+        <br><br><br><button><a href="wylogowanie.php">Wyloguj się</a></button>
         
     </main>
 

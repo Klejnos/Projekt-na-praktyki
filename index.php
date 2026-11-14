@@ -19,18 +19,19 @@
         <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="konto" href="konto.php">Konto</a></h1>
     </header>
     <nav>
-            <a href="index.php">Strona główna</a> 
-            <a href="filmy.php">Filmy</a>
-            <a href="muzyka.php">Muzyka</a>
-            <a href="kontakt.php">Kontakt</a>
+        <a href="index.php">Strona główna</a> 
+        <a href="filmy.php">Filmy</a>
+        <a href="muzyka.php">Muzyka</a>
+        <a href="kontakt.php">Kontakt</a>
     </nav>
     <main>
-            <h2>Witamy w naszej wypożyczalni!</h2>
-            <p>Oferujemy szeroki wybór filmów DVD, VHS, BLU-RAY oraz muzyki CD do wypożyczenia. Znajdziesz u nas najnowsze hity kinowe, klasyki filmowe oraz różnorodne gatunki muzyczne.</p>
-            <p>Oto kilka najlepszych ofert:</p>
-        </main>
+        <h2>Witamy w naszej wypożyczalni!</h2>
+        <p>Oferujemy szeroki wybór filmów DVD, VHS, BLU-RAY oraz muzyki CD do wypożyczenia. Znajdziesz u nas najnowsze hity kinowe, klasyki filmowe oraz różnorodne gatunki muzyczne.</p>
+        <p>Oto kilka najlepszych ofert:</p>
+    </main>
 
     <footer>
-        <p>Autorzy: Przemysław Gałęziowski i Filip Mały</p>
+        <p>Autorzy: Przemysław Gałęziowski i Filip Klein</p>
+    </footer>
 </body>
 </html>

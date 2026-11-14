@@ -16,8 +16,6 @@
             throw new Exception();
         }
 
-        $polaczenie->set_charset("utf8mb4");
-
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $tytul = trim($_POST['tytul'] ?? '');
             $wykonawca = trim($_POST['wykonawca'] ?? '');

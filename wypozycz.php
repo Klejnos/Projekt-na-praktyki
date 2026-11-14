@@ -22,10 +22,11 @@
             }
 
             if ($typ == 'film') {
-                $q = "insert into wypozyczenia_filmy (uzytkownicy_id, film_id, data_wypozyczenia) values ($uzytkownik_id, $id, NOW())";
+                $q = "INSERT INTO wypozyczenia_filmy (uzytkownicy_id, film_id, data_wypozyczenia, data_zwrotu) 
+                VALUES ($uzytkownik_id, $id, NOW(), DATE_ADD(NOW(), INTERVAL 10 DAY))";
 
                 if ($polaczenie -> query($q)) {
-                    $polaczenie -> query("update filmy set ilosc_dostepnych = ilosc_dostepnych - 1 where id = $id and ilosc_dostepnych > 0");
+                    $polaczenie -> query("UPDATE filmy SET ilosc_dostepnych = ilosc_dostepnych - 1 WHERE id = $id AND ilosc_dostepnych > 0");
                     $_SESSION['wypozyczono_film'] = true;
 
                     header('Location: filmy.php');
@@ -37,10 +38,11 @@
             }
 
             elseif ($typ == 'muzyka') {
-                $q = "insert into wypozyczenia_muzyka (uzytkownicy_id, muzyka_id, data_wypozyczenia) values ($uzytkownik_id, $id, NOW())";
+                $q = "INSERT INTO wypozyczenia_muzyka (uzytkownicy_id, muzyka_id, data_wypozyczenia, data_zwrotu) 
+                VALUES ($uzytkownik_id, $id, NOW(), DATE_ADD(NOW(), INTERVAL 15 DAY))";
 
                 if ($polaczenie -> query($q)) {
-                    $polaczenie -> query("update muzyka set ilosc_dostepnych = ilosc_dostepnych - 1 where id = $id and ilosc_dostepnych > 0");
+                    $polaczenie -> query("UPDATE muzyka SET ilosc_dostepnych = ilosc_dostepnych - 1 WHERE id = $id AND ilosc_dostepnych > 0");
                     $_SESSION['wypozyczono_album'] = true;
 
                     header('Location: muzyka.php');

@@ -32,7 +32,8 @@
                 $imdb_id = $polaczenie -> real_escape_string($_POST['imdb_id'] ?? '');
                 $typ_plyty = (($_POST['typ_plyty'] ?? '') !== '') ? (int)$_POST['typ_plyty'] : "NULL";
 
-                $q = "insert into filmy (tytul, tytul_oryginalny, gatunek, rok, ocena, rezyser, czas_trwania, jezyk, ilosc_dostepnych, budzet, produkcja, nagrody, cena, opis, okladka, tmdb_id, imdb_id, typ_plyty_id) values ('$tytul', '$tytul_oryginalny', '$gatunek', $rok, $ocena, '$rezyser', $czas_trwania, '$jezyk', $ilosc_dostepnych, $budzet, '$produkcja', '$nagrody', $cena, '$opis', '$okladka', $tmdb_id, '$imdb_id', $typ_plyty)";
+                $q = "INSERT INTO filmy (tytul, tytul_oryginalny, gatunek, rok, ocena, rezyser, czas_trwania, jezyk, ilosc_dostepnych, budzet, produkcja, nagrody, cena, opis, okladka, tmdb_id, imdb_id, typ_plyty_id) 
+                VALUES ('$tytul', '$tytul_oryginalny', '$gatunek', $rok, $ocena, '$rezyser', $czas_trwania, '$jezyk', $ilosc_dostepnych, $budzet, '$produkcja', '$nagrody', $cena, '$opis', '$okladka', $tmdb_id, '$imdb_id', $typ_plyty)";
 
                 if ($polaczenie -> query($q)) {
                     $_SESSION['dodano_film'] = true;
@@ -131,10 +132,10 @@
                                 throw new Exception(mysqli_connect_errno());
                             }
                             else {
-                                $qu = $polaczenie -> query("select id, nazwa from typy_plyt");
+                                $qu = $polaczenie -> query("SELECT id, nazwa FROM typy_plyt");
                                 if ($qu) {
-                                    while ($row = $qu -> fetch_assoc()) {
-                                        echo '<option value="'.$row['id'].'">'.$row['nazwa'].'</option>';
+                                    while ($wiersz = $qu -> fetch_assoc()) {
+                                        echo '<option value="'.$wiersz['id'].'">'.$wiersz['nazwa'].'</option>';
                                     }
                                 }
 

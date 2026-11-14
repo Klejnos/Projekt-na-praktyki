@@ -85,7 +85,7 @@
     ?>
 
     <header>
-        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="konto" href="<?= $kontoLink ?>">Konto</a></h1>
+        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="konto" href="konto.php">Konto</a></h1>
     </header>
     <nav>
             <a href="index.php">Strona główna</a> 

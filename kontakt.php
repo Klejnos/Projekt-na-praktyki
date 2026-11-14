@@ -19,10 +19,10 @@
         <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="konto" href="konto.php">Konto</a></h1>
     </header>
     <nav>
-            <a href="index.php">Strona główna</a>
-            <a href="filmy.php">Filmy</a>
-            <a href="muzyka.php">Muzyka</a>
-            <a href="kontakt.php">Kontakt</a>
+        <a href="index.php">Strona główna</a>
+        <a href="filmy.php">Filmy</a>
+        <a href="muzyka.php">Muzyka</a>
+        <a href="kontakt.php">Kontakt</a>
     </nav>
     <main>
         <h2>Kontakt</h2>
