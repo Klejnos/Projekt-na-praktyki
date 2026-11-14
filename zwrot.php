@@ -26,6 +26,7 @@
 
                 if ($polaczenie -> query($q)) {
                     $polaczenie -> query("UPDATE filmy SET ilosc_dostepnych = ilosc_dostepnych + 1 WHERE id = '$id'");
+                    $_SESSION['konto_komunikat'] = 'Film został zwrócony.';
                     header('Location: konto.php');
                     exit();
                 }
@@ -39,6 +40,7 @@
 
                 if ($polaczenie -> query($q)) {
                     $polaczenie -> query("UPDATE muzyka SET ilosc_dostepnych = ilosc_dostepnych + 1 WHERE id = '$id'");
+                    $_SESSION['konto_komunikat'] = 'Muzyka została zwrócona.';
                     header('Location: konto.php');
                     exit();
                 }

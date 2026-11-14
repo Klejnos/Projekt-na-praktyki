@@ -29,6 +29,7 @@ CREATE TABLE filmy (
     okladka VARCHAR(500),
     tmdb_id INT,
     imdb_id VARCHAR(20),
+    czy_ulubiony TINYINT(1) NOT NULL DEFAULT 0,
 	typ_plyty_id INT,
 
 	FOREIGN KEY (typ_plyty_id) REFERENCES typy_plyt(id) 
@@ -62,6 +63,7 @@ CREATE TABLE muzyka (
 	ilosc_dostepnych INT,
 	cena DECIMAL(6,2),
 	album_id INT,
+	czy_ulubiony TINYINT(1) NOT NULL DEFAULT 0,
 
 	FOREIGN KEY (album_id) REFERENCES albumy(id)
 	ON DELETE SET NULL

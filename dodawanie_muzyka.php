@@ -154,14 +154,15 @@
         <?php endif; ?>
 
         <form method="POST">
-            <label for="tytul">Album / wykonawca:</label>
-            <input type="text" name="tytul" id="tytul" autocomplete="off" placeholder="Zacznij wpisywać nazwę albumu lub wykonawcę...">
+            <div class="search-box">
+                <label for="tytul">Album / wykonawca:</label>
+                <input type="text" name="tytul" id="tytul" autocomplete="off" placeholder="Zacznij wpisywać nazwę albumu lub wykonawcę...">
+                <div id="podpowiedzi"></div>
+            </div>
 
             <input type="hidden" name="discogs_id" id="discogs_id" value="">
             <input type="hidden" name="okladka" id="okladka_url" value="">
             <input type="hidden" name="discogs_uri" id="discogs_uri" value="">
-
-            <div id="podpowiedzi"></div>
             <div id="podgladOkladki">
                 <img id="okladka" src="" alt="Okładka albumu">
             </div>

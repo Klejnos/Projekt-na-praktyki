@@ -9,23 +9,40 @@ footer {
     padding: 50px;
 }
 
+nav {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 10px 20px;
+    padding: 5px;
+    border: 2px solid white;
+    background-color: rgb(46, 43, 51);
+}
+
 nav a {
     color: white;
     text-decoration: none;
-    padding: 14px 20px;
+    padding: 10px 18px;
     display: inline-block;
-    border: 2px solid white;
+    border: 2px solid transparent;
+}
+
+nav a:hover {
+    background-color: white;
+    color: rgb(46, 43, 51);
 }
 
 .konto {
     position: absolute;
-    top: 1px;
+    top: 8px;
     right: 20px;
-    padding: 5px;
+    padding: 8px 16px;
     border: 2px solid white;
     color: white;
     text-decoration: none;
     background-color: rgb(46, 43, 51);
+    font-weight: bold;
+    letter-spacing: 0.5px;
 }
 
 .konto:hover {
@@ -90,17 +107,129 @@ button:hover {
     color: #ccc;
 }
 
+/* ---------- Polecane utwory na stronie głównej ---------- */
+
+.polecane-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.polecane-card {
+    display: block;
+    width: 200px;
+    border: 2px solid white;
+    background-color: rgb(46, 43, 51);
+    color: white;
+    text-decoration: none;
+}
+
+.polecane-card:hover {
+    background-color: #39353d;
+}
+
+.polecane-card img,
+.polecane-cover {
+    display: block;
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-bottom: 2px solid white;
+    background-color: #39353d;
+}
+
+.polecane-cover--empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #bbb;
+    font-size: 14px;
+}
+
+.polecane-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 10px;
+}
+
+.polecane-info b {
+    font-size: 16px;
+}
+
+.polecane-info span {
+    font-size: 14px;
+    color: #ddd;
+}
+
+.polecane-info .przycisk {
+    margin-top: 5px;
+    text-align: center;
+}
+
 .error {
     color: red;
     margin-top: 10px;
     margin-bottom: 10px;
 }
+input[type="text"],
+input[type="password"],
+textarea,
+select {
+    background-color: #39353d;
+    color: white;
+    border: 2px solid white;
+    padding: 8px;
+    font-family: inherit;
+    font-size: 15px;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    background-color: #4a4552;
+}
+
+.search-box {
+    position: relative;
+    width: 100%;
+    max-width: 520px;
+    margin-bottom: 10px;
+}
+
+.search-box input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+}
+
 #podpowiedzi {
-    width: 350px;
     position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: 100%;
+    max-height: 380px;
+    overflow-y: auto;
     z-index: 100;
     background: #39353d;
     color: white;
+    border: 2px solid white;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+}
+
+#podpowiedzi::-webkit-scrollbar {
+    width: 8px;
+}
+
+#podpowiedzi::-webkit-scrollbar-track {
+    background: #39353d;
+}
+
+#podpowiedzi::-webkit-scrollbar-thumb {
+    background: white;
 }
 
 #podgladOkladki img {
@@ -115,19 +244,30 @@ button:hover {
     gap: 12px;
     padding: 10px;
     cursor: pointer;
-    border-bottom: 1px solid #555;
+    border-bottom: 1px solid #6b6575;
+}
+
+.podpowiedz:last-child {
+    border-bottom: none;
 }
 
 .podpowiedz img {
-    width: 50px;
-    height: 70px;
+    width: 55px;
+    height: 75px;
     object-fit: cover;
-    border-radius: 4px;
+    border: 2px solid white;
+    flex-shrink: 0;
+}
+
+.podpowiedz strong {
+    display: block;
+    font-size: 15px;
 }
 
 .podpowiedz p {
-    margin: 5px 0;
-    color: #bbb;
+    margin: 4px 0 0;
+    color: #d0cbd8;
+    font-size: 13px;
 }
 
 .podpowiedz:hover {

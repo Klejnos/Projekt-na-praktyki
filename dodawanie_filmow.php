@@ -73,14 +73,15 @@
     <main>
         <h1>Dodawanie filmu</h1>
             <form method="POST">
-                <label for="tytul">tytuł:</label>
-                <input type="text" name="tytul" id="tytul" autocomplete="off"><br>
+                <div class="search-box">
+                    <label for="tytul">Tytuł:</label>
+                    <input type="text" name="tytul" id="tytul" autocomplete="off" placeholder="Zacznij wpisywać tytuł filmu...">
+                    <div id="podpowiedzi"></div>
+                </div>
 
                 <input type="hidden" name="tytul_oryginalny" id="tytul_oryginalny" value="">
                 <input type="hidden" name="tmdb_id" id="tmdb_id" value="">
                 <input type="hidden" name="imdb_id" id="imdb_id" value="">
-
-                <div id="podpowiedzi"></div>
                 <div id="podgladOkladki">
                 <img id="okladka" src="" alt="Okładka filmu">
                 <input type="hidden" name="okladka" id="okladka_url" value=""></div>

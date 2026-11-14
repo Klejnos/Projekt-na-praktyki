@@ -47,6 +47,9 @@
             echo '<p><b>' . $etykieta . ':</b> ' . htmlspecialchars((string) $wartosc) . '</p>';
         }
     }
+
+    $czyAdmin = isset($_SESSION['czy_admin']) && (int) $_SESSION['czy_admin'] === 1;
+    $kontoLink = 'konto.php';
 ?>
 
 <!DOCTYPE html>
@@ -59,7 +62,7 @@
 </head>
 <body>
     <header>
-        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="konto" href="konto.php">Konto</a></h1>
+        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="konto" href="<?= $kontoLink ?>">Konto</a></h1>
     </header>
     <nav>
             <a href="index.php">Strona główna</a>
@@ -68,6 +71,23 @@
             <a href="kontakt.php">Kontakt</a>
     </nav>
     <main>
+        <?php
+            if (!empty($_SESSION['rent_sukces'])) {
+                echo '<div class="sukces">' . htmlspecialchars($_SESSION['rent_sukces']) . '</div>';
+                unset($_SESSION['rent_sukces']);
+            }
+
+            if (!empty($_SESSION['rent_blad'])) {
+                echo '<div class="error">' . htmlspecialchars($_SESSION['rent_blad']) . '</div>';
+                unset($_SESSION['rent_blad']);
+            }
+
+            if (!empty($_SESSION['ulubione_film_komunikat'])) {
+                echo '<div class="sukces">' . htmlspecialchars($_SESSION['ulubione_film_komunikat']) . '</div>';
+                unset($_SESSION['ulubione_film_komunikat']);
+            }
+        ?>
+
         <p class="biblioteka">
             <span>Szczegóły filmu:</span>
         </p>
@@ -103,9 +123,18 @@
                 ?>
 
                 <p>
+                    <a class="przycisk" href="wypozycz.php?typ=film&amp;id=<?= (int) $film['id'] ?>">Wypożycz</a>
+
+                    <?php if ($czyAdmin): ?>
+                        <a class="przycisk serduszko <?= !empty($film['czy_ulubiony']) ? 'aktywne' : '' ?>"
+                           href="ulubione_film.php?id=<?= (int) $film['id'] ?>&amp;powrot=film"
+                           title="<?= !empty($film['czy_ulubiony']) ? 'Usuń z polecanych' : 'Dodaj do polecanych' ?>">
+                            <?= !empty($film['czy_ulubiony']) ? '♥' : '♡' ?>
+                        </a>
+                    <?php endif; ?>
+
                     <a class="przycisk" href="edytuj_film.php?id=<?= (int) $film['id'] ?>">Edytuj film</a>
                     <a class="przycisk" href="usun_film.php?id=<?= (int) $film['id'] ?>" onclick="return confirm('Czy na pewno usunąć ten film?');">Usuń film</a>
-                    <button><a href="wypozycz.php?id=<?= (int) $film['id'] ?>&typ=<?= $typ ?>">Wypożycz film</a></button>
                     <a class="przycisk" href="filmy.php">Powrót do filmów</a>
                 </p>
             </div>

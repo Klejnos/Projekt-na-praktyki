@@ -10,9 +10,13 @@ footer {
 }
 
 nav {
-    overflow: hidden;
-    
-    
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 10px 20px;
+    padding: 5px;
+    border: 2px solid white;
+    background-color: rgb(46, 43, 51);
 }
 
 select {
@@ -29,20 +33,73 @@ select {
     font-size: 18px;
     margin-bottom: 20px;
     border: 2px solid white;
-    padding: 10px;
-    padding-top: 30px;
+    padding: 15px;
     display: flex;
-    
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
 }
 
 .srodek select {
     margin-left: auto;
-    margin-right: 20px;
+    margin-right: 0;
 }
 
 .srodek span {
-    position: relative;
-    top: 10px;
+    position: static;
+}
+
+#wyszukiwarka {
+    background-color: #39353d;
+    color: white;
+    border: 2px solid white;
+    padding: 9px 12px;
+    font-size: 15px;
+    min-width: 220px;
+}
+
+#wyszukiwarka:focus {
+    outline: none;
+    background-color: #4a4552;
+}
+
+#przycisk-szukaj {
+    position: static;
+    top: auto;
+    right: auto;
+    background-color: rgb(46, 43, 51);
+    color: white;
+    border: 2px solid white;
+    padding: 9px 16px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+#przycisk-szukaj:hover {
+    background-color: white;
+    color: rgb(46, 43, 51);
+}
+
+.filters {
+    border: 2px solid white;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.filters-title {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.filters-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.filters-controls select {
+    margin-left: auto;
 }
 
 .biblioteka {
@@ -57,20 +114,27 @@ select {
 nav a {
     color: white;
     text-decoration: none;
-    padding: 14px 20px;
+    padding: 10px 18px;
     display: inline-block;
-    border: 2px solid white;
+    border: 2px solid transparent;
+}
+
+nav a:hover {
+    background-color: white;
+    color: rgb(46, 43, 51);
 }
 
 .konto {
     position: absolute;
-    top: 1px;
-    padding: 5px;
+    top: 8px;
+    padding: 8px 16px;
     right: 20px;
     border: 2px solid white;
     color: white;
     text-decoration: none;
     background-color: rgb(46, 43, 51);
+    font-weight: bold;
+    letter-spacing: 0.5px;
 }
 
 .konto:hover {
@@ -119,15 +183,32 @@ button {
 
 .admin-actions {
     display: flex;
-    gap: 8px;
+    flex-wrap: wrap;
+    gap: 6px;
     margin-top: 8px;
 }
 
 .admin-actions .przycisk {
-    flex: 1;
-    padding: 6px 8px;
-    font-size: 14px;
+    flex: 1 1 45%;
+    padding: 6px;
+    font-size: 13px;
     text-align: center;
+}
+
+.serduszko {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.serduszko.aktywne {
+    color: #ff6b81;
+    border-color: #ff6b81;
+}
+
+.serduszko:hover {
+    background-color: #ff6b81;
+    color: white;
+    border-color: #ff6b81;
 }
 
 .sukces {
@@ -201,6 +282,12 @@ button {
     gap: 30px;
     flex-wrap: wrap;
     align-items: flex-start;
+}
+
+.konto-rental {
+    border: 2px solid white;
+    padding: 15px;
+    margin-bottom: 20px;
 }
 
 .film-page-cover {

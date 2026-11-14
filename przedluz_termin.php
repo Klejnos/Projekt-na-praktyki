@@ -26,6 +26,7 @@
                 WHERE uzytkownicy_id = '$uzytkownik_id' AND film_id = '$id'";
 
                 if ($polaczenie -> query($q)) {
+                    $_SESSION['konto_komunikat'] = 'Termin zwrotu filmu został przedłużony o 10 dni.';
                     header('Location: konto.php');
                     exit();
                 }
@@ -39,6 +40,7 @@
                 WHERE uzytkownicy_id = '$uzytkownik_id' AND muzyka_id = '$id'";
 
                 if ($polaczenie -> query($q)) {
+                    $_SESSION['konto_komunikat'] = 'Termin zwrotu muzyki został przedłużony o 15 dni.';
                     header('Location: konto.php');
                     exit();
                 }

@@ -33,10 +33,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Twoje konto</title>
+    <link rel="stylesheet" href="assets/css/style_filmy.css">
 </head>
 <body>
     <header>
-        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="konto" href="konto_admin.php">Konto</a></h1>
+        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="konto" href="konto.php">Konto</a></h1>
     </header>
     <nav>
             <a href="index.php">Strona główna</a>
@@ -45,6 +46,11 @@
             <a href="kontakt.php">Kontakt</a>
     </nav>
     <main>
+        <?php if (!empty($_SESSION['konto_komunikat'])): ?>
+            <div class="sukces"><?= htmlspecialchars($_SESSION['konto_komunikat']) ?></div>
+            <?php unset($_SESSION['konto_komunikat']); ?>
+        <?php endif; ?>
+
         <?php if($czy_admin) : ?>
             <h2>Panel administratora</h2>
         <?php endif; ?>
@@ -52,12 +58,16 @@
         <h2>Witaj, <?= htmlspecialchars($_SESSION['nazwa']) ?></h2>
 
         <?php if($czy_admin): ?>
-            <button><a href="dodawanie_filmow.php">Dodaj film</a></button>
-            <button><a href="dodawanie_muzyka.php">Dodaj muzykę</a></button>
+            <p>
+                <a class="przycisk" href="dodawanie_filmow.php">Dodaj film</a>
+                <a class="przycisk" href="dodawanie_muzyka.php">Dodaj muzykę</a>
+            </p>
         <?php endif; ?>
 
-        <button><a href="filmy.php">Przeglądaj filmy</a></button>
-        <button><a href="muzyka.php">Przeglądaj muzykę</a></button>
+        <p>
+            <a class="przycisk" href="filmy.php">Przeglądaj filmy</a>
+            <a class="przycisk" href="muzyka.php">Przeglądaj muzykę</a>
+        </p>
 
         <h2>Twoje wypożyczenia - filmy:</h2>
         <?php
@@ -68,7 +78,7 @@
                 while ($wiersz = $q -> fetch_assoc()) {
                     ?>
 
-                    <div class="film-page">
+                    <div class="film-page konto-rental">
                         <?php if (!empty($wiersz['okladka'])): ?>
                             <img class="film-page-cover" src="<?= htmlspecialchars($wiersz['okladka']) ?>" alt="Okładka filmu <?= htmlspecialchars($wiersz['tytul']) ?>">
                         <?php else: ?>
@@ -91,11 +101,14 @@
                                 pole('Język', $wiersz['jezyk']);
                                 pole('Typ płyty', $wiersz['nazwa_typu']);
                                 pole('Data wypożyczenia', $wiersz['data_wypozyczenia']);
+                                pole('Termin zwrotu', $wiersz['data_zwrotu']);
                                 pole('Cena', $wiersz['cena'] !== null ? number_format((float) $wiersz['cena'], 2, ',', ' ') . ' zł' : null);
                                 pole('Opis', $wiersz['opis']);
                             ?>
-                            <br><button><a href="zwrot.php?id=<?= (int) $wiersz['film_id'] ?>&typ=<?= $typ?>">Zwróć film</a></button>
-                            <button><a href="przedluz_termin.php?id=<?= (int) $wiersz['film_id'] ?>&typ=<?= $typ ?>">Przedłuż termin odania</a></button>
+                            <p>
+                                <a class="przycisk" href="zwrot.php?id=<?= (int) $wiersz['film_id'] ?>&amp;typ=<?= $typ ?>">Zwróć film</a>
+                                <a class="przycisk" href="przedluz_termin.php?id=<?= (int) $wiersz['film_id'] ?>&amp;typ=<?= $typ ?>">Przedłuż termin zwrotu</a>
+                            </p>
                         </div>
                     </div>
                     <hr>
@@ -109,14 +122,14 @@
 
         <br><br><br><h2>Twoje wypozyczenia - muzyka:</h2>
         <?php
-            $q_muzyka = $polaczenie -> query("SELECT m.*, a.wykonawca, a.okladka, w.data_wypozyczenia, w.muzyka_id 
+            $q_muzyka = $polaczenie -> query("SELECT m.*, a.wykonawca, a.okladka, w.data_wypozyczenia, w.data_zwrotu, w.muzyka_id 
             FROM muzyka m LEFT JOIN albumy a ON m.album_id = a.id 
             JOIN wypozyczenia_muzyka w ON w.muzyka_id = m.id WHERE w.uzytkownicy_id = '$id'");
             $typ = 'muzyka';
             if ($q_muzyka && $q_muzyka -> num_rows > 0) {
                 while ($wiersz_m = $q_muzyka -> fetch_assoc()) {
                     ?>
-                    <div class="film-page">
+                    <div class="film-page konto-rental">
                         <?php if (!empty($wiersz_m['okladka'])): ?>
                             <img class="film-page-cover" src="<?= htmlspecialchars($wiersz_m['okladka']) ?>" alt="Okładka albumu <?= htmlspecialchars($wiersz_m['tytul']) ?>">
                         <?php else: ?>
@@ -133,10 +146,13 @@
                                 pole('Gatunek', $wiersz_m['gatunek']);
                                 pole('Rok', $wiersz_m['rok']);
                                 pole('Data wypożyczenia', $wiersz_m['data_wypozyczenia']);
+                                pole('Termin zwrotu', $wiersz_m['data_zwrotu']);
                                 pole('Cena', $wiersz_m['cena'] !== null ? number_format((float) $wiersz_m['cena'], 2, ',', ' ') . ' zł' : null);
                             ?>
-                            <button><a href="zwrot.php?id=<?= (int) $wiersz_m['muzyka_id'] ?>&typ=<?= $typ?>">Zwróć muzykę</a></button>
-                            <button><a href="przedluz_termin.php?id= <?= (int) $wiersz_m['muzyka_id'] ?>&typ=<?= $typ ?>">Przedłuż termin odania</a></button>
+                            <p>
+                                <a class="przycisk" href="zwrot.php?id=<?= (int) $wiersz_m['muzyka_id'] ?>&amp;typ=<?= $typ ?>">Zwróć muzykę</a>
+                                <a class="przycisk" href="przedluz_termin.php?id=<?= (int) $wiersz_m['muzyka_id'] ?>&amp;typ=<?= $typ ?>">Przedłuż termin zwrotu</a>
+                            </p>
                         </div>
                     </div>
         <?php
@@ -147,7 +163,9 @@
             }
         ?>
         
-        <br><br><br><button><a href="wylogowanie.php">Wyloguj się</a></button>
+        <p>
+            <a class="przycisk" href="wylogowanie.php">Wyloguj się</a>
+        </p>
         
     </main>
 

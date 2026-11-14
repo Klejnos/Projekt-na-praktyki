@@ -8,6 +8,7 @@
     require_once "polaczenie.php";
 
     $sort = $_GET['sort'] ?? 'default';
+    $search = trim($_GET['q'] ?? '');
 
     switch ($sort) {
         case 'cena-rosnaco':
@@ -15,6 +16,21 @@
             break;
         case 'cena-malejaco':
             $orderBy = 'cena IS NULL ASC, cena DESC';
+            break;
+        case 'ocena-najlepeij':
+        case 'ocena-najwyzsza':
+            $orderBy = 'ocena IS NULL ASC, ocena DESC';
+            break;
+        case 'ocena-najgorzej':
+        case 'ocena-najnizszas':
+            $orderBy = 'ocena IS NULL ASC, ocena ASC';
+            break;
+        case 'rok-najnowsze':
+        case 'rok':
+            $orderBy = 'rok IS NULL ASC, rok DESC, id DESC';
+            break;
+        case 'rok-najstarsze':
+            $orderBy = 'rok IS NULL ASC, rok ASC, id DESC';
             break;
         case 'nazwa':
             $orderBy = 'tytul ASC';
@@ -38,11 +54,23 @@
 
         $polaczenie->set_charset("utf8mb4");
 
-        $wynik = $polaczenie->query(
-            "SELECT id, tytul, tytul_oryginalny, gatunek, rok, ocena, cena, okladka
-             FROM filmy
-             ORDER BY $orderBy"
-        );
+        $sql = "SELECT id, tytul, tytul_oryginalny, gatunek, rok, ocena, cena, okladka, czy_ulubiony FROM filmy";
+        
+        if ($search !== '') {
+            $sql .= " WHERE tytul LIKE ? OR tytul_oryginalny LIKE ?";
+        }
+        
+        $sql .= " ORDER BY $orderBy";
+
+        $stmt = $polaczenie->prepare($sql);
+
+        if ($search !== '') {
+            $param = '%' . $search . '%';
+            $stmt->bind_param("ss", $param, $param);
+        }
+
+        $stmt->execute();
+        $wynik = $stmt->get_result();
 
         if ($wynik) {
             while ($row = $wynik->fetch_assoc()) {
@@ -51,13 +79,16 @@
             $wynik->free();
         }
 
+        if (isset($stmt)) {
+            $stmt->close();
+        }
         $polaczenie->close();
     } catch (Exception $e) {
         // Strona pokaże stan pusty, jeśli baza jest niedostępna.
     }
 
     $czyAdmin = isset($_SESSION['czy_admin']) && (int) $_SESSION['czy_admin'] === 1;
-    $kontoLink = $czyAdmin ? 'konto_admin.php' : 'konto_uzytkownik.php';
+    $kontoLink = 'konto.php';
 ?>
 
 <!DOCTYPE html>
@@ -82,10 +113,15 @@
                 unset($_SESSION[$klucz]);
             }
         }
+
+        if (!empty($_SESSION['ulubione_film_komunikat'])) {
+            echo '<div class="sukces">' . htmlspecialchars($_SESSION['ulubione_film_komunikat']) . '</div>';
+            unset($_SESSION['ulubione_film_komunikat']);
+        }
     ?>
 
     <header>
-        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="konto" href="konto.php">Konto</a></h1>
+        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="przycisk" href="dodawanie_filmow.php">Dodaj film</a><a class="konto" href="<?= $kontoLink ?>">Konto</a></h1>
     </header>
     <nav>
             <a href="index.php">Strona główna</a> 
@@ -94,15 +130,28 @@
             <a href="kontakt.php">Kontakt</a>
     </nav>
     <main>
-        <p class="srodek"><span>Filmy dostępne w naszej wypożyczalni:</span>
-        <select id="sortowanie">
-            <option value="default" <?= $sort === 'default' ? 'selected' : '' ?>>Sortuj według</option>
-            <option value="data-dodania" <?= $sort === 'data-dodania' ? 'selected' : '' ?>>Data dodania</option>
-            <option value="cena-rosnaco" <?= $sort === 'cena-rosnaco' ? 'selected' : '' ?>>Cena: od najniższej</option>
-            <option value="cena-malejaco" <?= $sort === 'cena-malejaco' ? 'selected' : '' ?>>Cena: od najwyższej</option>
-            <option value="nazwa" <?= $sort === 'nazwa' ? 'selected' : '' ?>>Nazwa: A-Z</option>
-        </select>
-        </p>
+        <form method="GET" action="filmy.php" class="filters">
+            <div class="filters-title">
+                <span>Filmy dostępne w naszej wypożyczalni:</span>
+            </div>
+
+            <div class="filters-controls">
+                <input type="text" id="wyszukiwarka" name="q" placeholder="Szukaj tytułu..." value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
+                <button type="submit" id="przycisk-szukaj">Szukaj</button>
+
+                <select id="sortowanie" name="sort">
+                    <option value="default" <?= $sort === 'default' ? 'selected' : '' ?>>Sortuj według</option>
+                    <option value="data-dodania" <?= $sort === 'data-dodania' ? 'selected' : '' ?>>Data dodania</option>
+                    <option value="nazwa" <?= $sort === 'nazwa' ? 'selected' : '' ?>>Nazwa: A-Z</option>
+                    <option value="ocena-najlepeij" <?= $sort === 'ocena-najlepeij' ? 'selected' : '' ?>>Ocena: od najlepszej</option>
+                    <option value="ocena-najgorzej" <?= $sort === 'ocena-najgorzej' ? 'selected' : '' ?>>Ocena: od najgorszej</option>
+                    <option value="rok-najnowsze" <?= $sort === 'rok-najnowsze' || $sort === 'rok' ? 'selected' : '' ?>>Rok wydania: od najnowszego</option>
+                    <option value="rok-najstarsze" <?= $sort === 'rok-najstarsze' ? 'selected' : '' ?>>Rok wydania: od najstarszego</option>
+                    <option value="cena-rosnaco" <?= $sort === 'cena-rosnaco' ? 'selected' : '' ?>>Cena: od najniższej</option>
+                    <option value="cena-malejaco" <?= $sort === 'cena-malejaco' ? 'selected' : '' ?>>Cena: od najwyższej</option>
+                </select>
+            </div>
+        </form>
 
         <p class="biblioteka">
             <span>Biblioteka filmów:</span>
@@ -161,6 +210,16 @@
                         </a>
 
                         <div class="admin-actions">
+                            <a class="przycisk" href="wypozycz.php?typ=film&amp;id=<?= (int) $film['id'] ?>">Wypożycz</a>
+
+                            <?php if ($czyAdmin): ?>
+                                <a class="przycisk serduszko <?= !empty($film['czy_ulubiony']) ? 'aktywne' : '' ?>"
+                                   href="ulubione_film.php?id=<?= (int) $film['id'] ?>&amp;powrot=filmy"
+                                   title="<?= !empty($film['czy_ulubiony']) ? 'Usuń z polecanych' : 'Dodaj do polecanych' ?>">
+                                    <?= !empty($film['czy_ulubiony']) ? '♥' : '♡' ?>
+                                </a>
+                            <?php endif; ?>
+
                             <a class="przycisk" href="edytuj_film.php?id=<?= (int) $film['id'] ?>">Edytuj</a>
                             <a class="przycisk" href="usun_film.php?id=<?= (int) $film['id'] ?>" onclick="return confirm('Czy na pewno usunąć ten film?');">Usuń</a>
                         </div>

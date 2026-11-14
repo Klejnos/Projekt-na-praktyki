@@ -155,7 +155,7 @@
 </head>
 <body>
     <header>
-        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="konto" href="<?= (!empty($_SESSION['czy_admin'])) ? 'konto_admin.php' : 'konto_uzytkownik.php' ?>">Konto</a></h1>
+        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="konto" href="konto.php">Konto</a></h1>
     </header>
     <nav>
             <a href="index.php">Strona główna</a>
