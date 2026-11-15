@@ -33,20 +33,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Twoje konto</title>
-    <link rel="stylesheet" href="assets/css/konto.css">
-    <link rel="icon" type="image/x-icon" href="assets/img/icon.ico"> 
 </head>
 <body>
     <header>
         <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="konto" href="konto.php">Konto</a></h1>
     </header>
     <nav>
-            <a href="index.php">Strona główna</a>
-            <a href="filmy.php">Filmy</a>
-            <a href="muzyka.php">Muzyka</a>
-            <a href="kontakt.php">Kontakt</a>
+        <a href="index.php">Strona główna</a>
+        <a href="filmy.php">Filmy</a>
+        <a href="muzyka.php">Muzyka</a>
+        <a href="kontakt.php">Kontakt</a>
     </nav>
     <main>
+
         <?php if (!empty($_SESSION['konto_komunikat'])): ?>
             <div class="sukces"><?= htmlspecialchars($_SESSION['konto_komunikat']) ?></div>
             <?php unset($_SESSION['konto_komunikat']); ?>
@@ -84,7 +83,7 @@
                 while ($wiersz = $q -> fetch_assoc()) {
                     ?>
 
-                    <div class="film-page konto-rental">
+                    <div class="film-page">
                         <?php if (!empty($wiersz['okladka'])): ?>
                             <img class="film-page-cover" src="<?= htmlspecialchars($wiersz['okladka']) ?>" alt="Okładka filmu <?= htmlspecialchars($wiersz['tytul']) ?>">
                         <?php else: ?>
@@ -135,7 +134,7 @@
             if ($q_muzyka && $q_muzyka -> num_rows > 0) {
                 while ($wiersz_m = $q_muzyka -> fetch_assoc()) {
                     ?>
-                    <div class="film-page konto-rental">
+                    <div class="film-page">
                         <?php if (!empty($wiersz_m['okladka'])): ?>
                             <img class="film-page-cover" src="<?= htmlspecialchars($wiersz_m['okladka']) ?>" alt="Okładka albumu <?= htmlspecialchars($wiersz_m['tytul']) ?>">
                         <?php else: ?>
@@ -172,7 +171,6 @@
         <p>
             <a class="przycisk" href="wylogowanie.php">Wyloguj się</a>
         </p>
-        
     </main>
 
     <footer>
