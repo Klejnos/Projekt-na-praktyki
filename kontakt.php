@@ -10,14 +10,12 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="assets/css/style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kontakt | Wypożyczalnia</title>
-    <link rel="icon" type="image/x-icon" href="assets/img/icon.ico"> 
+    <title>Kontakt | Wypożyczalnia filmów</title>
 </head>
 <body>
     <header>
-        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="konto" href="konto.php">Konto</a></h1>
+        <h1>Wypożyczalnia filmów DVD oraz muzyki CD</h1>
     </header>
     <nav>
         <a href="index.php">Strona główna</a>
@@ -27,44 +25,24 @@
     </nav>
     <main>
         <h2>Kontakt</h2>
-        <p>Masz pytania dotyczące wypożyczeń, rezerwacji albo dostępnych tytułów? Skontaktuj się z nami — chętnie pomożemy.</p>
+        <p>Jeśli masz pytania lub potrzebujesz pomocy, skontaktuj się z nami:</p>
 
-        <div class="kontakt-grid">
-            <div class="kontakt-box">
-                <h3>Telefon / SMS</h3>
-                <p><a href="sms:+48574152486">+48 574 152 486</a></p>
-                <p>Poniedziałek – piątek: 10:00 – 19:00</p>
-            </div>
-
-            <div class="kontakt-box">
-                <h3>E-mail</h3>
-                <p><a href="mailto:kontakt@twojadomena.pl">kontakt@twojadomena.pl</a></p>
-                <p>Odpowiadamy zwykle w ciągu jednego dnia.</p>
-            </div>
-
-            <div class="kontakt-box">
-                <h3>Adres</h3>
-                <p>
-                    <a href="https://www.google.com/maps/search/?api=1&amp;query=ul.+Rajska+4,+80-850+Gda%C5%84sk"
-                       target="_blank" rel="noopener noreferrer">
-                        ul. Rajska 4<br>80-850 Gdańsk
-                    </a>
-                </p>
-                <p>Otwórz lokalizację w Google Maps</p>
-            </div>
-
-            <div class="kontakt-box">
-                <h3>Godziny otwarcia</h3>
-                <p>Poniedziałek – piątek: 10:00 – 19:00</p>
-                <p>Sobota: 10:00 – 15:00</p>
-                <p>Niedziela: nieczynne</p>
-            </div>
-        </div>
-
-        <h3>Napisz do nas</h3>
-        <p>Najszybszy kontakt to e-mail. Kliknij poniżej, aby otworzyć swoją pocztę.</p>
-        <p><a class="przycisk" href="mailto:kontakt@twojadomena.pl?subject=Pytanie%20do%20wypo%C5%BCyczalni">Wyślij wiadomość e-mail</a></p>
+        <ul>
+            <li>
+                <a href="sms:+48574152486">Wyślij SMS na numer +48 574 152 486</a>
+            </li>
+            <li>
+                <a href="mailto:kontakt@twojadomena.pl">Email: kontakt@twojadomena.pl</a>
+            </li>
+            <li>
+                <a href="https://www.google.com/maps/search/?api=1&amp;query=ul.+Rajska+4,+80-850+Gda%C5%84sk"
+                   target="_blank" rel="noopener noreferrer">
+                    ul. Rajska 4, 80-850 Gdańsk
+                </a>
+            </li>
+        </ul>
     </main>
+
     <footer>
         <p>Autorzy: Przemysław Gałęziowski i Filip Klein</p>
     </footer>
