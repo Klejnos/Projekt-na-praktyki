@@ -4,6 +4,7 @@
         header('Location: logowanie.php');
         exit();
     }
+    
 
     require_once "polaczenie.php";
 
@@ -27,6 +28,7 @@
                 $film = $wynik->fetch_assoc();
                 $wynik->free();
             }
+            $typ = "film";
 
             $polaczenie->close();
         }
@@ -39,163 +41,109 @@
         exit();
     }
 
+    function pole(string $etykieta, $wartosc): void
+    {
+        if ($wartosc !== null && $wartosc !== '') {
+            echo '<p><b>' . $etykieta . ':</b> ' . htmlspecialchars((string) $wartosc) . '</p>';
+        }
+    }
+
     $czyAdmin = isset($_SESSION['czy_admin']) && (int) $_SESSION['czy_admin'] === 1;
-    $active = 'filmy';
-    $pageTitle = $film['tytul'];
+    $kontoLink = 'konto.php';
+?>
 
-    $dostepne = $film['ilosc_dostepnych'] !== null ? (int) $film['ilosc_dostepnych'] : 0;
-    $ocena = $film['ocena'] !== null ? number_format((float) $film['ocena'], 1, ',', '') : '—';
-    $cena = $film['cena'] !== null ? number_format((float) $film['cena'], 2, ',', ' ') . ' zł' : '—';
-    $czas = $film['czas_trwania'] !== null ? (int) $film['czas_trwania'] . ' min' : '—';
-    $dostepnosc = $dostepne > 0 ? $dostepne . ' szt. na stanie' : 'Brak na stanie';
-
-    ?>
 <!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wypożyczalnia filmów</title>
     <link rel="stylesheet" href="assets/css/style_filmy.css">
-    <link rel="icon" type="image/x-icon" href="assets/img/icon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= htmlspecialchars($film['tytul']) ?> | Wypożyczalnia</title>
+    <link rel="icon" type="image/x-icon" href="assets/img/icon.ico"> 
 </head>
 <body>
-<header class="site-header">
-    <div class="header-top">
-        <a class="brand" href="index.php">
-            <span class="brand-badge">DVD</span>
-            <span class="brand-text">
-                <strong>Wypożyczalnia filmów</strong>
-                <small>filmy DVD · muzyka CD</small>
-            </span>
-        </a>
-        <div class="header-actions">
-            <a class="top-btn" href="konto.php">Konto</a>
-            <a class="top-btn" href="wylogowanie.php">Wyloguj</a>
-        </div>
-    </div>
-    <nav class="mainnav">
-        <a href="index.php">Strona główna</a>
-        <a href="filmy.php" class="active">Filmy</a>
-        <a href="muzyka.php">Muzyka</a>
-        <a href="kontakt.php">Kontakt</a>
+    <header>
+        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="konto" href="<?= $kontoLink ?>">Konto</a></h1>
+    </header>
+    <nav>
+            <a href="index.php">Strona główna</a>
+            <a href="filmy.php">Filmy</a>
+            <a href="muzyka.php">Muzyka</a>
+            <a href="kontakt.php">Kontakt</a>
     </nav>
-</header>
-<main class="page">
+    <main>
+        <?php
+            if (!empty($_SESSION['rent_sukces'])) {
+                echo '<div class="sukces">' . htmlspecialchars($_SESSION['rent_sukces']) . '</div>';
+                unset($_SESSION['rent_sukces']);
+            }
 
-    <div class="detail-breadcrumb">
-        <a href="filmy.php">Filmy</a> / <?= htmlspecialchars($film['gatunek'] ?: 'Film') ?>
-    </div>
+            if (!empty($_SESSION['rent_blad'])) {
+                echo '<div class="error">' . htmlspecialchars($_SESSION['rent_blad']) . '</div>';
+                unset($_SESSION['rent_blad']);
+            }
 
-    <?php
-        if (!empty($_SESSION['rent_sukces'])) {
-            echo '<div class="sukces">' . htmlspecialchars($_SESSION['rent_sukces']) . '</div>';
-            unset($_SESSION['rent_sukces']);
-        }
+            if (!empty($_SESSION['ulubione_film_komunikat'])) {
+                echo '<div class="sukces">' . htmlspecialchars($_SESSION['ulubione_film_komunikat']) . '</div>';
+                unset($_SESSION['ulubione_film_komunikat']);
+            }
+        ?>
 
-        if (!empty($_SESSION['rent_blad'])) {
-            echo '<div class="error">' . htmlspecialchars($_SESSION['rent_blad']) . '</div>';
-            unset($_SESSION['rent_blad']);
-        }
+        <p class="biblioteka">
+            <span>Szczegóły filmu:</span>
+        </p>
 
-        if (!empty($_SESSION['ulubione_film_komunikat'])) {
-            echo '<div class="sukces">' . htmlspecialchars($_SESSION['ulubione_film_komunikat']) . '</div>';
-            unset($_SESSION['ulubione_film_komunikat']);
-        }
-    ?>
-
-    <div class="detail-layout">
-        <div class="detail-poster">
+        <div class="film-page">
             <?php if (!empty($film['okladka'])): ?>
-                <img src="<?= htmlspecialchars($film['okladka']) ?>" alt="Okładka filmu <?= htmlspecialchars($film['tytul']) ?>">
+                <img class="film-page-cover" src="<?= htmlspecialchars($film['okladka']) ?>" alt="Okładka filmu <?= htmlspecialchars($film['tytul']) ?>">
             <?php else: ?>
-                <div class="poster-fallback"></div>
-            <?php endif; ?>
-        </div>
-
-        <div class="detail-info">
-            <h1><?= htmlspecialchars($film['tytul']) ?></h1>
-
-            <?php if (!empty($film['tytul_oryginalny']) && $film['tytul_oryginalny'] !== $film['tytul']): ?>
-                <p class="detail-original"><?= htmlspecialchars($film['tytul_oryginalny']) ?></p>
+                <div class="film-page-cover film-cover--empty"><span>Brak okładki</span></div>
             <?php endif; ?>
 
-            <div class="detail-meta-grid">
-                <div class="meta-item">
-                    <span>Gatunek</span>
-                    <strong><?= htmlspecialchars($film['gatunek'] ?: '—') ?></strong>
-                </div>
-                <div class="meta-item">
-                    <span>Rok</span>
-                    <strong><?= $film['rok'] ? (int) $film['rok'] : '—' ?></strong>
-                </div>
-                <div class="meta-item">
-                    <span>Ocena</span>
-                    <strong><span class="rating-star">★</span> <?= $ocena ?></strong>
-                </div>
-                <div class="meta-item">
-                    <span>Reżyser</span>
-                    <strong><?= htmlspecialchars($film['rezyser'] ?: '—') ?></strong>
-                </div>
-                <div class="meta-item">
-                    <span>Czas trwania</span>
-                    <strong><?= $czas ?></strong>
-                </div>
-                <div class="meta-item">
-                    <span>Nośnik</span>
-                    <strong><?= htmlspecialchars($film['typ'] ?: '—') ?></strong>
-                </div>
-                <div class="meta-item">
-                    <span>Język</span>
-                    <strong><?= htmlspecialchars($film['jezyk'] ?: '—') ?></strong>
-                </div>
-                <div class="meta-item">
-                    <span>Dostępność</span>
-                    <strong><?= $dostepnosc ?></strong>
-                </div>
-            </div>
+            <div class="film-page-info">
+                <h2><?= htmlspecialchars($film['tytul']) ?></h2>
 
-            <div class="detail-price-row">
-                <div class="detail-price">
-                    <?= $cena ?>
-                    <small>za 10 dni wypożyczenia</small>
-                </div>
+                <?php
+                    if (!empty($film['tytul_oryginalny']) && $film['tytul_oryginalny'] !== $film['tytul']) {
+                        pole('Tytuł oryginalny', $film['tytul_oryginalny']);
+                    }
 
-                <div class="detail-actions">
-                    <a class="btn btn-primary" href="wypozycz.php?typ=film&amp;id=<?= (int) $film['id'] ?>">Wypożycz teraz</a>
+                    pole('Gatunek', $film['gatunek']);
+                    pole('Rok', $film['rok']);
+                    pole('Ocena', $film['ocena'] !== null ? number_format((float) $film['ocena'], 1, ',', '') : null);
+                    pole('Reżyser', $film['rezyser']);
+                    pole('Czas trwania', $film['czas_trwania'] !== null ? $film['czas_trwania'] . ' min' : null);
+                    pole('Język', $film['jezyk']);
+                    pole('Typ płyty', $film['typ']);
+                    pole('Dostępne sztuki', $film['ilosc_dostepnych']);
+                    pole('Cena', $film['cena'] !== null ? number_format((float) $film['cena'], 2, ',', ' ') . ' zł' : null);
+                    pole('Produkcja', $film['produkcja']);
+                    pole('Budżet', $film['budzet'] !== null ? number_format((float) $film['budzet'], 2, ',', ' ') . ' zł' : null);
+                    pole('Nagrody', $film['nagrody']);
+                    pole('Opis', $film['opis']);
+                ?>
+
+                <p>
+                    <a class="przycisk" href="wypozycz.php?typ=film&amp;id=<?= (int) $film['id'] ?>">Wypożycz</a>
 
                     <?php if ($czyAdmin): ?>
-                        <a class="btn btn-secondary" href="ulubione_film.php?id=<?= (int) $film['id'] ?>&amp;powrot=film">
-                            <span style="color: <?= !empty($film['czy_ulubiony']) ? '#ff6b81' : 'inherit' ?>;">
-                                <?= !empty($film['czy_ulubiony']) ? '♥' : '♡' ?>
-                            </span>
-                            <?= !empty($film['czy_ulubiony']) ? 'Usuń z ulubionych' : 'Dodaj do ulubionych' ?>
+                        <a class="przycisk serduszko <?= !empty($film['czy_ulubiony']) ? 'aktywne' : '' ?>"
+                           href="ulubione_film.php?id=<?= (int) $film['id'] ?>&amp;powrot=film"
+                           title="<?= !empty($film['czy_ulubiony']) ? 'Usuń z polecanych' : 'Dodaj do polecanych' ?>">
+                            <?= !empty($film['czy_ulubiony']) ? '♥' : '♡' ?>
                         </a>
                     <?php endif; ?>
-                </div>
-            </div>
 
-            <div class="detail-description">
-                <h2>Opis</h2>
-                <p><?= nl2br(htmlspecialchars($film['opis'] ?: 'Brak opisu.')) ?></p>
-            </div>
-
-            <div class="detail-admin-actions">
-                <?php if ($czyAdmin): ?>
-                    <a class="btn btn-secondary" href="edytuj_film.php?id=<?= (int) $film['id'] ?>">✎ Edytuj film</a>
-                    <a class="btn btn-danger" href="usun_film.php?id=<?= (int) $film['id'] ?>" onclick="return confirm('Czy na pewno usunąć ten film?');">🗑 Usuń</a>
-                <?php endif; ?>
-                <a class="btn btn-secondary" href="filmy.php">← Wróć do katalogu</a>
+                    <a class="przycisk" href="edytuj_film.php?id=<?= (int) $film['id'] ?>">Edytuj film</a>
+                    <a class="przycisk" href="usun_film.php?id=<?= (int) $film['id'] ?>" onclick="return confirm('Czy na pewno usunąć ten film?');">Usuń film</a>
+                    <a class="przycisk" href="filmy.php">Powrót do filmów</a>
+                </p>
             </div>
         </div>
-    </div>
+    </main>
 
-</main>
-<footer class="site-footer">
-    <div class="footer-inner">
-        <span>&copy; <?= date('Y') ?> Wypożyczalnia filmów — filmy DVD i muzyka CD</span>
-        <span>Gdańsk, ul. Rajska 4 · 10:00–18:00</span>
-    </div>
-</footer>
+    <footer>
+        <p>Autorzy: Przemysław Gałęziowski i Filip Klein</p>
+    </footer>
 </body>
 </html>

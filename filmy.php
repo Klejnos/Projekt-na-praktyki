@@ -22,7 +22,7 @@
             $orderBy = 'ocena IS NULL ASC, ocena DESC';
             break;
         case 'ocena-najgorzej':
-        case 'ocena-najnizsza':
+        case 'ocena-najnizszas':
             $orderBy = 'ocena IS NULL ASC, ocena ASC';
             break;
         case 'rok-najnowsze':
@@ -45,8 +45,6 @@
     }
 
     $filmy = [];
-    $typy = [];
-    $statystyki = ['total' => 0, 'available' => 0];
 
     try {
         $polaczenie = new mysqli($host, $db_user, $db_password, $db_name);
@@ -56,28 +54,12 @@
 
         $polaczenie->set_charset("utf8mb4");
 
-        $wynik = $polaczenie->query("SELECT id, nazwa FROM typy_plyt");
-        if ($wynik) {
-            while ($row = $wynik->fetch_assoc()) {
-                $typy[(int) $row['id']] = $row['nazwa'];
-            }
-            $wynik->free();
-        }
-
-        $wynik = $polaczenie->query("SELECT COUNT(*) AS total, COALESCE(SUM(ilosc_dostepnych > 0), 0) AS available FROM filmy");
-        if ($wynik) {
-            $statystyki = $wynik->fetch_assoc();
-            $wynik->free();
-        }
-
-        $sql = "SELECT id, tytul, tytul_oryginalny, gatunek, rok, ocena, cena,
-                       ilosc_dostepnych, okladka, typ_plyty_id, czy_ulubiony
-                FROM filmy";
-
+        $sql = "SELECT id, tytul, tytul_oryginalny, gatunek, rok, ocena, cena, okladka, czy_ulubiony FROM filmy";
+        
         if ($search !== '') {
             $sql .= " WHERE tytul LIKE ? OR tytul_oryginalny LIKE ?";
         }
-
+        
         $sql .= " ORDER BY $orderBy";
 
         $stmt = $polaczenie->prepare($sql);
@@ -97,65 +79,28 @@
             $wynik->free();
         }
 
-        $stmt->close();
+        if (isset($stmt)) {
+            $stmt->close();
+        }
         $polaczenie->close();
     } catch (Exception $e) {
         // Strona pokaże stan pusty, jeśli baza jest niedostępna.
     }
 
     $czyAdmin = isset($_SESSION['czy_admin']) && (int) $_SESSION['czy_admin'] === 1;
-    $active = 'filmy';
-    $pageTitle = 'Filmy';
-    ?>
+    $kontoLink = 'konto.php';
+?>
+
 <!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wypożyczalnia filmów</title>
     <link rel="stylesheet" href="assets/css/style_filmy.css">
-    <link rel="icon" type="image/x-icon" href="assets/img/icon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Filmy | Wypożyczalnia</title>
+    <link rel="icon" type="image/x-icon" href="assets/img/icon.ico"> 
 </head>
 <body>
-<header class="site-header">
-    <div class="header-top">
-        <a class="brand" href="index.php">
-            <span class="brand-badge">DVD</span>
-            <span class="brand-text">
-                <strong>Wypożyczalnia filmów</strong>
-                <small>filmy DVD · muzyka CD</small>
-            </span>
-        </a>
-        <div class="header-actions">
-            <a class="top-btn" href="konto.php">Konto</a>
-            <a class="top-btn" href="wylogowanie.php">Wyloguj</a>
-        </div>
-    </div>
-    <nav class="mainnav">
-        <a href="index.php">Strona główna</a>
-        <a href="filmy.php" class="active">Filmy</a>
-        <a href="muzyka.php">Muzyka</a>
-        <a href="kontakt.php">Kontakt</a>
-    </nav>
-</header>
-<main class="page">
-
-    <section class="catalog-head">
-        <div>
-            <h1>Filmy</h1>
-            <p class="catalog-meta">
-                <?= (int) $statystyki['total'] ?> tytułów w katalogu · <?= (int) $statystyki['available'] ?> dostępne od ręki
-            </p>
-            <?php if ($czyAdmin): ?>
-                <p class="admin-note">Widok administratora — serduszka i ikony edycji są ukryte dla klientów.</p>
-            <?php endif; ?>
-        </div>
-
-        <?php if ($czyAdmin): ?>
-            <a class="btn btn-primary" href="dodawanie_filmow.php">+ Dodaj film</a>
-        <?php endif; ?>
-    </section>
-
     <?php
         $komunikaty = [
             'dodano_film' => 'Film został pomyślnie dodany do bazy danych.',
@@ -176,104 +121,121 @@
         }
     ?>
 
-    <form method="GET" action="filmy.php" class="catalog-filters">
-        <div class="search-field">
-            <input type="text" id="wyszukiwarka" name="q" placeholder="Szukaj tytułu, reżysera..." value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
-        </div>
+    <header>
+        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="przycisk" href="dodawanie_filmow.php">Dodaj film</a><a class="konto" href="<?= $kontoLink ?>">Konto</a></h1>
+    </header>
+    <nav>
+            <a href="index.php">Strona główna</a> 
+            <a href="filmy.php">Filmy</a>
+            <a href="muzyka.php">Muzyka</a>
+            <a href="kontakt.php">Kontakt</a>
+    </nav>
+    <main>
+        <form method="GET" action="filmy.php" class="filters">
+            <div class="filters-title">
+                <span>Filmy dostępne w naszej wypożyczalni:</span>
+            </div>
 
-        <select id="sortowanie" name="sort">
-            <option value="default" <?= $sort === 'default' ? 'selected' : '' ?>>Sortuj: najnowsze</option>
-            <option value="data-dodania" <?= $sort === 'data-dodania' ? 'selected' : '' ?>>Data dodania</option>
-            <option value="nazwa" <?= $sort === 'nazwa' ? 'selected' : '' ?>>Nazwa: A-Z</option>
-            <option value="ocena-najlepeij" <?= $sort === 'ocena-najlepeij' ? 'selected' : '' ?>>Ocena: od najlepszej</option>
-            <option value="ocena-najgorzej" <?= $sort === 'ocena-najgorzej' ? 'selected' : '' ?>>Ocena: od najgorszej</option>
-            <option value="rok-najnowsze" <?= $sort === 'rok-najnowsze' || $sort === 'rok' ? 'selected' : '' ?>>Rok: od najnowszego</option>
-            <option value="rok-najstarsze" <?= $sort === 'rok-najstarsze' ? 'selected' : '' ?>>Rok: od najstarszego</option>
-            <option value="cena-rosnaco" <?= $sort === 'cena-rosnaco' ? 'selected' : '' ?>>Cena: od najniższej</option>
-            <option value="cena-malejaco" <?= $sort === 'cena-malejaco' ? 'selected' : '' ?>>Cena: od najwyższej</option>
-        </select>
+            <div class="filters-controls">
+                <input type="text" id="wyszukiwarka" name="q" placeholder="Szukaj tytułu..." value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
+                <button type="submit" id="przycisk-szukaj">Szukaj</button>
 
-        <button class="btn btn-secondary" type="submit">Szukaj</button>
-    </form>
+                <select id="sortowanie" name="sort">
+                    <option value="default" <?= $sort === 'default' ? 'selected' : '' ?>>Sortuj według</option>
+                    <option value="data-dodania" <?= $sort === 'data-dodania' ? 'selected' : '' ?>>Data dodania</option>
+                    <option value="nazwa" <?= $sort === 'nazwa' ? 'selected' : '' ?>>Nazwa: A-Z</option>
+                    <option value="ocena-najlepeij" <?= $sort === 'ocena-najlepeij' ? 'selected' : '' ?>>Ocena: od najlepszej</option>
+                    <option value="ocena-najgorzej" <?= $sort === 'ocena-najgorzej' ? 'selected' : '' ?>>Ocena: od najgorszej</option>
+                    <option value="rok-najnowsze" <?= $sort === 'rok-najnowsze' || $sort === 'rok' ? 'selected' : '' ?>>Rok wydania: od najnowszego</option>
+                    <option value="rok-najstarsze" <?= $sort === 'rok-najstarsze' ? 'selected' : '' ?>>Rok wydania: od najstarszego</option>
+                    <option value="cena-rosnaco" <?= $sort === 'cena-rosnaco' ? 'selected' : '' ?>>Cena: od najniższej</option>
+                    <option value="cena-malejaco" <?= $sort === 'cena-malejaco' ? 'selected' : '' ?>>Cena: od najwyższej</option>
+                </select>
+            </div>
+        </form>
 
-    <?php if (count($filmy) > 0): ?>
-        <div class="catalog-grid">
-            <?php foreach ($filmy as $film): ?>
-                <?php
-                    $typ = $typy[(int) ($film['typ_plyty_id'] ?? 0)] ?? 'DVD';
-                    $dostepne = $film['ilosc_dostepnych'] !== null ? (int) $film['ilosc_dostepnych'] : 0;
-                    $ocena = $film['ocena'] !== null ? number_format((float) $film['ocena'], 1, ',', '') : '—';
-                    $cena = $film['cena'] !== null ? number_format((float) $film['cena'], 2, ',', ' ') . ' zł' : '—';
-                    $url = 'film.php?id=' . (int) $film['id'];
-                ?>
-                <article class="catalog-card">
-                    <div class="catalog-poster">
-                        <a href="<?= $url ?>">
+        <p class="biblioteka">
+            <span>Biblioteka filmów:</span>
+        </p>
+
+        <?php if (count($filmy) > 0): ?>
+            <div class="film-grid">
+                <?php foreach ($filmy as $film): ?>
+                    <div class="film-card-wrap">
+                        <a class="film-card" href="film.php?id=<?= (int) $film['id'] ?>">
                             <?php if (!empty($film['okladka'])): ?>
-                                <img src="<?= htmlspecialchars($film['okladka']) ?>" alt="Okładka filmu <?= htmlspecialchars($film['tytul']) ?>">
+                                <img class="film-cover" src="<?= htmlspecialchars($film['okladka']) ?>" alt="Okładka filmu <?= htmlspecialchars($film['tytul']) ?>">
                             <?php else: ?>
-                                <div class="poster-fallback"></div>
+                                <div class="film-cover film-cover--empty"><span>Brak okładki</span></div>
                             <?php endif; ?>
+
+                            <div class="film-info">
+                                <b><?= htmlspecialchars($film['tytul']) ?></b>
+
+                                <?php if (!empty($film['tytul_oryginalny']) && $film['tytul_oryginalny'] !== $film['tytul']): ?>
+                                    <span class="film-original"><?= htmlspecialchars($film['tytul_oryginalny']) ?></span>
+                                <?php endif; ?>
+
+                                <?php
+                                    $podtytul = [];
+
+                                    if ($film['gatunek']) {
+                                        $podtytul[] = htmlspecialchars($film['gatunek']);
+                                    }
+
+                                    if ($film['rok']) {
+                                        $podtytul[] = (int) $film['rok'];
+                                    }
+
+                                    if ($podtytul) {
+                                        echo '<span>' . implode(' · ', $podtytul) . '</span>';
+                                    }
+                                ?>
+
+                                <?php
+                                    $szczegoly = [];
+
+                                    if ($film['ocena'] !== null) {
+                                        $szczegoly[] = 'Ocena: ' . number_format((float) $film['ocena'], 1, ',', '');
+                                    }
+
+                                    if ($film['cena'] !== null) {
+                                        $szczegoly[] = 'Cena: ' . number_format((float) $film['cena'], 2, ',', ' ') . ' zł';
+                                    }
+
+                                    if ($szczegoly) {
+                                        echo '<span>' . implode(' | ', $szczegoly) . '</span>';
+                                    }
+                                ?>
+                            </div>
                         </a>
 
-                        <span class="media-badge"><?= htmlspecialchars($typ) ?></span>
-
-                        <?php if ($czyAdmin): ?>
-                            <a class="heart-btn <?= !empty($film['czy_ulubiony']) ? 'active' : '' ?>"
-                               href="ulubione_film.php?id=<?= (int) $film['id'] ?>&amp;powrot=filmy"
-                               title="<?= !empty($film['czy_ulubiony']) ? 'Usuń z polecanych' : 'Dodaj do polecanych' ?>">
-                                <?= !empty($film['czy_ulubiony']) ? '♥' : '♡' ?>
-                            </a>
-                        <?php endif; ?>
-                    </div>
-
-                    <div class="catalog-body">
-                        <h3 class="catalog-title">
-                            <a href="<?= $url ?>"><?= htmlspecialchars($film['tytul']) ?></a>
-                        </h3>
-
-                        <?php if (!empty($film['tytul_oryginalny']) && $film['tytul_oryginalny'] !== $film['tytul']): ?>
-                            <p class="catalog-original"><?= htmlspecialchars($film['tytul_oryginalny']) ?></p>
-                        <?php endif; ?>
-
-                        <p class="catalog-meta">
-                            <span class="rating">★ <?= $ocena ?></span>
-                            <span><?= htmlspecialchars($film['gatunek'] ?: 'Film') ?></span>
-                            <?php if (!empty($film['rok'])): ?>
-                                <span>· <?= (int) $film['rok'] ?></span>
-                            <?php endif; ?>
-                        </p>
-
-                        <div class="catalog-bottom">
-                            <span class="availability <?= $dostepne > 0 ? '' : 'out' ?>">
-                                <?= $dostepne > 0 ? 'Dostępne: ' . $dostepne : 'Brak na stanie' ?>
-                            </span>
-                            <span class="price"><?= $cena ?></span>
-                        </div>
-
-                        <div class="catalog-actions">
-                            <a class="btn btn-primary" href="wypozycz.php?typ=film&amp;id=<?= (int) $film['id'] ?>">Wypożycz</a>
+                        <div class="admin-actions">
+                            <a class="przycisk" href="wypozycz.php?typ=film&amp;id=<?= (int) $film['id'] ?>">Wypożycz</a>
 
                             <?php if ($czyAdmin): ?>
-                                <a class="icon-btn" href="edytuj_film.php?id=<?= (int) $film['id'] ?>" title="Edytuj film">✎</a>
-                                <a class="icon-btn" href="usun_film.php?id=<?= (int) $film['id'] ?>" title="Usuń film" onclick="return confirm('Czy na pewno usunąć ten film?');">🗑</a>
+                                <a class="przycisk serduszko <?= !empty($film['czy_ulubiony']) ? 'aktywne' : '' ?>"
+                                   href="ulubione_film.php?id=<?= (int) $film['id'] ?>&amp;powrot=filmy"
+                                   title="<?= !empty($film['czy_ulubiony']) ? 'Usuń z polecanych' : 'Dodaj do polecanych' ?>">
+                                    <?= !empty($film['czy_ulubiony']) ? '♥' : '♡' ?>
+                                </a>
                             <?php endif; ?>
+
+                            <a class="przycisk" href="edytuj_film.php?id=<?= (int) $film['id'] ?>">Edytuj</a>
+                            <a class="przycisk" href="usun_film.php?id=<?= (int) $film['id'] ?>" onclick="return confirm('Czy na pewno usunąć ten film?');">Usuń</a>
                         </div>
                     </div>
-                </article>
-            <?php endforeach; ?>
-        </div>
-    <?php else: ?>
-        <p class="empty-state">Brak filmów spełniających kryteria.</p>
-    <?php endif; ?>
+                <?php endforeach; ?>
+            </div>
+        <?php else: ?>
+            <p class="biblioteka"><span>Brak filmów w bazie danych.</span></p>
+        <?php endif; ?>
+    </main>
+
+    <footer>
+        <p>Autorzy: Przemysław Gałęziowski i Filip Klein</p>
+    </footer>
 
     <script src="assets/js/script_filmy.js"></script>
-</main>
-<footer class="site-footer">
-    <div class="footer-inner">
-        <span>&copy; <?= date('Y') ?> Wypożyczalnia filmów — filmy DVD i muzyka CD</span>
-        <span>Gdańsk, ul. Rajska 4 · 10:00–18:00</span>
-    </div>
-</footer>
 </body>
 </html>

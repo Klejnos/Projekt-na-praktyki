@@ -9,7 +9,6 @@
 
     $polecaneFilmy = [];
     $polecaneAlbumy = [];
-    $typy = [];
 
     try {
         $polaczenie = new mysqli($host, $db_user, $db_password, $db_name);
@@ -17,17 +16,8 @@
         if (!$polaczenie->connect_errno) {
             $polaczenie->set_charset("utf8mb4");
 
-            $wynik = $polaczenie->query("SELECT id, nazwa FROM typy_plyt");
-            if ($wynik) {
-                while ($row = $wynik->fetch_assoc()) {
-                    $typy[(int) $row['id']] = $row['nazwa'];
-                }
-                $wynik->free();
-            }
-
             $wynik = $polaczenie->query(
-                "SELECT id, tytul, tytul_oryginalny, gatunek, rok, ocena, cena,
-                        ilosc_dostepnych, okladka, typ_plyty_id
+                "SELECT id, tytul, tytul_oryginalny, gatunek, rok, ocena, cena, okladka
                  FROM filmy
                  WHERE czy_ulubiony = 1
                  ORDER BY id DESC
@@ -43,10 +33,9 @@
 
             $wynik = $polaczenie->query(
                 "SELECT m.id, m.tytul, m.rok, m.gatunek, m.cena, m.ilosc_dostepnych,
-                        a.wykonawca, a.okladka, t.nazwa AS typ
+                        a.wykonawca, a.okladka
                  FROM muzyka m
                  LEFT JOIN albumy a ON m.album_id = a.id
-                 LEFT JOIN typy_plyt t ON a.typ_plyty_id = t.id
                  WHERE m.czy_ulubiony = 1
                  ORDER BY m.id DESC
                  LIMIT 6"
@@ -65,173 +54,114 @@
         // Strona pokaże się bez sekcji polecanych.
     }
 
-    $active = 'index';
-    $pageTitle = 'Strona główna';
-    ?>
+    $kontoLink = 'konto.php';
+?>
+
 <!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wypożyczalnia filmów</title>
     <link rel="stylesheet" href="assets/css/style_filmy.css">
-    <link rel="icon" type="image/x-icon" href="assets/img/icon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wypożyczalnia filmów DVD oraz muzyki CD</title>
+    <link rel="icon" type="image/x-icon" href="assets/img/icon.ico"> 
 </head>
 <body>
-<header class="site-header">
-    <div class="header-top">
-        <a class="brand" href="index.php">
-            <span class="brand-badge">DVD</span>
-            <span class="brand-text">
-                <strong>Wypożyczalnia filmów</strong>
-                <small>filmy DVD · muzyka CD</small>
-            </span>
-        </a>
-        <div class="header-actions">
-            <a class="top-btn" href="konto.php">Konto</a>
-            <a class="top-btn" href="wylogowanie.php">Wyloguj</a>
-        </div>
-    </div>
-    <nav class="mainnav">
-        <a href="index.php" class="active">Strona główna</a>
+    <header>
+        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="konto" href="<?= $kontoLink ?>">Konto</a></h1>
+    </header>
+    <nav>
+        <a href="index.php">Strona główna</a> 
         <a href="filmy.php">Filmy</a>
         <a href="muzyka.php">Muzyka</a>
         <a href="kontakt.php">Kontakt</a>
     </nav>
-</header>
-<main class="page">
+    <main>
+        <h2>Witamy w naszej wypożyczalni!</h2>
+        <p>Oferujemy szeroki wybór filmów DVD, VHS, BLU-RAY oraz muzyki CD do wypożyczenia. Znajdziesz u nas najnowsze hity kinowe, klasyki filmowe oraz różnorodne gatunki muzyczne.</p>
 
-    <section class="catalog-head">
-        <div>
-            <h1>Witamy w wypożyczalni</h1>
-            <p class="catalog-meta">Filmy DVD, Blu-ray i VHS oraz muzyka CD — wszystko w jednym miejscu.</p>
-        </div>
-    </section>
+        <?php if (count($polecaneFilmy) > 0): ?>
+            <h2>Polecane filmy</h2>
+            <p>Filmy oznaczone serduszkiem przez administratora.</p>
 
-    <?php if (count($polecaneFilmy) > 0): ?>
-        <section class="catalog-head" style="margin-top: 34px;">
-            <div>
-                <h2>Polecane filmy</h2>
-                <p class="catalog-meta">Filmy oznaczone serduszkiem przez administratora.</p>
-            </div>
-        </section>
-
-        <div class="catalog-grid">
-            <?php foreach ($polecaneFilmy as $film): ?>
-                <?php
-                    $typ = $typy[(int) ($film['typ_plyty_id'] ?? 0)] ?? 'DVD';
-                    $dostepne = $film['ilosc_dostepnych'] !== null ? (int) $film['ilosc_dostepnych'] : 0;
-                    $ocena = $film['ocena'] !== null ? number_format((float) $film['ocena'], 1, ',', '') : '—';
-                    $cena = $film['cena'] !== null ? number_format((float) $film['cena'], 2, ',', ' ') . ' zł' : '—';
-                    $url = 'film.php?id=' . (int) $film['id'];
-                ?>
-                <article class="catalog-card">
-                    <div class="catalog-poster">
-                        <a href="<?= $url ?>">
+            <div class="film-grid">
+                <?php foreach ($polecaneFilmy as $film): ?>
+                    <div class="film-card-wrap">
+                        <a class="film-card" href="film.php?id=<?= (int) $film['id'] ?>">
                             <?php if (!empty($film['okladka'])): ?>
-                                <img src="<?= htmlspecialchars($film['okladka']) ?>" alt="Okładka filmu <?= htmlspecialchars($film['tytul']) ?>">
+                                <img class="film-cover" src="<?= htmlspecialchars($film['okladka']) ?>" alt="Okładka filmu <?= htmlspecialchars($film['tytul']) ?>">
                             <?php else: ?>
-                                <div class="poster-fallback"></div>
+                                <div class="film-cover film-cover--empty"><span>Brak okładki</span></div>
                             <?php endif; ?>
+
+                            <div class="film-info">
+                                <b><?= htmlspecialchars($film['tytul']) ?></b>
+
+                                <?php if (!empty($film['tytul_oryginalny']) && $film['tytul_oryginalny'] !== $film['tytul']): ?>
+                                    <span class="film-original"><?= htmlspecialchars($film['tytul_oryginalny']) ?></span>
+                                <?php endif; ?>
+
+                                <span>
+                                    <?= htmlspecialchars($film['gatunek'] ?: 'Film') ?><?= $film['rok'] ? ' · ' . (int) $film['rok'] : '' ?>
+                                </span>
+
+                                <span>
+                                    Ocena: <?= $film['ocena'] !== null ? number_format((float) $film['ocena'], 1, ',', '') : '—' ?>
+                                    <?= $film['cena'] !== null ? ' | Cena: ' . number_format((float) $film['cena'], 2, ',', ' ') . ' zł' : '' ?>
+                                </span>
+                            </div>
                         </a>
-                        <span class="media-badge"><?= htmlspecialchars($typ) ?></span>
-                    </div>
 
-                    <div class="catalog-body">
-                        <h3 class="catalog-title"><a href="<?= $url ?>"><?= htmlspecialchars($film['tytul']) ?></a></h3>
-
-                        <?php if (!empty($film['tytul_oryginalny']) && $film['tytul_oryginalny'] !== $film['tytul']): ?>
-                            <p class="catalog-original"><?= htmlspecialchars($film['tytul_oryginalny']) ?></p>
-                        <?php endif; ?>
-
-                        <p class="catalog-meta">
-                            <span class="rating">★ <?= $ocena ?></span>
-                            <span><?= htmlspecialchars($film['gatunek'] ?: 'Film') ?></span>
-                            <?php if (!empty($film['rok'])): ?>
-                                <span>· <?= (int) $film['rok'] ?></span>
-                            <?php endif; ?>
-                        </p>
-
-                        <div class="catalog-bottom">
-                            <span class="availability <?= $dostepne > 0 ? '' : 'out' ?>">
-                                <?= $dostepne > 0 ? 'Dostępne: ' . $dostepne : 'Brak na stanie' ?>
-                            </span>
-                            <span class="price"><?= $cena ?></span>
-                        </div>
-
-                        <div class="catalog-actions">
-                            <a class="btn btn-primary" href="wypozycz.php?typ=film&amp;id=<?= (int) $film['id'] ?>">Wypożycz</a>
+                        <div class="admin-actions">
+                            <a class="przycisk" href="wypozycz.php?typ=film&amp;id=<?= (int) $film['id'] ?>">Wypożycz</a>
                         </div>
                     </div>
-                </article>
-            <?php endforeach; ?>
-        </div>
-    <?php endif; ?>
-
-    <?php if (count($polecaneAlbumy) > 0): ?>
-        <section class="catalog-head" style="margin-top: 34px;">
-            <div>
-                <h2>Polecane albumy</h2>
-                <p class="catalog-meta">Albumy oznaczone serduszkiem przez administratora.</p>
+                <?php endforeach; ?>
             </div>
-        </section>
+        <?php endif; ?>
 
-        <div class="catalog-grid">
-            <?php foreach ($polecaneAlbumy as $album): ?>
-                <?php
-                    $typ = $album['typ'] ?: 'CD';
-                    $dostepne = $album['ilosc_dostepnych'] !== null ? (int) $album['ilosc_dostepnych'] : 0;
-                    $cena = $album['cena'] !== null ? number_format((float) $album['cena'], 2, ',', ' ') . ' zł' : '—';
-                    $url = 'album.php?id=' . (int) $album['id'];
-                ?>
-                <article class="catalog-card">
-                    <div class="catalog-poster">
-                        <a href="<?= $url ?>">
+        <?php if (count($polecaneAlbumy) > 0): ?>
+            <h2>Polecane albumy</h2>
+            <p>Albumy oznaczone serduszkiem przez administratora.</p>
+
+            <div class="film-grid">
+                <?php foreach ($polecaneAlbumy as $album): ?>
+                    <div class="film-card-wrap">
+                        <a class="film-card" href="album.php?id=<?= (int) $album['id'] ?>">
                             <?php if (!empty($album['okladka'])): ?>
-                                <img src="<?= htmlspecialchars($album['okladka']) ?>" alt="Okładka albumu <?= htmlspecialchars($album['tytul']) ?>">
+                                <img class="film-cover" src="<?= htmlspecialchars($album['okladka']) ?>" alt="Okładka albumu <?= htmlspecialchars($album['tytul']) ?>">
                             <?php else: ?>
-                                <div class="poster-fallback"></div>
+                                <div class="film-cover film-cover--empty"><span>Brak okładki</span></div>
                             <?php endif; ?>
+
+                            <div class="film-info">
+                                <b><?= htmlspecialchars($album['tytul']) ?></b>
+
+                                <?php if (!empty($album['wykonawca'])): ?>
+                                    <span class="film-original"><?= htmlspecialchars($album['wykonawca']) ?></span>
+                                <?php endif; ?>
+
+                                <span>
+                                    <?= htmlspecialchars($album['gatunek'] ?: 'Muzyka') ?><?= $album['rok'] ? ' · ' . (int) $album['rok'] : '' ?>
+                                </span>
+
+                                <span>
+                                    Cena: <?= $album['cena'] !== null ? number_format((float) $album['cena'], 2, ',', ' ') . ' zł' : '—' ?>
+                                </span>
+                            </div>
                         </a>
-                        <span class="media-badge"><?= htmlspecialchars($typ) ?></span>
-                    </div>
 
-                    <div class="catalog-body">
-                        <h3 class="catalog-title"><a href="<?= $url ?>"><?= htmlspecialchars($album['tytul']) ?></a></h3>
-
-                        <?php if (!empty($album['wykonawca'])): ?>
-                            <p class="catalog-original"><?= htmlspecialchars($album['wykonawca']) ?></p>
-                        <?php endif; ?>
-
-                        <p class="catalog-meta">
-                            <span><?= htmlspecialchars($album['gatunek'] ?: 'Muzyka') ?></span>
-                            <?php if (!empty($album['rok'])): ?>
-                                <span>· <?= (int) $album['rok'] ?></span>
-                            <?php endif; ?>
-                        </p>
-
-                        <div class="catalog-bottom">
-                            <span class="availability <?= $dostepne > 0 ? '' : 'out' ?>">
-                                <?= $dostepne > 0 ? 'Dostępne: ' . $dostepne : 'Brak na stanie' ?>
-                            </span>
-                            <span class="price"><?= $cena ?></span>
-                        </div>
-
-                        <div class="catalog-actions">
-                            <a class="btn btn-primary" href="wypozycz.php?typ=muzyka&amp;id=<?= (int) $album['id'] ?>">Wypożycz</a>
+                        <div class="admin-actions">
+                            <a class="przycisk" href="wypozycz.php?typ=muzyka&amp;id=<?= (int) $album['id'] ?>">Wypożycz</a>
                         </div>
                     </div>
-                </article>
-            <?php endforeach; ?>
-        </div>
-    <?php endif; ?>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </main>
 
-</main>
-<footer class="site-footer">
-    <div class="footer-inner">
-        <span>&copy; <?= date('Y') ?> Wypożyczalnia filmów — filmy DVD i muzyka CD</span>
-        <span>Gdańsk, ul. Rajska 4 · 10:00–18:00</span>
-    </div>
-</footer>
+    <footer>
+        <p>Autorzy: Przemysław Gałęziowski i Filip Klein</p>
+    </footer>
 </body>
 </html>

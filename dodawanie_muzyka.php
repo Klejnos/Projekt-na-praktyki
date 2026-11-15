@@ -128,43 +128,26 @@
     }
 ?>
 
-<?php
-    $active = 'muzyka';
-    $pageTitle = 'Dodawanie muzyki';
-    ?>
 <!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="assets/css/style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wypożyczalnia filmów</title>
-    <link rel="stylesheet" href="assets/css/style_filmy.css">
-    <link rel="icon" type="image/x-icon" href="assets/img/icon.ico">
+    <title>Dodawanie muzyki | Wypożyczalnia</title>
+    <link rel="icon" type="image/x-icon" href="assets/img/icon.ico"> 
 </head>
 <body>
-<header class="site-header">
-    <div class="header-top">
-        <a class="brand" href="index.php">
-            <span class="brand-badge">DVD</span>
-            <span class="brand-text">
-                <strong>Wypożyczalnia filmów</strong>
-                <small>filmy DVD · muzyka CD</small>
-            </span>
-        </a>
-        <div class="header-actions">
-            <a class="top-btn" href="konto.php">Konto</a>
-            <a class="top-btn" href="wylogowanie.php">Wyloguj</a>
-        </div>
-    </div>
-    <nav class="mainnav">
-        <a href="index.php">Strona główna</a>
-        <a href="filmy.php">Filmy</a>
-        <a href="muzyka.php" class="active">Muzyka</a>
-        <a href="kontakt.php">Kontakt</a>
+    <header>
+        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="konto" href="konto.php">Konto</a></h1>
+    </header>
+    <nav>
+            <a href="index.php">Strona główna</a>
+            <a href="filmy.php">Filmy</a>
+            <a href="muzyka.php">Muzyka</a>
+            <a href="kontakt.php">Kontakt</a>
     </nav>
-</header>
-<main class="page">
-
+    <main>
         <h1>Dodawanie muzyki</h1>
 
         <?php if ($blad !== ''): ?>
@@ -211,13 +194,12 @@
             <button type="submit">Dodaj muzykę</button>
             <button type="reset">Wyczyść</button>
         </form>
+    </main>
+
+    <footer>
+        <p>Autorzy: Przemysław Gałęziowski i Filip Klein</p>
+    </footer>
+
     <script src="assets/js/script_muzyka.js"></script>
-</main>
-<footer class="site-footer">
-    <div class="footer-inner">
-        <span>&copy; <?= date('Y') ?> Wypożyczalnia filmów — filmy DVD i muzyka CD</span>
-        <span>Gdańsk, ul. Rajska 4 · 10:00–18:00</span>
-    </div>
-</footer>
 </body>
 </html>

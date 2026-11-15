@@ -17,7 +17,7 @@
             $polaczenie->set_charset("utf8mb4");
 
             $stmt = $polaczenie->prepare(
-                "SELECT m.*, a.wykonawca, a.okladka, a.discogs_uri, a.rok AS album_rok, a.gatunek AS album_gatunek, t.nazwa AS typ
+                "SELECT m.*, a.wykonawca, a.okladka, a.discogs_uri, t.nazwa AS typ
                  FROM muzyka m
                  LEFT JOIN albumy a ON m.album_id = a.id
                  LEFT JOIN typy_plyt t ON a.typ_plyty_id = t.id
@@ -48,150 +48,106 @@
         exit();
     }
 
+    function pole(string $etykieta, $wartosc): void
+    {
+        if ($wartosc !== null && $wartosc !== '') {
+            echo '<p><b>' . $etykieta . ':</b> ' . htmlspecialchars((string) $wartosc) . '</p>';
+        }
+    }
+
     $czyAdmin = isset($_SESSION['czy_admin']) && (int) $_SESSION['czy_admin'] === 1;
-    $active = 'muzyka';
-    $pageTitle = $album['tytul'];
+    $kontoLink = 'konto.php';
+?>
 
-    $dostepne = $album['ilosc_dostepnych'] !== null ? (int) $album['ilosc_dostepnych'] : 0;
-    $cena = $album['cena'] !== null ? number_format((float) $album['cena'], 2, ',', ' ') . ' zł' : '—';
-    $rok = $album['album_rok'] ?: $album['rok'];
-    $gatunek = $album['album_gatunek'] ?: $album['gatunek'];
-    $dostepnosc = $dostepne > 0 ? $dostepne . ' szt. na stanie' : 'Brak na stanie';
-
-    ?>
 <!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wypożyczalnia filmów</title>
     <link rel="stylesheet" href="assets/css/style_filmy.css">
-    <link rel="icon" type="image/x-icon" href="assets/img/icon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= htmlspecialchars($album['tytul']) ?> | Wypożyczalnia</title>
+    <link rel="icon" type="image/x-icon" href="assets/img/icon.ico"> 
 </head>
 <body>
-<header class="site-header">
-    <div class="header-top">
-        <a class="brand" href="index.php">
-            <span class="brand-badge">DVD</span>
-            <span class="brand-text">
-                <strong>Wypożyczalnia filmów</strong>
-                <small>filmy DVD · muzyka CD</small>
-            </span>
-        </a>
-        <div class="header-actions">
-            <a class="top-btn" href="konto.php">Konto</a>
-            <a class="top-btn" href="wylogowanie.php">Wyloguj</a>
-        </div>
-    </div>
-    <nav class="mainnav">
-        <a href="index.php">Strona główna</a>
-        <a href="filmy.php">Filmy</a>
-        <a href="muzyka.php" class="active">Muzyka</a>
-        <a href="kontakt.php">Kontakt</a>
+    <header>
+        <h1>Wypożyczalnia filmów DVD oraz muzyki CD<a class="przycisk" href="dodawanie_muzyka.php">Dodaj muzykę</a><a class="konto" href="<?= $kontoLink ?>">Konto</a></h1>
+    </header>
+    <nav>
+            <a href="index.php">Strona główna</a>
+            <a href="filmy.php">Filmy</a>
+            <a href="muzyka.php">Muzyka</a>
+            <a href="kontakt.php">Kontakt</a>
     </nav>
-</header>
-<main class="page">
+    <main>
+        <?php
+            if (!empty($_SESSION['rent_sukces'])) {
+                echo '<div class="sukces">' . htmlspecialchars($_SESSION['rent_sukces']) . '</div>';
+                unset($_SESSION['rent_sukces']);
+            }
 
-    <div class="detail-breadcrumb">
-        <a href="muzyka.php">Muzyka</a> / <?= htmlspecialchars($gatunek ?: 'Album') ?>
-    </div>
+            if (!empty($_SESSION['rent_blad'])) {
+                echo '<div class="error">' . htmlspecialchars($_SESSION['rent_blad']) . '</div>';
+                unset($_SESSION['rent_blad']);
+            }
 
-    <?php
-        if (!empty($_SESSION['rent_sukces'])) {
-            echo '<div class="sukces">' . htmlspecialchars($_SESSION['rent_sukces']) . '</div>';
-            unset($_SESSION['rent_sukces']);
-        }
+            if (!empty($_SESSION['ulubione_komunikat'])) {
+                echo '<div class="sukces">' . htmlspecialchars($_SESSION['ulubione_komunikat']) . '</div>';
+                unset($_SESSION['ulubione_komunikat']);
+            }
+        ?>
 
-        if (!empty($_SESSION['rent_blad'])) {
-            echo '<div class="error">' . htmlspecialchars($_SESSION['rent_blad']) . '</div>';
-            unset($_SESSION['rent_blad']);
-        }
+        <p class="biblioteka">
+            <span>Szczegóły albumu:</span>
+        </p>
 
-        if (!empty($_SESSION['ulubione_komunikat'])) {
-            echo '<div class="sukces">' . htmlspecialchars($_SESSION['ulubione_komunikat']) . '</div>';
-            unset($_SESSION['ulubione_komunikat']);
-        }
-    ?>
-
-    <div class="detail-layout">
-        <div class="detail-poster">
+        <div class="film-page">
             <?php if (!empty($album['okladka'])): ?>
-                <img src="<?= htmlspecialchars($album['okladka']) ?>" alt="Okładka albumu <?= htmlspecialchars($album['tytul']) ?>">
+                <img class="film-page-cover" src="<?= htmlspecialchars($album['okladka']) ?>" alt="Okładka albumu <?= htmlspecialchars($album['tytul']) ?>">
             <?php else: ?>
-                <div class="poster-fallback"></div>
-            <?php endif; ?>
-        </div>
-
-        <div class="detail-info">
-            <h1><?= htmlspecialchars($album['tytul']) ?></h1>
-
-            <?php if (!empty($album['wykonawca'])): ?>
-                <p class="detail-original"><?= htmlspecialchars($album['wykonawca']) ?></p>
+                <div class="film-page-cover film-cover--empty"><span>Brak okładki</span></div>
             <?php endif; ?>
 
-            <div class="detail-meta-grid">
-                <div class="meta-item">
-                    <span>Gatunek</span>
-                    <strong><?= htmlspecialchars($gatunek ?: '—') ?></strong>
-                </div>
-                <div class="meta-item">
-                    <span>Rok</span>
-                    <strong><?= $rok ? (int) $rok : '—' ?></strong>
-                </div>
-                <div class="meta-item">
-                    <span>Wykonawca</span>
-                    <strong><?= htmlspecialchars($album['wykonawca'] ?: '—') ?></strong>
-                </div>
-                <div class="meta-item">
-                    <span>Typ płyty</span>
-                    <strong><?= htmlspecialchars($album['typ'] ?: '—') ?></strong>
-                </div>
-                <div class="meta-item">
-                    <span>Dostępność</span>
-                    <strong><?= $dostepnosc ?></strong>
-                </div>
-            </div>
+            <div class="film-page-info">
+                <h2><?= htmlspecialchars($album['tytul']) ?></h2>
 
-            <div class="detail-price-row">
-                <div class="detail-price">
-                    <?= $cena ?>
-                    <small>za 15 dni wypożyczenia</small>
-                </div>
+                <?php
+                    pole('Wykonawca', $album['wykonawca']);
+                    pole('Rok', $album['rok']);
+                    pole('Gatunek', $album['gatunek']);
+                    pole('Typ płyty', $album['typ']);
+                    pole('Dostępne sztuki', $album['ilosc_dostepnych']);
+                    pole('Cena', $album['cena'] !== null ? number_format((float) $album['cena'], 2, ',', ' ') . ' zł' : null);
+                ?>
 
-                <div class="detail-actions">
-                    <a class="btn btn-primary" href="wypozycz.php?typ=muzyka&amp;id=<?= (int) $album['id'] ?>">Wypożycz teraz</a>
+                <p>
+                    <a class="przycisk" href="wypozycz.php?typ=muzyka&amp;id=<?= (int) $album['id'] ?>">Wypożycz</a>
+                    <a class="przycisk" href="edytuj_muzyka.php?id=<?= (int) $album['id'] ?>">Edytuj</a>
+                    <a class="przycisk" href="usun_muzyka.php?id=<?= (int) $album['id'] ?>" onclick="return confirm('Czy na pewno usunąć ten album?');">Usuń</a>
 
                     <?php if ($czyAdmin): ?>
-                        <a class="btn btn-secondary" href="ulubione_muzyka.php?id=<?= (int) $album['id'] ?>&amp;powrot=album">
-                            <span style="color: <?= !empty($album['czy_ulubiony']) ? '#ff6b81' : 'inherit' ?>;">
-                                <?= !empty($album['czy_ulubiony']) ? '♥' : '♡' ?>
-                            </span>
-                            <?= !empty($album['czy_ulubiony']) ? 'Usuń z ulubionych' : 'Dodaj do ulubionych' ?>
+                        <a class="przycisk serduszko <?= !empty($album['czy_ulubiony']) ? 'aktywne' : '' ?>"
+                           href="ulubione_muzyka.php?id=<?= (int) $album['id'] ?>&amp;powrot=album"
+                           title="<?= !empty($album['czy_ulubiony']) ? 'Usuń z polecanych' : 'Dodaj do polecanych' ?>">
+                            <?= !empty($album['czy_ulubiony']) ? '♥' : '♡' ?>
                         </a>
                     <?php endif; ?>
 
-                    <?php if (!empty($album['discogs_uri'])): ?>
-                        <a class="btn btn-secondary" href="<?= htmlspecialchars($album['discogs_uri'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer">Discogs</a>
-                    <?php endif; ?>
-                </div>
-            </div>
+                    <a class="przycisk" href="muzyka.php">Powrót do muzyki</a>
+                </p>
 
-            <div class="detail-admin-actions">
-                <?php if ($czyAdmin): ?>
-                    <a class="btn btn-secondary" href="edytuj_muzyka.php?id=<?= (int) $album['id'] ?>">✎ Edytuj album</a>
-                    <a class="btn btn-danger" href="usun_muzyka.php?id=<?= (int) $album['id'] ?>" onclick="return confirm('Czy na pewno usunąć ten album?');">🗑 Usuń</a>
+                <?php if (!empty($album['discogs_uri'])): ?>
+                    <p>
+                        <a class="przycisk" href="<?= htmlspecialchars($album['discogs_uri'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer">
+                            Zobacz w Discogs
+                        </a>
+                    </p>
                 <?php endif; ?>
-                <a class="btn btn-secondary" href="muzyka.php">← Wróć do katalogu</a>
             </div>
         </div>
-    </div>
+    </main>
 
-</main>
-<footer class="site-footer">
-    <div class="footer-inner">
-        <span>&copy; <?= date('Y') ?> Wypożyczalnia filmów — filmy DVD i muzyka CD</span>
-        <span>Gdańsk, ul. Rajska 4 · 10:00–18:00</span>
-    </div>
-</footer>
+    <footer>
+        <p>Autorzy: Przemysław Gałęziowski i Filip Klein</p>
+    </footer>
 </body>
 </html>
