@@ -10,45 +10,48 @@
         
         try {
             $polaczenie = new mysqli($host, $db_user, $db_password, $db_name);
-            if ($polaczenie -> connect_errno) {
+            if ($polaczenie->connect_errno) {
                 throw new Exception(mysqli_connect_errno());
             }
-            else{
-                $nazwa = $_POST['nazwa'];
-                $haslo = $_POST['haslo'];
 
-                $q = sprintf("SELECT * FROM uzytkownicy WHERE nazwa = '%s'", mysqli_real_escape_string($polaczenie, $nazwa));
+            $nazwa = $_POST['nazwa'] ?? '';
+            $haslo = $_POST['haslo'] ?? '';
 
-                if ($result = $polaczenie -> query($q)) {
-                    if ($result -> num_rows == 1) {
-                        $wiersz = $result -> fetch_assoc();
-                        if (password_verify($haslo, $wiersz['haslo'])) {
-                            $_SESSION['zalogowany'] = true;
-                            $_SESSION['id'] = $wiersz['id'];
-                            $_SESSION['nazwa'] = $wiersz['nazwa'];
-                            $_SESSION['czy_admin'] = $wiersz['czy_admin'];
+            $stmt = $polaczenie->prepare("SELECT id, nazwa, haslo, czy_admin, portfel FROM uzytkownicy WHERE nazwa = ?");
+            $stmt->bind_param("s", $nazwa);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-                            header('Location: index.php');
-                            exit();
-                        }
-                    }
-                    
-                    $_SESSION['blad'] = '<span style="color: red">Nieprawidłowy login lub hasło</span>';
-                    $result -> free();
-                    $polaczenie -> close();
-                    header('Location: logowanie.php');
+            if ($result->num_rows == 1) {
+                $wiersz = $result->fetch_assoc();
+                if (password_verify($haslo, $wiersz['haslo'])) {
+                    $_SESSION['zalogowany'] = true;
+                    $_SESSION['id'] = $wiersz['id'];
+                    $_SESSION['nazwa'] = $wiersz['nazwa'];
+                    $_SESSION['czy_admin'] = $wiersz['czy_admin'];
+                    $_SESSION['portfel'] = $wiersz['portfel'];
+
+                    $stmt->close();
+                    $polaczenie->close();
+
+                    header('Location: index.php');
                     exit();
                 }
             }
-        }
+            
+            $_SESSION['blad'] = '<span style="color: red">Nieprawidłowy login lub hasło</span>';
+            $stmt->close();
+            $polaczenie->close();
+            header('Location: logowanie.php');
+            exit();
 
-        catch(Exception $e) {
+        } catch(Exception $e) {
             $_SESSION['blad'] = '<span style="color: red">Błąd serwera</span>';
+            header('Location: logowanie.php');
             exit();
         }
     }
 ?>
-
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -58,7 +61,6 @@
     <link rel="stylesheet" href="assets/css/logowanie.css">
     <link rel="icon" type="image/x-icon" href="assets/img/icon.ico"> 
 </head>
-
 <body>
     <header>
         <div id="header-left">
@@ -67,7 +69,6 @@
         </div>
         <div id="header-right">
             <a href="konto.php">Konto</a>
-            <a href="ulubione.php">Ulubione</a>
         </div>
     </header>
 
@@ -83,11 +84,11 @@
             <h2>Zaloguj się</h2>
             <form method="post">
                 <label for="nazwa">Nazwa użytkownika:</label><br>
-                <input type="text" name="nazwa" id="nazwa" placeholder="np. szrek2137"><br>
+                <input type="text" name="nazwa" id="nazwa"><br>
 
                 <label for="haslo">Hasło:</label><br>
                 <div class="password-container">
-                    <input type="password" name="haslo" id="haslo" placeholder="polecane to 1234">
+                    <input type="password" name="haslo" id="haslo">
                     <button type="button" id="przycisk_pokazHaslo">
                         <img id="img_pokaz_haslo" src="assets/img/lock.png" alt="Pokaż hasło" draggable="false">
                     </button>
@@ -111,8 +112,7 @@
     </main>
 
     <footer>
-        <p>2026</p>
-        <p>Przemysław Gałęziowski oraz Filip Klein</p>
+        <p>2026 - Przemysław Gałęziowski oraz Filip Klein</p>
     </footer>
 </body>
 </html>

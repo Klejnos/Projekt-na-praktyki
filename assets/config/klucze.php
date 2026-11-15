@@ -10,3 +10,5 @@ $omdb_api_key = '138317b9';
 $discogs_user_agent = 'WypozyczalniaProjekt/1.0 +http://localhost';
 $discogs_token = '';
 ?>
+
+<!-- API do filmów: https://www.omdbapi.com/ -->

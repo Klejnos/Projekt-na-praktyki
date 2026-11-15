@@ -1,3 +1,0 @@
-https://www.omdbapi.com/
-
-klucz API: przeniesiony do assets/config/klucze.php

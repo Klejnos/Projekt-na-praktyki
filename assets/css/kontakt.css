@@ -1,0 +1,94 @@
+@import url("style.css");
+
+/* Układ strony - stopka zawsze na dole, karta na środku */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* Rozciągnięcie górnego paska nagłówka na całą szerokość ekranu */
+.header-top {
+    max-width: none;
+    width: 100%;
+    padding-left: 40px;
+    padding-right: 40px;
+}
+
+/* Rozciągnięcie paska nawigacji na całą szerokość ekranu */
+.mainnav {
+    max-width: none;
+    width: 100%;
+    padding-left: 40px;
+    padding-right: 40px;
+}
+
+/* GŁÓWNA TREŚĆ - zwarta, elegancka karta */
+main {
+    background-color: var(--bg-3);
+    border: 1px solid var(--border);
+    padding: 40px;
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 480px;
+    margin: auto auto; /* Centruje kartę w pionie i poziomie w wolnej przestrzeni */
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+main h2 {
+    color: var(--text);
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+}
+
+main p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 24px;
+}
+
+/* Lista kontaktowa */
+ul {
+    list-style: none;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+ul li {
+    background-color: var(--bg);
+    border: 1px solid var(--border-2);
+    border-radius: 8px;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+ul li:hover {
+    border-color: var(--accent);
+    transform: scale(1.02);
+}
+
+ul li a {
+    display: block;
+    padding: 13px 16px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.15s ease;
+}
+
+ul li a:hover {
+    color: var(--accent);
+}
+
+/* STOPKA - wyśrodkowanie treści */
+.site-footer {
+    text-align: center;
+}
+
+.footer-inner {
+    max-width: none;
+    justify-content: center; /* Centruje elementy wewnątrz stopki */
+}
