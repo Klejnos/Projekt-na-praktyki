@@ -128,7 +128,7 @@
         </a>
         <div class="header-actions">
             <a href="konto.php" class="top-btn">Konto</a>
-            <a href="wylogowanie.php" class="top-btn">Wyloguj</a>
+            <a href="wylogowanie.php" class="top-btn">Wyloguj się</a>
         </div>
     </div>
     <nav class="mainnav">

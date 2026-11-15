@@ -26,6 +26,8 @@ html {
 body {
     margin: 0;
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
     background: var(--bg);
     color: var(--text);
     font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
@@ -62,14 +64,17 @@ textarea {
 .site-header {
     background: var(--bg-2);
     border-bottom: 1px solid var(--border);
+    width: 100%;
 }
 
 .header-top {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 14px 24px;
+    max-width: none;
+    width: 100%;
+    margin: 0;
+    padding: 14px 40px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 20px;
     flex-wrap: wrap;
 }
@@ -80,6 +85,14 @@ textarea {
     gap: 12px;
     color: var(--text);
     text-decoration: none;
+}
+
+.brand img {
+    width: 38px;
+    height: 38px;
+    border-radius: 6px;
+    user-select: none;
+    object-fit: cover;
 }
 
 .brand-badge {
@@ -144,9 +157,10 @@ textarea {
 }
 
 .mainnav {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 24px;
+    max-width: none;
+    width: 100%;
+    margin: 0;
+    padding: 0 40px;
     display: flex;
     align-items: center;
     gap: 34px;
@@ -178,28 +192,35 @@ textarea {
 /* ---------- Układ strony ---------- */
 
 .page {
+    flex: 1;
+    width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 32px 24px 0;
+    padding: 40px 40px 0;
 }
 
 .site-footer {
-    margin-top: 64px;
+    margin-top: auto;
     border-top: 1px solid var(--border);
     background: #0f0f11;
     color: var(--muted-2);
     font-size: 13px;
+    text-align: center;
 }
 
 .footer-inner {
-    max-width: 1200px;
+    max-width: none;
     margin: 0 auto;
     padding: 22px 24px;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     gap: 16px;
     flex-wrap: wrap;
+}
+
+.footer-inner p {
+    margin: 0;
 }
 
 /* ---------- Przyciski ---------- */
@@ -388,7 +409,7 @@ button {
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: border-color 0.15s ease, color 0.15s ease;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
 }
 
 button:hover {
@@ -398,6 +419,76 @@ button:hover {
 
 button[type="reset"] {
     color: var(--muted);
+}
+
+/* Formularze dodawania / edycji – wygląd jak karta logowania */
+
+.page > h1,
+.page > h2 {
+    max-width: 720px;
+    margin: 0 auto 18px;
+    color: var(--text);
+    font-size: 1.75rem;
+}
+
+.page > .error,
+.page > .sukces {
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.page > form:not(.catalog-filters) {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 32px 40px 40px;
+    background: var(--bg-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+.page > form:not(.catalog-filters) br {
+    display: none;
+}
+
+.page > form:not(.catalog-filters) input[type="text"],
+.page > form:not(.catalog-filters) input[type="password"],
+.page > form:not(.catalog-filters) input[type="email"],
+.page > form:not(.catalog-filters) input[type="number"],
+.page > form:not(.catalog-filters) textarea,
+.page > form:not(.catalog-filters) select,
+.page > form:not(.catalog-filters) .search-box {
+    max-width: none;
+}
+
+.page > form:not(.catalog-filters) select {
+    width: 100%;
+}
+
+.page > form:not(.catalog-filters) button[type="submit"] {
+    width: 100%;
+    margin-top: 24px;
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #151100;
+}
+
+.page > form:not(.catalog-filters) button[type="submit"]:hover {
+    border-color: var(--accent-hover);
+    background: var(--accent-hover);
+    color: #151100;
+}
+
+.page > form:not(.catalog-filters) button[type="reset"] {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.page > form:not(.catalog-filters) a.przycisk {
+    display: flex;
+    width: 100%;
+    margin-top: 10px;
 }
 
 /* ---------- Wyszukiwanie podpowiedzi ---------- */
@@ -509,6 +600,14 @@ button[type="reset"] {
 
     .mainnav a {
         white-space: nowrap;
+    }
+
+    .page {
+        padding-top: 24px;
+    }
+
+    .page > form:not(.catalog-filters) {
+        padding: 24px 20px 28px;
     }
 
     .film-page {

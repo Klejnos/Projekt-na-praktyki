@@ -7,22 +7,13 @@ body {
     min-height: 100vh;
 }
 
-/* Rozciągnięcie górnego paska nagłówka i nawigacji na całą szerokość ekranu */
-.header-top,
-.mainnav {
-    max-width: none;
-    width: 100%;
-    padding-left: 40px;
-    padding-right: 40px;
-}
-
 /* GŁÓWNA TREŚĆ */
 main {
     flex: 1;
     width: 100%;
     max-width: 960px;
     margin: 0 auto;
-    padding: 40px 20px;
+    padding: 40px 40px 0;
 }
 
 /* Panel powitalny i przyciski akcji */
@@ -32,6 +23,7 @@ main {
     border-radius: var(--radius);
     padding: 28px 32px;
     margin-bottom: 36px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
 }
 
 .admin-badge {
@@ -83,6 +75,7 @@ main {
     gap: 24px;
     align-items: flex-start;
     margin-bottom: 18px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
     transition: border-color 0.15s ease;
 }
 
@@ -152,23 +145,10 @@ main {
     font-size: 14px;
 }
 
-/* STOPKA - przyklejona do dołu i wyśrodkowana */
-.site-footer {
-    margin-top: auto;
-    text-align: center;
-}
-
-.footer-inner {
-    max-width: none;
-    justify-content: center;
-}
-
 /* Responsywność */
 @media (max-width: 760px) {
-    .header-top,
-    .mainnav {
-        padding-left: 16px;
-        padding-right: 16px;
+    main {
+        padding: 24px 16px 0;
     }
 
     .film-page {

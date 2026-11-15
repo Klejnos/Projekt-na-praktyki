@@ -104,16 +104,16 @@
 <body>
 <header class="site-header">
     <div class="header-top">
-        <a class="brand" href="index.php">
-            <span class="brand-badge">DVD</span>
-            <span class="brand-text">
-                <strong>Wypożyczalnia filmów</strong>
-                <small>filmy DVD · muzyka CD</small>
-            </span>
+        <a href="index.php" class="brand">
+            <img src="assets/img/icon.ico" alt="plyta" style="width: 38px; height: 38px; border-radius: 6px; user-select: none;">
+            <div class="brand-text">
+                <strong>Wypożyczalnia</strong>
+                <small>Filmów i muzyki</small>
+            </div>
         </a>
         <div class="header-actions">
             <a class="top-btn" href="konto.php">Konto</a>
-            <a class="top-btn" href="wylogowanie.php">Wyloguj</a>
+            <a class="top-btn" href="wylogowanie.php">Wyloguj się</a>
         </div>
     </div>
     <nav class="mainnav">

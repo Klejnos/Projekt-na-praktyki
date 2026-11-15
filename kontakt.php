@@ -27,6 +27,7 @@
             </a>
             <div class="header-actions">
                 <a href="konto.php" class="top-btn">Konto</a>
+                <a class="top-btn" href="wylogowanie.php">Wyloguj się</a>
             </div>
         </div>
         <nav class="mainnav">

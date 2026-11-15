@@ -12,62 +12,11 @@ body {
 header {
     background: var(--bg-2);
     border-bottom: 1px solid var(--border);
-    max-width: none;
     width: 100%;
-    padding: 14px 40px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 20px;
-}
-
-#header-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-#header-left img {
-    width: 38px;
-    height: 38px;
-    border-radius: 6px;
-    user-select: none;
-    object-fit: cover;
-}
-
-#header-left h1 {
-    margin: 0;
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: 0.01em;
-}
-
-#header-right a {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 8px 16px;
-    border: 1px solid var(--border-2);
-    border-radius: 8px;
-    background: var(--bg-4);
-    color: var(--text);
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 600;
-    transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
-}
-
-#header-right a:hover {
-    border-color: var(--accent);
-    color: var(--accent);
 }
 
 /* ---------- NAWIGACJA ---------- */
 nav {
-    max-width: none;
     width: 100%;
     padding: 0 40px;
     display: flex;
@@ -184,6 +133,11 @@ main {
     justify-content: center;
 }
 
+#przycisk_pokazHaslo:hover {
+    border-color: transparent;
+    color: inherit;
+}
+
 /* Stały wygląd kłódki – brak jakichkolwiek zmian po najechaniu */
 #img_pokaz_haslo {
     width: 18px;
@@ -212,6 +166,7 @@ main {
 .login-box button[type="submit"]:hover {
     background: var(--accent-hover);
     border-color: var(--accent-hover);
+    color: #151100;
 }
 
 /* Link do rejestracji */
@@ -263,7 +218,6 @@ footer p {
 
 /* ---------- RWD ---------- */
 @media (max-width: 760px) {
-    header,
     nav {
         padding-left: 16px;
         padding-right: 16px;

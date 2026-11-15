@@ -101,12 +101,17 @@
 </head>
 <body>
     <header>
-        <div id="header-left">
-            <img src="assets/img/icon.ico" alt="plyta">
-            <h1>Wypożyczalnia filmów i muzyki</h1>
-        </div>
-        <div id="header-right">
-            <a href="konto.php">Konto</a>
+        <div class="header-top">
+            <a href="index.php" class="brand">
+                <img src="assets/img/icon.ico" alt="plyta">
+                <div class="brand-text">
+                    <strong>Wypożyczalnia</strong>
+                    <small>Filmów i muzyki</small>
+                </div>
+            </a>
+            <div class="header-actions">
+                <a href="konto.php" class="top-btn">Konto</a>
+            </div>
         </div>
     </header>
 

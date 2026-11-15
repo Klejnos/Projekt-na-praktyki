@@ -1,13 +1,6 @@
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+@import url("style.css");
 
 body {
-    background-color: #121316;
-    color: #e4e6eb;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -16,11 +9,16 @@ body {
     padding: 20px;
 }
 
+main {
+    width: 100%;
+    max-width: 440px;
+}
+
 .witaj {
-    background-color: #1a1d24;
-    border: 1px solid #272a33;
+    background-color: var(--bg-3);
+    border: 1px solid var(--border);
     padding: 45px 40px;
-    border-radius: 14px;
+    border-radius: var(--radius);
     width: 100%;
     max-width: 440px;
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
@@ -41,25 +39,29 @@ body {
 
 .witaj h1 {
     font-size: 1.5rem;
-    color: #ffffff;
-    font-weight: bold;
-    margin-bottom: 25px;
+    color: var(--text);
+    font-weight: 700;
+    margin: 0 0 25px;
 }
 
 .witaj a {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 100%;
-    background-color: #fbbf24;
-    color: #121316;
-    text-decoration: none;
     padding: 13px;
+    border: 1px solid var(--accent);
     border-radius: 8px;
-    font-weight: bold;
+    background-color: var(--accent);
+    color: #151100;
+    text-decoration: none;
+    font-weight: 600;
     font-size: 15px;
-    transition: transform 0.2s ease, background-color 0.2s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .witaj a:hover {
-    background-color: #f59e0b;
-    transform: scale(1.05);
+    background-color: var(--accent-hover);
+    border-color: var(--accent-hover);
+    color: #151100;
 }
