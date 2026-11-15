@@ -32,3 +32,4 @@
 
     header('Location: filmy.php');
     exit();
+?>

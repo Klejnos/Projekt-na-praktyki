@@ -203,3 +203,4 @@ if ($action === 'details') {
 }
 
 odpowiedz(['ok' => false, 'error' => 'Nieznana akcja.']);
+?>

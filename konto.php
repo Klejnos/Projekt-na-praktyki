@@ -33,7 +33,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Twoje konto</title>
-    <link rel="stylesheet" href="assets/css/style_filmy.css">
+    <link rel="stylesheet" href="assets/css/konto.css">
+    <link rel="icon" type="image/x-icon" href="assets/img/icon.ico"> 
 </head>
 <body>
     <header>
@@ -49,6 +50,11 @@
         <?php if (!empty($_SESSION['konto_komunikat'])): ?>
             <div class="sukces"><?= htmlspecialchars($_SESSION['konto_komunikat']) ?></div>
             <?php unset($_SESSION['konto_komunikat']); ?>
+        <?php endif; ?>
+
+        <?php if (!empty($_SESSION['e_konto_komunikat'])): ?>
+            <div class="sukces"><?= htmlspecialchars($_SESSION['konto_komunikat']) ?></div>
+            <?php unset($_SESSION['e_konto_komunikat']); ?>
         <?php endif; ?>
 
         <?php if($czy_admin) : ?>

@@ -146,3 +146,4 @@
 
     header('Location: ' . $powrot);
     exit();
+?>

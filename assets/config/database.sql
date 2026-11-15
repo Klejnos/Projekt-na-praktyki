@@ -2,7 +2,8 @@ CREATE TABLE uzytkownicy (
 	id INT AUTO_INCREMENT PRIMARY KEY,
 	nazwa VARCHAR(20) NOT NULL UNIQUE,
 	haslo VARCHAR(100) NOT NULL,
-	czy_admin TINYINT(1) NOT NULL DEFAULT 0
+	czy_admin TINYINT(1) NOT NULL DEFAULT 0,
+	portfel DECIMAL(10, 2) NOT NULL DEFAULT 0
 );
 
 CREATE TABLE typy_plyt (
@@ -37,7 +38,6 @@ CREATE TABLE filmy (
 	ON UPDATE CASCADE -- przy zamianie id wszystkie rekordy zostaną zakutalizowane
 );
 
--- nie jestem pewny czy ta tabela jest skończona
 CREATE TABLE albumy (
 	id INT AUTO_INCREMENT PRIMARY KEY,
 	tytul VARCHAR(150) NOT NULL,
@@ -54,7 +54,6 @@ CREATE TABLE albumy (
 	ON UPDATE CASCADE
 );
 
--- tabela do muzyki
 CREATE TABLE muzyka (
 	id INT AUTO_INCREMENT PRIMARY KEY,
 	tytul VARCHAR(150) NOT NULL,
@@ -75,6 +74,7 @@ CREATE TABLE wypozyczenia_filmy (
 	film_id INT NOT NULL,
 	data_wypozyczenia DATETIME NOT NULL,
 	data_zwrotu DATETIME,
+	czy_byl_przedluzany TINYINT(1) NOT NULL DEFAULT 0
 
 	PRIMARY KEY (uzytkownicy_id, film_id),
 	FOREIGN KEY (uzytkownicy_id) REFERENCES uzytkownicy(id) 
@@ -90,6 +90,7 @@ CREATE TABLE wypozyczenia_muzyka (
 	muzyka_id INT NOT NULL,
 	data_wypozyczenia DATETIME NOT NULL,
 	data_zwrotu DATETIME,
+	czy_byl_przedluzany TINYINT(1) NOT NULL DEFAULT 0
 
 	PRIMARY KEY (uzytkownicy_id, muzyka_id),
 	FOREIGN KEY (uzytkownicy_id) REFERENCES uzytkownicy(id)

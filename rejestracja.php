@@ -81,40 +81,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zarejestruj się</title>
+    <title>Rejestracja</title>
+    <link rel="stylesheet" href="assets/css/rejestracja.css">
+    <link rel="icon" type="image/x-icon" href="assets/img/icon.ico">
 </head>
+
 <body>
-    <script src="assets/js/pokaz_haslo.js"></script>
-    <form method="post">
-        <label for="nazwa">Nazwa:</label><br>
-        <input type="text" name="nazwa" placeholder="Bez polskich znaków">
+    <header>
+        <div id="header-left">
+            <img src="assets/img/icon.ico" alt="plyta">
+            <h1>Wypożyczalnia filmów i muzyki</h1>
+        </div>
+        <div id="header-right">
+            <a href="konto.php">Konto</a>
+            <a href="ulubione.php">Ulubione</a>
+        </div>
+    </header>
 
-        <?php
-            if (isset($_SESSION['e_nazwa'])) {
-                echo '<div class="error">'.$_SESSION['e_nazwa']."</div>";
-                unset($_SESSION['e_nazwa']);
-            }
-        ?><br>
+    <nav>
+        <a href="index.php">Strona główna</a> 
+        <a href="filmy.php">Filmy</a>
+        <a href="muzyka.php">Muzyka</a>
+        <a href="kontakt.php">Kontakt</a>
+    </nav>
 
-        <label for="haslo1">Haslo:</label><br>
-        <input type="password" id="haslo1" name="haslo1" placeholder="8 - 20 znaków"><br>
+    <main>
+        <form method="post">
+            <h2>Zarejestruj się</h2>
+            <label for="nazwa">Nazwa użytkownika:</label>
+            <input type="text" name="nazwa" placeholder="Bez polskich znaków">
 
-        <label for="haslo2">Powtórz haslo:</label><br>
-        <input type="password" id="haslo2" name="haslo2">
-        <button type="button" id="przycisk_pokazHaslo">Pokaż hasło</button>
+            <?php
+                if (isset($_SESSION['e_nazwa'])) {
+                    echo '<div class="error">'.$_SESSION['e_nazwa']."</div>";
+                    unset($_SESSION['e_nazwa']);
+                }
+            ?>
 
-        <?php
-            if (isset($_SESSION['e_haslo'])) {
-                echo '<div class="error">'.$_SESSION['e_haslo']."</div>";
-                unset($_SESSION['e_haslo']);
-            }
-        ?><br>
+            <label for="haslo1">Haslo:</label>
+            <input type="password" id="haslo1" name="haslo1" placeholder="8 - 20 znaków">
 
-        <label>
-            <input name="czy_admin" type="checkbox">Zarejestruj jako admin
-        </label>
+            <label for="haslo2">Powtórz haslo:</label>
+            <div class="password-container">
+                <input type="password" id="haslo2" name="haslo2">
+                <button type="button" id="przycisk_pokazHaslo">
+                    <img id="img_pokaz_haslo" src="assets/img/lock.png" alt="Pokaż hasło" draggable="false">
+                </button>
+            </div>
 
-        <br><br><button type="submit">Zarejestruj się</button>
-    </form>
+            <?php
+                if (isset($_SESSION['e_haslo'])) {
+                    echo '<div class="error">'.$_SESSION['e_haslo']."</div>";
+                    unset($_SESSION['e_haslo']);
+                }
+            ?><br>
+
+            <label>
+                <input name="czy_admin" type="checkbox">Zarejestruj jako admin
+            </label>
+
+            <button type="submit">Zarejestruj się</button>
+        </form>
+        <script src="assets/js/pokaz_haslo.js"></script>
+    </main>
+
+    <footer>
+        <p>2026</p>
+    </footer>
 </body>
 </html>

@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="assets/css/style.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kontakt | Wypożyczalnia</title>
+    <link rel="icon" type="image/x-icon" href="assets/img/icon.ico"> 
 </head>
 <body>
     <header>

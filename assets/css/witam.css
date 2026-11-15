@@ -1,0 +1,65 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: #121316;
+    color: #e4e6eb;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.witaj {
+    background-color: #1a1d24;
+    border: 1px solid #272a33;
+    padding: 45px 40px;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.witaj img {
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.witaj h1 {
+    font-size: 1.5rem;
+    color: #ffffff;
+    font-weight: bold;
+    margin-bottom: 25px;
+}
+
+.witaj a {
+    display: inline-block;
+    width: 100%;
+    background-color: #fbbf24;
+    color: #121316;
+    text-decoration: none;
+    padding: 13px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 15px;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.witaj a:hover {
+    background-color: #f59e0b;
+    transform: scale(1.05);
+}
