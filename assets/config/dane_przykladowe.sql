@@ -1,7 +1,7 @@
 INSERT INTO `uzytkownicy` (`id`, `nazwa`, `haslo`, `czy_admin`) VALUES
-(1, 'Nigger', '$2y$12$pQJiB.AZJsYb98/.EDn/u.fLewp/9Bai9R5iCaEYB7zPikItMEqRi', 1),
-(15, 'Para', '$2y$12$.DezghwO/TswDVxH2jqpQuxjewMExA9nAIB8BY6cBEmPi5wwM5H5K', 1),
-(25, 'testadmin2', '$2y$12$MhYVVKZtJBcqXwhsxpRFK.dxz.5IGV5rdmo6aLHiKfUQquYvM0n9i', 1);
+(1, 'ChocolateMan', '$2y$12$pQJiB.AZJsYb98/.EDn/u.fLewp/9Bai9R5iCaEYB7zPikItMEqRi', 1, 100.0),
+(15, 'Para', '$2y$12$.DezghwO/TswDVxH2jqpQuxjewMExA9nAIB8BY6cBEmPi5wwM5H5K', 1, 200.0),
+(25, 'testadmin2', '$2y$12$MhYVVKZtJBcqXwhsxpRFK.dxz.5IGV5rdmo6aLHiKfUQquYvM0n9i', 0, 55.0);
 
 
 INSERT INTO `albumy` (`id`, `tytul`, `wykonawca`, `rok`, `gatunek`, `okladka`, `discogs_id`, `discogs_uri`, `typ_plyty_id`) VALUES

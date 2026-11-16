@@ -13,6 +13,17 @@
     require_once "polaczenie.php";
     try {
         $polaczenie = new mysqli($host, $db_user, $db_password, $db_name);
+        $id_u = $_SESSION['id'];
+        $q_u = $polaczenie -> prepare("SELECT portfel FROM uzytkownicy WHERE id = ?");
+        $q_u -> bind_param ("i", $id_u);
+        $q_u -> execute();
+        $wynik = $q_u -> get_result();
+        if ($wynik -> num_rows !== 1) {
+            throw new Exception("Nie znaleziono użytkownika");
+        }
+        $wiersz_u = $wynik -> fetch_assoc();
+        $portfel = (float) $wiersz_u['portfel'];
+        $q_u -> close();
     }
     catch (Exception $e) {
         echo "Błąd serwera";
@@ -84,6 +95,19 @@
                 <?php endif; ?>
                 <a class="przycisk" href="filmy.php">Przeglądaj filmy</a>
                 <a class="przycisk" href="muzyka.php">Przeglądaj muzykę</a>
+            </div>
+        </div>
+
+        <div class="account-header">
+            <div>
+                <h1>Twój portfel wynosi aktualnie: <span style="color: green;">
+                    <?= $portfel ?>
+                </span></h1>
+                <h4>Wpłać pieniądze, aby móc wypożyczać filmy</h4>
+                <a class="przycisk btn-primary" href="doladowanie.php?k=10">10 zł</a>
+                <a class="przycisk btn-primary" href="doladowanie.php?k=20">20 zł</a>
+                <a class="przycisk btn-primary" href="doladowanie.php?k=35">35 zł</a>
+                <a class="przycisk btn-primary" href="doladowanie.php?k=50">50 zł</a>
             </div>
         </div>
 

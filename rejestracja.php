@@ -133,8 +133,8 @@
                 }
             ?>
 
-            <label for="nazwa">Nazwa użytkownika:</label>
-            <input type="text" id="nazwa" name="nazwa" placeholder="Bez polskich znaków">
+            <label for="nazwa">Nazwa użytkownika (Bez polskich znaków):</label>
+            <input type="text" id="nazwa" name="nazwa">
             <?php
                 if (isset($_SESSION['e_nazwa'])) {
                     echo '<div class="error">'.$_SESSION['e_nazwa']."</div>";
@@ -142,8 +142,8 @@
                 }
             ?>
 
-            <label for="haslo1">Hasło:</label>
-            <input type="password" id="haslo1" name="haslo1" placeholder="8 - 20 znaków">
+            <label for="haslo1">Hasło (8 - 20 znaków):</label>
+            <input type="password" id="haslo1" name="haslo1">
 
             <label for="haslo2">Powtórz hasło:</label>
             <div class="password-container">

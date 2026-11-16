@@ -26,9 +26,23 @@
         }
 
         $polaczenie->set_charset("utf8mb4");
+        $polaczenie -> begin_transaction();
+
+        $q = $polaczenie -> prepare("SELECT portfel FROM uzytkownicy WHERE id = ? FOR UPDATE");
+        $q -> bind_param("i", $uzytkownikId);
+        $q -> execute();
+        $portfel_wynik = $q -> get_result();
+        $dane_uzytkownika = $portfel_wynik ? $portfel_wynik -> fetch_assoc() : null;
+        $q -> close();
+
+        if (!$dane_uzytkownika) {
+            throw new Exception("Nie znaleziono użytkownika");
+        }
+
+        $portfel_stan = (float) $dane_uzytkownika['portfel'];
 
         if ($typ === 'film') {
-            $stmt = $polaczenie->prepare("SELECT tytul, ilosc_dostepnych FROM filmy WHERE id = ? LIMIT 1");
+            $stmt = $polaczenie->prepare("SELECT tytul, ilosc_dostepnych, cena FROM filmy WHERE id = ? LIMIT 1");
             $stmt->bind_param("i", $id);
             $stmt->execute();
             $wynik = $stmt->get_result();
@@ -36,14 +50,24 @@
             $stmt->close();
 
             if (!$film) {
+                $polaczenie -> rollback();
                 $_SESSION['rent_blad'] = 'Nie znaleziono wybranego filmu.';
                 header('Location: filmy.php');
                 exit();
             }
 
             if ($film['ilosc_dostepnych'] !== null && (int) $film['ilosc_dostepnych'] <= 0) {
+                $polaczenie -> rollback();
                 $_SESSION['rent_blad'] = 'Ten film jest chwilowo niedostępny.';
                 header('Location: ' . $powrot);
+                exit();
+            }
+
+            $cena_wypozyczenia = (float) $film['cena'];
+            if ($portfel_stan < $cena_wypozyczenia) {
+                $polaczenie -> rollback();
+                $_SESSION['rent_blad'] = 'Nie znaleziono wybranego filmu.';
+                header('Location: '.$powrot);
                 exit();
             }
 
@@ -61,6 +85,11 @@
                 header('Location: ' . $powrot);
                 exit();
             }
+
+            $q = $polaczenie -> prepare("UPDATE uzytkownicy SET portfel = portfel - ? WHERE id = ?");
+            $q -> bind_param("di", $cena_wypozyczenia, $uzytkownikId);
+            $q -> execute();
+            $q -> close();
 
             $stmt = $polaczenie->prepare(
                 "INSERT INTO wypozyczenia_filmy
@@ -83,7 +112,7 @@
 
             $_SESSION['rent_sukces'] = 'Film został wypożyczony: ' . $film['tytul'];
         } else {
-            $stmt = $polaczenie->prepare("SELECT tytul, ilosc_dostepnych FROM muzyka WHERE id = ? LIMIT 1");
+            $stmt = $polaczenie->prepare("SELECT tytul, ilosc_dostepnych, cena FROM muzyka WHERE id = ? LIMIT 1");
             $stmt->bind_param("i", $id);
             $stmt->execute();
             $wynik = $stmt->get_result();
@@ -91,14 +120,24 @@
             $stmt->close();
 
             if (!$album) {
+                $polaczenie -> rollback();
                 $_SESSION['rent_blad'] = 'Nie znaleziono wybranego albumu.';
                 header('Location: muzyka.php');
                 exit();
             }
 
             if ($album['ilosc_dostepnych'] !== null && (int) $album['ilosc_dostepnych'] <= 0) {
+                $polaczenie -> rollback();
                 $_SESSION['rent_blad'] = 'Ten album jest chwilowo niedostępny.';
                 header('Location: ' . $powrot);
+                exit();
+            }
+
+            $cena_wypozyczenia = (float) $album['cena'];
+            if ($portfel_stan < $cena_wypozyczenia) {
+                $polaczenie -> rollback();
+                $_SESSION['rent_blad'] = 'Nie znaleziono wybranego filmu.';
+                header('Location: '.$powrot);
                 exit();
             }
 
@@ -116,6 +155,11 @@
                 header('Location: ' . $powrot);
                 exit();
             }
+
+            $q = $polaczenie -> prepare("UPDATE uzytkownicy SET portfel = portfel - ? WHERE id = ?");
+            $q -> bind_param("di", $cena_wypozyczenia, $uzytkownikId);
+            $q -> execute();
+            $q -> close();
 
             $stmt = $polaczenie->prepare(
                 "INSERT INTO wypozyczenia_muzyka
@@ -138,10 +182,14 @@
 
             $_SESSION['rent_sukces'] = 'Album został wypożyczony: ' . $album['tytul'];
         }
-
+        $polaczenie -> commit();
         $polaczenie->close();
     } catch (Exception $e) {
-        $_SESSION['rent_blad'] = 'Nie udało się wypożyczyć. Spróbuj ponownie później.';
+        if (isset($polaczenie) && polaczenie -> ping()) {
+            $polaczenie -> rollback();
+            $polaczenie -> close();
+        }
+        $_SESSION['rent_blad'] = 'Nie udało się wypożyczyć.';
     }
 
     header('Location: ' . $powrot);
