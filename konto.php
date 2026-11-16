@@ -100,9 +100,7 @@
 
         <div class="account-header">
             <div>
-                <h1>Twój portfel wynosi aktualnie: <span style="color: green;">
-                    <?= $portfel ?>
-                </span></h1>
+                <h1>Twój portfel wynosi aktualnie: <span style="color: green;"><?= $portfel ?></span> zł</h1>
                 <h4>Wpłać pieniądze, aby móc wypożyczać filmy</h4>
                 <a class="przycisk btn-primary" href="doladowanie.php?k=10">10 zł</a>
                 <a class="przycisk btn-primary" href="doladowanie.php?k=20">20 zł</a>
