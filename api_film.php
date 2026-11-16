@@ -16,6 +16,12 @@ if (!isset($_SESSION['zalogowany']) || $_SESSION['zalogowany'] != true) {
 
 function odpowiedz(array $dane): void
 {
+    // Usuwa ewentualne przypadkowe wyjście (np. whitespace/komentarz z dołączanego pliku),
+    // żeby odpowiedź zawsze była poprawnym JSON-em.
+    if (ob_get_length() !== false) {
+        ob_clean();
+    }
+
     echo json_encode($dane, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 }
