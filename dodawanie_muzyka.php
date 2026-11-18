@@ -28,6 +28,9 @@
             $okladka = trim($_POST['okladka'] ?? '');
             $discogsUri = trim($_POST['discogs_uri'] ?? '');
 
+            $utworyZPosta = json_decode($_POST['utwory'] ?? '[]', true);
+            $utwory = is_array($utworyZPosta) ? array_slice($utworyZPosta, 0, 300) : [];
+
             $tytul = mb_substr($tytul, 0, 150, 'UTF-8');
             $wykonawca = mb_substr($wykonawca, 0, 150, 'UTF-8');
             $gatunek = mb_substr($gatunek, 0, 100, 'UTF-8');
@@ -84,6 +87,42 @@
                         $stmt->close();
                     } else {
                         $blad = 'Nie udało się przygotować zapytania: ' . $polaczenie->error;
+                    }
+                }
+
+                // Nazwy utworów pobrane z Discogs zapisujemy przy albumie.
+                if ($blad === '' && $albumId !== null && $utwory) {
+                    $tabelaUtworow = $polaczenie->query("SHOW TABLES LIKE 'utwory'");
+
+                    if ($tabelaUtworow && $tabelaUtworow->num_rows === 1) {
+                        $stmtUsun = $polaczenie->prepare("DELETE FROM utwory WHERE album_id = ?");
+
+                        if ($stmtUsun) {
+                            $stmtUsun->bind_param("i", $albumId);
+                            $stmtUsun->execute();
+                            $stmtUsun->close();
+                        }
+
+                        $stmtUtwor = $polaczenie->prepare(
+                            "INSERT INTO utwory (album_id, numer, tytul, czas) VALUES (?, ?, ?, ?)"
+                        );
+
+                        if ($stmtUtwor) {
+                            foreach ($utwory as $utwor) {
+                                $numer = mb_substr(trim((string) ($utwor['numer'] ?? '')), 0, 20, 'UTF-8');
+                                $tytulUtworu = mb_substr(trim((string) ($utwor['tytul'] ?? '')), 0, 200, 'UTF-8');
+                                $czas = mb_substr(trim((string) ($utwor['czas'] ?? '')), 0, 20, 'UTF-8');
+
+                                if ($tytulUtworu === '') {
+                                    continue;
+                                }
+
+                                $stmtUtwor->bind_param("isss", $albumId, $numer, $tytulUtworu, $czas);
+                                $stmtUtwor->execute();
+                            }
+
+                            $stmtUtwor->close();
+                        }
                     }
                 }
 
@@ -181,6 +220,7 @@
             <input type="hidden" name="discogs_id" id="discogs_id" value="">
             <input type="hidden" name="okladka" id="okladka_url" value="">
             <input type="hidden" name="discogs_uri" id="discogs_uri" value="">
+            <input type="hidden" name="utwory" id="utwory_json" value="[]">
             <div id="podgladOkladki">
                 <img id="okladka" src="" alt="Okładka albumu">
             </div>

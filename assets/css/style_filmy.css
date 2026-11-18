@@ -210,6 +210,15 @@
     text-overflow: ellipsis;
 }
 
+.catalog-track {
+    margin: 0;
+    overflow: hidden;
+    color: var(--accent);
+    font-size: 12px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
 .catalog-meta {
     display: flex;
     align-items: center;
@@ -415,6 +424,55 @@
     margin-top: 28px;
     padding-top: 20px;
     border-top: 1px solid var(--border);
+}
+
+/* ---------- Lista utworów albumu ---------- */
+
+.tracklist {
+    margin-top: 36px;
+    padding: 22px 24px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-2);
+}
+
+.tracklist h2 {
+    margin: 0 0 16px;
+    font-size: 22px;
+}
+
+.tracklist-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0 28px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.tracklist-items li {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+}
+
+.track-number {
+    min-width: 28px;
+    color: var(--muted-2);
+    font-variant-numeric: tabular-nums;
+}
+
+.track-title {
+    flex: 1;
+}
+
+.track-time {
+    color: var(--muted);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
 }
 
 /* ---------- RWD katalogu ---------- */

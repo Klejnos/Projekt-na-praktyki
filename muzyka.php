@@ -54,13 +54,23 @@
         }
 
         $sql = "SELECT m.id, m.tytul, m.gatunek, m.rok, m.ilosc_dostepnych, m.cena, m.czy_ulubiony,
-                       a.wykonawca, a.okladka, a.discogs_uri, t.nazwa AS typ
-                FROM muzyka m
+                       a.wykonawca, a.okladka, a.discogs_uri, t.nazwa AS typ";
+
+        if ($search !== '') {
+            $sql .= ", (SELECT u.tytul FROM utwory u
+                        WHERE u.album_id = a.id AND u.tytul LIKE ?
+                        ORDER BY u.id LIMIT 1) AS pasujacy_utwor";
+        }
+
+        $sql .= " FROM muzyka m
                 LEFT JOIN albumy a ON m.album_id = a.id
                 LEFT JOIN typy_plyt t ON a.typ_plyty_id = t.id";
 
         if ($search !== '') {
-            $sql .= " WHERE m.tytul LIKE ? OR a.wykonawca LIKE ?";
+            $sql .= " WHERE m.tytul LIKE ? OR a.wykonawca LIKE ? OR EXISTS (
+                        SELECT 1 FROM utwory u
+                        WHERE u.album_id = a.id AND u.tytul LIKE ?
+                      )";
         }
 
         $sql .= " ORDER BY $orderBy";
@@ -69,7 +79,7 @@
 
         if ($search !== '') {
             $param = '%' . $search . '%';
-            $stmt->bind_param("ss", $param, $param);
+            $stmt->bind_param("ssss", $param, $param, $param, $param);
         }
 
         $stmt->execute();
@@ -163,7 +173,7 @@
 
     <form method="GET" action="muzyka.php" class="catalog-filters">
         <div class="search-field">
-            <input type="text" id="wyszukiwarka" name="q" placeholder="Szukaj albumu, wykonawcy..." value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
+            <input type="text" id="wyszukiwarka" name="q" placeholder="Szukaj albumu, wykonawcy lub utworu..." value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
         </div>
 
         <select id="sortowanie" name="sort">
@@ -216,6 +226,10 @@
 
                         <?php if (!empty($album['wykonawca'])): ?>
                             <p class="catalog-original"><?= htmlspecialchars($album['wykonawca']) ?></p>
+                        <?php endif; ?>
+
+                        <?php if (!empty($album['pasujacy_utwor'])): ?>
+                            <p class="catalog-track">♫ Zawiera: <?= htmlspecialchars($album['pasujacy_utwor']) ?></p>
                         <?php endif; ?>
 
                         <p class="catalog-meta">

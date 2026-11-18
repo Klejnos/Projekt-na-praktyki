@@ -9,6 +9,7 @@
 
     $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
     $album = null;
+    $utwory = [];
 
     try {
         $polaczenie = new mysqli($host, $db_user, $db_password, $db_name);
@@ -35,6 +36,29 @@
                 }
 
                 $stmt->close();
+            }
+
+            if ($album) {
+                $stmtUtwory = $polaczenie->prepare(
+                    "SELECT numer, tytul, czas FROM utwory WHERE album_id = ? ORDER BY id"
+                );
+
+                if ($stmtUtwory) {
+                    $albumIdBazy = (int) $album['album_id'];
+                    $stmtUtwory->bind_param("i", $albumIdBazy);
+                    $stmtUtwory->execute();
+                    $wynikUtworow = $stmtUtwory->get_result();
+
+                    if ($wynikUtworow) {
+                        while ($utwor = $wynikUtworow->fetch_assoc()) {
+                            $utwory[] = $utwor;
+                        }
+
+                        $wynikUtworow->free();
+                    }
+
+                    $stmtUtwory->close();
+                }
             }
 
             $polaczenie->close();
@@ -185,6 +209,25 @@
             </div>
         </div>
     </div>
+
+    <?php if (!empty($utwory)): ?>
+        <section class="tracklist">
+            <h2>Utwory na płycie</h2>
+            <ol class="tracklist-items">
+                <?php foreach ($utwory as $utwor): ?>
+                    <li>
+                        <?php if (!empty($utwor['numer'])): ?>
+                            <span class="track-number"><?= htmlspecialchars($utwor['numer']) ?></span>
+                        <?php endif; ?>
+                        <span class="track-title"><?= htmlspecialchars($utwor['tytul']) ?></span>
+                        <?php if (!empty($utwor['czas'])): ?>
+                            <span class="track-time"><?= htmlspecialchars($utwor['czas']) ?></span>
+                        <?php endif; ?>
+                    </li>
+                <?php endforeach; ?>
+            </ol>
+        </section>
+    <?php endif; ?>
 
 </main>
 <footer class="site-footer">

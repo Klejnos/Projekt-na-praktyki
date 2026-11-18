@@ -37,6 +37,7 @@ tytul.addEventListener("input", function () {
     ustawWartosc("okladka_url", "");
     ustawWartosc("discogs_id", "");
     ustawWartosc("discogs_uri", "");
+    ustawWartosc("utwory_json", "[]");
 
     if (nazwa.length < 2) {
         return;
@@ -66,6 +67,20 @@ tytul.addEventListener("input", function () {
 
                 let obraz = album.okladka || "";
 
+                // Jeśli szukana fraza pasuje do utworu, pokazujemy go w podpowiedzi.
+                let pasujaceUtwory = (album.utwory || [])
+                    .filter(function (utwor) {
+                        return (utwor.tytul || '').toLowerCase().includes(nazwa.toLowerCase());
+                    })
+                    .slice(0, 2)
+                    .map(function (utwor) {
+                        return utwor.tytul;
+                    });
+
+                let utworyHtml = pasujaceUtwory.length
+                    ? `<p class="podpowiedz-utwor">♫ ${pasujaceUtwory.map(escapeHtml).join(' · ')}</p>`
+                    : '';
+
                 element.innerHTML = `
                     <img src="${escapeHtml(obraz)}" alt="Okładka"
                      onerror="this.style.display='none'">
@@ -73,6 +88,7 @@ tytul.addEventListener("input", function () {
                  <div>
                 <strong>${escapeHtml(album.tytul)}</strong>
                 <p>${escapeHtml(album.rok)}${album.format ? ' • ' + escapeHtml(album.format) : ''}</p>
+                ${utworyHtml}
     </div>
 `;
 
@@ -119,6 +135,7 @@ async function pobierzAlbum(id) {
         ustawWartosc("gatunek", album.gatunek);
         ustawWartosc("discogs_id", album.discogs_id);
         ustawWartosc("discogs_uri", album.discogs_uri);
+        ustawWartosc("utwory_json", JSON.stringify(album.utwory || []));
 
         // Pola do ręcznego uzupełnienia
 

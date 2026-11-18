@@ -576,6 +576,13 @@ button[type="reset"] {
     font-size: 12px;
 }
 
+.podpowiedz p.podpowiedz-utwor {
+    color: var(--accent);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
 /* ---------- RWD ---------- */
 
 @media (max-width: 760px) {

@@ -165,13 +165,55 @@ function znajdzOkladke(array $album): string
     return $album['cover_image'] ?? ($album['thumb'] ?? '');
 }
 
-// Prosty cache okładek, żeby nie odpytywać Discogs o te same wydania przy każdym wyszukiwaniu.
+// Wyciąga listę utworów z danych wydania Discogs (także podutwory).
+function pobierzUtwory(array $album): array
+{
+    $utwory = [];
+
+    foreach (($album['tracklist'] ?? []) as $utwor) {
+        if (($utwor['type_'] ?? '') === 'heading') {
+            continue;
+        }
+
+        $tytul = trim((string) ($utwor['title'] ?? ''));
+
+        if ($tytul === '') {
+            continue;
+        }
+
+        $utwory[] = [
+            'numer' => mb_substr(trim((string) ($utwor['position'] ?? '')), 0, 20, 'UTF-8'),
+            'tytul' => mb_substr($tytul, 0, 200, 'UTF-8'),
+            'czas' => mb_substr(trim((string) ($utwor['duration'] ?? '')), 0, 20, 'UTF-8'),
+        ];
+
+        foreach (($utwor['sub_tracks'] ?? []) as $podutwor) {
+            $podTytul = trim((string) ($podutwor['title'] ?? ''));
+
+            if ($podTytul === '') {
+                continue;
+            }
+
+            $numer = trim(($utwor['position'] ?? '') . '.' . ($podutwor['position'] ?? ''));
+
+            $utwory[] = [
+                'numer' => mb_substr($numer, 0, 20, 'UTF-8'),
+                'tytul' => mb_substr($podTytul, 0, 200, 'UTF-8'),
+                'czas' => mb_substr(trim((string) ($podutwor['duration'] ?? '')), 0, 20, 'UTF-8'),
+            ];
+        }
+    }
+
+    return $utwory;
+}
+
+// Prosty cache danych wydania (okładka + utwory), żeby nie odpytywać Discogs przy każdym wyszukiwaniu.
 function plikCacheOkladek(): string
 {
     return sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'wypozyczalnia_discogs_okladki.json';
 }
 
-function pobierzOkladkiDiscogs(array $ids): array
+function pobierzDaneDiscogs(array $ids): array
 {
     global $discogs_token;
 
@@ -196,8 +238,13 @@ function pobierzOkladkiDiscogs(array $ids): array
             continue;
         }
 
-        if (isset($cache[$id]['url'], $cache[$id]['ts']) && ($teraz - (int) $cache[$id]['ts']) < $ttl) {
-            $wynik[$id] = (string) $cache[$id]['url'];
+        if (isset($cache[$id]['ts'], $cache[$id]['utwory']) && ($teraz - (int) $cache[$id]['ts']) < $ttl) {
+            $wpis = $cache[$id];
+
+            $wynik[$id] = [
+                'okladka' => (string) ($wpis['okladka'] ?? $wpis['url'] ?? ''),
+                'utwory' => is_array($wpis['utwory'] ?? null) ? $wpis['utwory'] : [],
+            ];
         } else {
             $doPobrania[$id] = $id;
         }
@@ -220,12 +267,16 @@ function pobierzOkladkiDiscogs(array $ids): array
     }
 
     foreach (pobierzJsonWiele($adresy) as $id => $dane) {
-        $okladka = is_array($dane) ? znajdzOkladke($dane) : '';
-        $wynik[$id] = $okladka;
-
-        if (is_array($dane)) {
-            $cache[$id] = ['url' => $okladka, 'ts' => $teraz];
+        if (!is_array($dane)) {
+            $wynik[$id] = ['okladka' => '', 'utwory' => []];
+            continue;
         }
+
+        $okladka = znajdzOkladke($dane);
+        $utwory = pobierzUtwory($dane);
+
+        $wynik[$id] = ['okladka' => $okladka, 'utwory' => $utwory];
+        $cache[$id] = ['okladka' => $okladka, 'utwory' => $utwory, 'ts' => $teraz];
     }
 
     if ($cache) {
@@ -282,28 +333,33 @@ if ($action === 'search') {
             'format' => $format,
             'label' => $label,
             'okladka' => $okladka,
+            'utwory' => [],
             'discogs_uri' => !empty($album['uri'])
                 ? 'https://www.discogs.com' . $album['uri']
                 : '',
         ];
     }
 
-    // Discogs nie zwraca już miniatur w wynikach wyszukiwania,
-    // więc dociągamy okładkę z danych konkretnego wydania.
-    $brakujaceOkladki = [];
+    // Discogs nie zwraca w wyszukiwarce ani miniatur, ani listy utworów,
+    // więc dociągamy oba z danych konkretnego wydania.
+    $doPobrania = [];
 
     foreach ($wyniki as $indeks => $album) {
-        if ($album['okladka'] === '' && $album['discogs_id'] > 0) {
-            $brakujaceOkladki[$indeks] = $album['discogs_id'];
+        if ($album['discogs_id'] > 0) {
+            $doPobrania[$indeks] = $album['discogs_id'];
         }
     }
 
-    if ($brakujaceOkladki) {
-        $okladki = pobierzOkladkiDiscogs($brakujaceOkladki);
+    if ($doPobrania) {
+        $daneWydan = pobierzDaneDiscogs($doPobrania);
 
-        foreach ($brakujaceOkladki as $indeks => $id) {
-            if (!empty($okladki[$id])) {
-                $wyniki[$indeks]['okladka'] = $okladki[$id];
+        foreach ($doPobrania as $indeks => $id) {
+            if (!empty($daneWydan[$id]['okladka'])) {
+                $wyniki[$indeks]['okladka'] = $daneWydan[$id]['okladka'];
+            }
+
+            if (!empty($daneWydan[$id]['utwory'])) {
+                $wyniki[$indeks]['utwory'] = $daneWydan[$id]['utwory'];
             }
         }
     }
@@ -373,6 +429,7 @@ if ($action === 'details') {
             'format' => $format,
             'label' => $label,
             'okladka' => $okladka,
+            'utwory' => pobierzUtwory($dane),
             'discogs_uri' => $discogsUri,
         ],
     ]);
