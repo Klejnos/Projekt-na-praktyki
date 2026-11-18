@@ -110,7 +110,7 @@
                         $link_aktywacyjny = $base_url."witam.php?token=".$token;
 
                         $mail -> isHTML(true);
-                        $mail -> Subject = 'Potwierdzenie założenia konta';
+                        $mail -> Subject = 'Potwierdzenie zalozenia konta';
                         $mail -> Body = "Dzień dobry ".htmlspecialchars($nazwa, ENT_QUOTES, 'UTF-8').",<br>Dziękujemy za założenie konta. 
                         Aby aktywować konto, kliknij w poniższy link:<br><a href='".htmlspecialchars($link_aktywacyjny, ENT_QUOTES, 'UTF-8')."'>Aktywuj konto</a><br><br>Życzymy miłego dnia.";
                         $mail -> send();
