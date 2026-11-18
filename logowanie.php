@@ -1,9 +1,5 @@
 <?php
-    session_start();
-    if (isset($_SESSION['zalogowany']) && $_SESSION['zalogowany'] == true) {
-        header('Location: index.php');
-        exit();
-    }
+    require_once "czy_zalogowany.php";
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         require_once "polaczenie.php";

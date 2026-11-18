@@ -1,9 +1,5 @@
 <?php
-    session_start();
-    if (!isset($_SESSION['zalogowany']) || $_SESSION['zalogowany'] == false) {
-        header('Location: logowanie.php');
-        exit();
-    }
+    require_once "czy_zalogowany.php";
 
     $typ = $_GET['typ'] ?? '';
     $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;

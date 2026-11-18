@@ -1,5 +1,10 @@
 <?php
     session_start();
+
+    if (isset($_SESSION['zalogowany']) && $_SESSION['zalogowany'] == true) {
+        header('Location: index.php');
+        exit();
+    }
     
     if (isset($_POST['nazwa'])) {
         $ok = true;
@@ -14,6 +19,13 @@
         if (ctype_alnum($nazwa) == false) {
             $ok = false;
             $_SESSION['e_nazwa'] = "Nazwa może składać się tylko z liter i cyfr (bez polskich znaków)";
+        }
+
+        $email = $_POST['email'];
+        $email2 = filter_var($email, FILTER_SANITIZE_EMAIL);
+        if ((filter_var($email2, FILTER_VALIDATE_EMAIL) == false) || ($email2 != $email)) {
+            $ok = false;
+            $_SESSION['e_email'] = "Podaj poprawny adres e-mail";
         }
 
         $haslo1 = $_POST['haslo1'] ?? ''; 
@@ -33,7 +45,7 @@
 
         $haslo_hash = password_hash($haslo1, PASSWORD_DEFAULT);
 
-        require_once "assets/config/klucz_admin.php";
+        require_once "assets/config/rejestrajca_config.php";
 
         $czy_admin = 0;
         if (!empty($_POST['klucz_admin'])) {
@@ -53,32 +65,72 @@
                 throw new Exception(mysqli_connect_errno());
             }
 
-            $stmt = $polaczenie->prepare("SELECT id FROM uzytkownicy WHERE nazwa = ?");
-            $stmt->bind_param("s", $nazwa);
-            $stmt->execute();
-            $result = $stmt->get_result();
+            $q_sprawdzenie = $polaczenie -> prepare("SELECT nazwa, email FROM uzytkownicy WHERE nazwa = ? OR email = ?");
+            $q_sprawdzenie -> bind_param("ss", $nazwa, $email2);
+            $q_sprawdzenie -> execute();
+            $result = $q_sprawdzenie -> get_result();
 
-            if ($result->num_rows > 0) {
-                $ok = false;
-                $_SESSION['e_nazwa'] = "Istnieje już konto z taką nazwą";
+            while ($wiersz = $result -> fetch_assoc()) {
+                if ($wiersz['nazwa'] === $nazwa) {
+                    $ok = false;
+                    $_SESSION['e_nazwa'] = "Istnieje już konto z taką nazwą";
+                }
+                if ($wiersz['email'] === $email2) {
+                    $ok = false;
+                    $_SESSION['e_email'] = "Ten adres email jest już przypisany do jakiegoś konta";
+                }
             }
-            $stmt->close();
+            $q_sprawdzenie -> close();
 
             if ($ok) {
-                $stmt_insert = $polaczenie->prepare("INSERT INTO uzytkownicy (nazwa, haslo, czy_admin) VALUES (?, ?, ?)");
-                $stmt_insert->bind_param("ssi", $nazwa, $haslo_hash, $czy_admin);
+                $token = bin2hex(random_bytes(32));
+                $stmt_insert = $polaczenie -> prepare("INSERT INTO uzytkownicy (nazwa, email, haslo, czy_admin, token, czy_potwierdzony) VALUES (?, ?, ?, ?, ?, 0)");
+                $stmt_insert -> bind_param("sssis", $nazwa, $email2, $haslo_hash, $czy_admin, $token);
                 
                 if ($stmt_insert->execute()) {
+                    require "assets/PHPMailer/Exception.php";
+                    require "assets/PHPMailer/PHPMailer.php";
+                    require "assets/PHPMailer/SMTP.php";
+                    require_once "assets/config/mail.php";
+                    $email_uzytkownika = $email2;
+                    $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+
+                    try {
+                        $mail -> isSMTP();
+                        $mail -> Host = $mail_host;
+                        $mail -> SMTPAuth = true;
+                        $mail -> Username = $mail_user;
+                        $mail -> Password = $mail_pass;
+                        $mail -> SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+                        $mail -> Port = $mail_port;
+                        $mail -> Charset = 'UTF-8';
+
+                        $mail -> setFrom($mail_user, 'Wypożyczalnia filmów i muzyki');
+                        $mail -> addAddress($email_uzytkownika, $nazwa);
+                        $link_aktywacyjny = $base_url."witam.php?token=".$token;
+
+                        $mail -> isHTML(true);
+                        $mail -> Subject = 'Potwierdzenie założenia konta';
+                        $mail -> Body = "Dzień dobry $nazwa,<br>Dziękujemy za założenie konta. 
+                        Aby aktywować konto, kliknij w poniższy link:<br><a href='$link_aktywacyjny'>$link_aktywacyjny</a><br><br>Życzymy miłego dnia.";
+                        $mail -> send();
+                    }
+                    catch (Exception $e) { }
+
                     $_SESSION['udana_rejestracja'] = true;
-                    $stmt_insert->close();
-                    $polaczenie->close();
+                    $stmt_insert -> close();
+                    $polaczenie -> close();
                     header('Location: witam.php');
                     exit();
-                } else {
-                    throw new Exception($polaczenie->error);
+                } 
+
+                else {
+                    throw new Exception($polaczenie -> error);
                 }
-            } else {
-                $polaczenie->close();
+
+            } 
+            else {
+                $polaczenie -> close();
                 header('Location: rejestracja.php');
                 exit();
             }
@@ -90,6 +142,7 @@
         }
     }
 ?>
+
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -139,6 +192,15 @@
                 if (isset($_SESSION['e_nazwa'])) {
                     echo '<div class="error">'.$_SESSION['e_nazwa']."</div>";
                     unset($_SESSION['e_nazwa']);
+                }
+            ?>
+
+            <label for="email">Podaj swój adres e-mail:</label>
+            <input type="text" id="email" name="email">
+            <?php
+                if (isset($_SESSION['e_email'])) {
+                    echo '<div class="error">'.$_SESSION['e_email']."</div>";
+                    unset($_SESSION['e_email']);
                 }
             ?>
 
