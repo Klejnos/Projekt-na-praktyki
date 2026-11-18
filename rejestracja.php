@@ -45,7 +45,7 @@
 
         $haslo_hash = password_hash($haslo1, PASSWORD_DEFAULT);
 
-        require_once "assets/config/rejestrajca_config.php";
+        require_once "assets/config/rejestracja_config.php";
 
         $czy_admin = 0;
         if (!empty($_POST['klucz_admin'])) {
@@ -88,9 +88,9 @@
                 $stmt_insert -> bind_param("sssis", $nazwa, $email2, $haslo_hash, $czy_admin, $token);
                 
                 if ($stmt_insert->execute()) {
-                    require "assets/PHPMailer/Exception.php";
-                    require "assets/PHPMailer/PHPMailer.php";
-                    require "assets/PHPMailer/SMTP.php";
+                    require_once __DIR__.'assets/config/PHPMailer/Exception.php';
+                    require_once __DIR__.'assets/config/PHPMailer/PHPMailer.php';
+                    require_once __DIR__.'assets/config/PHPMailer/SMTP.php';
                     require_once "assets/config/mail.php";
                     $email_uzytkownika = $email2;
                     $mail = new PHPMailer\PHPMailer\PHPMailer(true);
@@ -105,19 +105,19 @@
                         $mail -> Port = $mail_port;
                         $mail -> Charset = 'UTF-8';
 
-                        $mail -> setFrom($mail_user, 'Wypożyczalnia filmów i muzyki');
+                        $mail -> setFrom($mail_user, 'Wypozyczalnia filmow i muzyki');
                         $mail -> addAddress($email_uzytkownika, $nazwa);
                         $link_aktywacyjny = $base_url."witam.php?token=".$token;
 
                         $mail -> isHTML(true);
                         $mail -> Subject = 'Potwierdzenie założenia konta';
-                        $mail -> Body = "Dzień dobry $nazwa,<br>Dziękujemy za założenie konta. 
-                        Aby aktywować konto, kliknij w poniższy link:<br><a href='$link_aktywacyjny'>$link_aktywacyjny</a><br><br>Życzymy miłego dnia.";
+                        $mail -> Body = "Dzień dobry ".htmlspecialchars($nazwa, ENT_QUOTES, 'UTF-8').",<br>Dziękujemy za założenie konta. 
+                        Aby aktywować konto, kliknij w poniższy link:<br><a href='".htmlspecialchars($link_aktywacyjny, ENT_QUOTES, 'UTF-8')."'>Aktywuj konto</a><br><br>Życzymy miłego dnia.";
                         $mail -> send();
+
+                        $_SESSION['udana_rejestracja'] = true;
                     }
                     catch (Exception $e) { }
-
-                    $_SESSION['udana_rejestracja'] = true;
                     $stmt_insert -> close();
                     $polaczenie -> close();
                     header('Location: witam.php');

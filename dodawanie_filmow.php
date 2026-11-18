@@ -5,6 +5,8 @@
         exit();
     }
 
+    $blad = '';
+
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         require_once "polaczenie.php";
         try {
@@ -107,7 +109,6 @@
     </nav>
 </header>
 <main class="page">
-
         <h1>Dodawanie filmu</h1>
         <?php if ($blad !== ''): ?>
             <div class="error"><?= htmlspecialchars($blad) ?></div>
