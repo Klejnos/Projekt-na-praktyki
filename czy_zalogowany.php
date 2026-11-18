@@ -9,20 +9,38 @@
     }
 
     require_once "polaczenie.php";
+    try {
+        $polaczenie = new mysqli($host, $db_user, $db_password, $db_name);
 
-    $uzytkownik_id = $_SESSION['id'];
-    $sprawdz_status = $polaczenie -> prepare("SELECT czy_potwierdzony FROM uzytkownicy WHERE id = ?");
-    $sprawdz_status -> bind_param("i", $uzytkownik_id);
-    $sprawdz_status -> execute();
-    $wynik = $sprawdz_status -> get_result() -> fetch_assoc();
+        if ($polaczenie -> connect_errno) {
+            throw new Exception("Błąd połączenia z bazą");
+        }
 
-    if (!$wynik || $wynik['czy_potwierdzony'] == 0) {
+        $polaczenie -> set_charset("utf8mb4");
+
+        $uzytkownik_id = $_SESSION['id'];
+        $sprawdz_status = $polaczenie -> prepare("SELECT czy_potwierdzony FROM uzytkownicy WHERE id = ?");
+        $sprawdz_status -> bind_param("i", $uzytkownik_id);
+        $sprawdz_status -> execute();
+        $wynik = $sprawdz_status -> get_result() -> fetch_assoc();
+
+        if (!$wynik || $wynik['czy_potwierdzony'] == 0) {
+            $sprawdz_status -> close();
+            $polaczenie -> close();
+            session_unset();
+
+            $_SESSION['blad'] = "Musisz aktywować konto poprzez link z maila";
+            header('Location: logowanie.php');
+            exit();
+        }
+
         $sprawdz_status -> close();
         $polaczenie -> close();
-        session_unset();
+    }
 
-        $_SESSION['blad'] = "Musisz aktywować konto poprzez link z maila";
-        header('Location: logowanie.php');
-        exit();
-    }  
+    catch (Exception $e) {
+        if (isset($polaczenie) && $polaczenie -> ping()) {
+            $polaczenie -> close();
+        }
+    }
 ?>
