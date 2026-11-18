@@ -1,9 +1,5 @@
 <?php
-    session_start();
-    if (!isset($_SESSION['zalogowany']) || $_SESSION['zalogowany'] == false) {
-        header('Location: logowanie.php');
-        exit();
-    }
+    require_once "czy_zalogowany.php";
 
     $czy_admin = true;
     if (!isset($_SESSION['czy_admin']) || (int) $_SESSION['czy_admin'] !== 1) {

@@ -1,1 +1,0 @@
-<?php $klucz_admin = "1234"; ?>
