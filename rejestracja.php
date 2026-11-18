@@ -88,9 +88,9 @@
                 $stmt_insert -> bind_param("sssis", $nazwa, $email2, $haslo_hash, $czy_admin, $token);
                 
                 if ($stmt_insert->execute()) {
-                    require_once __DIR__.'assets/config/PHPMailer/Exception.php';
-                    require_once __DIR__.'assets/config/PHPMailer/PHPMailer.php';
-                    require_once __DIR__.'assets/config/PHPMailer/SMTP.php';
+                    require_once __DIR__.'/assets/config/PHPMailer/Exception.php';
+                    require_once __DIR__.'/assets/config/PHPMailer/PHPMailer.php';
+                    require_once __DIR__.'/assets/config/PHPMailer/SMTP.php';
                     require_once "assets/config/mail.php";
                     $email_uzytkownika = $email2;
                     $mail = new PHPMailer\PHPMailer\PHPMailer(true);
