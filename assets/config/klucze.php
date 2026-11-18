@@ -11,3 +11,4 @@ $omdb_api_key = '138317b9';
 // Jeśli Discogs zacznie blokować zapytania, można tu wpisać token.
 $discogs_user_agent = 'WypozyczalniaProjekt/1.0 +http://localhost';
 $discogs_token = '';
+?>

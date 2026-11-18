@@ -1,6 +1,4 @@
 <?php
-    require_once "czy_zalogowany.php";
-
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         require_once "polaczenie.php";
         
