@@ -199,10 +199,10 @@
 
             <div class="detail-admin-actions">
                 <?php if ($czyAdmin): ?>
-                    <a class="btn btn-secondary" href="edytuj_muzyka.php?id=<?= (int) $album['id'] ?>">✎ Edytuj album</a>
-                    <a class="btn btn-danger" href="usun_muzyka.php?id=<?= (int) $album['id'] ?>" onclick="return confirm('Czy na pewno usunąć ten album?');">🗑 Usuń</a>
+                    <a class="btn btn-secondary" href="edytuj_muzyka.php?id=<?= (int) $album['id'] ?>">Edytuj album</a>
+                    <a class="btn btn-danger" href="usun_muzyka.php?id=<?= (int) $album['id'] ?>" onclick="return confirm('Czy na pewno usunąć ten album?');">Usuń</a>
                 <?php endif; ?>
-                <a class="btn btn-secondary" href="muzyka.php">← Wróć do katalogu</a>
+                <a class="btn btn-secondary" href="muzyka.php">Wróć do katalogu</a>
             </div>
         </div>
     </div>

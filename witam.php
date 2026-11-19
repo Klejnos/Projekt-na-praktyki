@@ -74,9 +74,6 @@
     <main>
     <div class="witaj">
         <img src="assets/img/icon.ico" alt="plyta">
-        
-        <a href="index.php">Sprawdź nasze filmy</a> 
-
         <?php if ($pokaz_dziekujemy): ?>
             <h1>Dziękujemy za zarejestrowanie się :D</h1>
             <p>Na podany adres e-mail wysłano link aktywacyjny. Potwiedź swoje konto, aby móc się zalogować.</p>

@@ -63,6 +63,7 @@ CREATE TABLE utwory (
 	numer VARCHAR(20),
 	tytul VARCHAR(200) NOT NULL,
 	czas VARCHAR(20),
+	cena DECIMAL(6, 2) NULL DEFAULT NULL,
 
 	FOREIGN KEY (album_id) REFERENCES albumy(id)
 	ON DELETE CASCADE
@@ -113,6 +114,22 @@ CREATE TABLE wypozyczenia_muzyka (
 	ON UPDATE CASCADE,
 	FOREIGN KEY (muzyka_id) REFERENCES muzyka(id)
 	ON DELETE CASCADE
+	ON UPDATE CASCADE
+);
+
+CREATE TABLE wypozyczenia_utwory (
+    uzytkownicy_id INT NOT NULL,
+    utwor_id INT NOT NULL,
+    data_wypozyczenia DATETIME NOT NULL,
+    data_zwrotu DATETIME NULL,
+    czy_byl_przedluzany TINYINT(1) NOT NULL DEFAULT 0,
+
+    PRIMARY KEY (uzytkownicy_id, utwor_id),
+    FOREIGN KEY (uzytkownicy_id) REFERENCES uzytkownicy(id)
+    ON DELETE CASCADE 
+	ON UPDATE CASCADE,
+    FOREIGN KEY (utwor_id) REFERENCES utwory(id)
+    ON DELETE CASCADE 
 	ON UPDATE CASCADE
 );
 

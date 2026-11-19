@@ -1,6 +1,5 @@
 <?php
     require_once "czy_zalogowany.php";
-
     require_once "polaczenie.php";
 
     $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
@@ -51,19 +50,21 @@
         exit();
     }
 
+    $czyAdmin = isset($_SESSION['czy_admin']) && (int) $_SESSION['czy_admin'] === 1;
+    $czyUlubiony = !empty($utwor['czy_ulubiony']); // jeśli dodasz kolumnę czy_ulubiony w tabeli utwory
     $active = 'utwory';
     $pageTitle = $utwor['tytul'];
     $cena = $utwor['cena'] !== null
         ? number_format((float) $utwor['cena'], 2, ',', ' ') . ' zł'
-        : '—';
-    ?>
+        : '-';
+?>
 
 <!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wypożyczalnia filmów</title>
+    <title><?= htmlspecialchars($pageTitle) ?> — Wypożyczalnia</title>
     <link rel="stylesheet" href="assets/css/style_filmy.css">
     <link rel="icon" type="image/x-icon" href="assets/img/icon.ico">
 </head>
@@ -94,14 +95,30 @@
 
     <div class="detail-breadcrumb">
         <a href="utwory.php">Utwory</a> /
-        <a href="album.php?id=<?= (int) $utwor['album_id'] ?>"><?= htmlspecialchars($utwor['album_tytul']) ?></a> /
         <?= htmlspecialchars($utwor['tytul']) ?>
     </div>
+
+    <?php
+        if (!empty($_SESSION['wypozycz_utwor_sukces'])) {
+            echo '<div class="sukces">' . htmlspecialchars($_SESSION['wypozycz_utwor_sukces']) . '</div>';
+            unset($_SESSION['wypozycz_utwor_sukces']);
+        }
+
+        if (!empty($_SESSION['wypozycz_utwor_blad'])) {
+            echo '<div class="error">' . htmlspecialchars($_SESSION['wypozycz_utwor_blad']) . '</div>';
+            unset($_SESSION['wypozycz_utwor_blad']);
+        }
+
+        if (!empty($_SESSION['ulubione_utwor_komunikat'])) {
+            echo '<div class="sukces">' . htmlspecialchars($_SESSION['ulubione_utwor_komunikat']) . '</div>';
+            unset($_SESSION['ulubione_utwor_komunikat']);
+        }
+    ?>
 
     <div class="detail-layout">
         <div class="detail-poster">
             <?php if (!empty($utwor['okladka'])): ?>
-                <img src="<?= htmlspecialchars($utwor['okladka']) ?>" alt="Okładka albumu <?= htmlspecialchars($utwor['album_tytul']) ?>">
+                <img src="<?= htmlspecialchars($utwor['okladka']) ?>" alt="Okładka <?= htmlspecialchars($utwor['tytul']) ?>">
             <?php else: ?>
                 <div class="poster-fallback"></div>
             <?php endif; ?>
@@ -114,10 +131,6 @@
 
             <div class="detail-meta-grid">
                 <div class="meta-item">
-                    <span>Album</span>
-                    <strong><?= htmlspecialchars($utwor['album_tytul']) ?></strong>
-                </div>
-                <div class="meta-item">
                     <span>Wykonawca</span>
                     <strong><?= htmlspecialchars($utwor['wykonawca'] ?: '—') ?></strong>
                 </div>
@@ -126,7 +139,7 @@
                     <strong><?= htmlspecialchars($utwor['czas'] ?: '—') ?></strong>
                 </div>
                 <div class="meta-item">
-                    <span>Rok albumu</span>
+                    <span>Rok wydania</span>
                     <strong><?= !empty($utwor['album_rok']) ? (int) $utwor['album_rok'] : '—' ?></strong>
                 </div>
                 <div class="meta-item">
@@ -134,13 +147,24 @@
                     <strong><?= htmlspecialchars($utwor['album_gatunek'] ?: '—') ?></strong>
                 </div>
                 <div class="meta-item">
-                    <span>Cena albumu</span>
+                    <span>Cena utworu</span>
                     <strong><?= $cena ?></strong>
                 </div>
             </div>
 
             <div class="detail-actions">
-                <a class="btn btn-primary" href="album.php?id=<?= (int) $utwor['album_id'] ?>">Zobacz album</a>
+                <form method="post" action="wypozycz_utwor.php" style="display: inline;">
+                    <input type="hidden" name="utwor_id" value="<?= (int) $utwor['id'] ?>">
+                    <button type="submit" class="btn btn-primary">Wypożycz utwór</button>
+                </form>
+
+                <a class="btn btn-secondary" href="ulubione_utwor.php?id=<?= (int) $utwor['id'] ?>">
+                    <span style="color: <?= $czyUlubiony ? '#ff6b81' : 'inherit' ?>;">
+                        <?= $czyUlubiony ? '♥' : '♡' ?>
+                    </span>
+                    <?= $czyUlubiony ? 'Usuń z ulubionych' : 'Dodaj do ulubionych' ?>
+                </a>
+
                 <a class="btn btn-secondary" href="utwory.php">← Wróć do utworów</a>
             </div>
         </div>
