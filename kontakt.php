@@ -30,6 +30,7 @@
             <a href="index.php">Strona główna</a>
             <a href="filmy.php">Filmy</a>
             <a href="muzyka.php">Muzyka</a>
+            <a href="utwory.php">Utwory</a>
             <a href="kontakt.php" class="active">Kontakt</a>
         </nav>
     </header>

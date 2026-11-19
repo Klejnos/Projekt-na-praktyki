@@ -36,7 +36,7 @@
 
             if ($album) {
                 $stmtUtwory = $polaczenie->prepare(
-                    "SELECT numer, tytul, czas FROM utwory WHERE album_id = ? ORDER BY id"
+                    "SELECT tytul, czas FROM utwory WHERE album_id = ? ORDER BY id"
                 );
 
                 if ($stmtUtwory) {
@@ -107,6 +107,7 @@
         <a href="index.php">Strona główna</a>
         <a href="filmy.php">Filmy</a>
         <a href="muzyka.php" class="active">Muzyka</a>
+        <a href="utwory.php">Utwory</a>
         <a href="kontakt.php">Kontakt</a>
     </nav>
 </header>
@@ -212,9 +213,6 @@
             <ol class="tracklist-items">
                 <?php foreach ($utwory as $utwor): ?>
                     <li>
-                        <?php if (!empty($utwor['numer'])): ?>
-                            <span class="track-number"><?= htmlspecialchars($utwor['numer']) ?></span>
-                        <?php endif; ?>
                         <span class="track-title"><?= htmlspecialchars($utwor['tytul']) ?></span>
                         <?php if (!empty($utwor['czas'])): ?>
                             <span class="track-time"><?= htmlspecialchars($utwor['czas']) ?></span>

@@ -459,12 +459,6 @@
     font-size: 14px;
 }
 
-.track-number {
-    min-width: 28px;
-    color: var(--muted-2);
-    font-variant-numeric: tabular-nums;
-}
-
 .track-title {
     flex: 1;
 }
@@ -473,6 +467,94 @@
     color: var(--muted);
     font-size: 12px;
     font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Lista wszystkich utworów ---------- */
+
+.tracks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.track-row {
+    display: grid;
+    grid-template-columns: 46px minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg-3);
+    color: inherit;
+    text-decoration: none;
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.track-row:hover {
+    transform: translateY(-1px);
+    border-color: #3a3a44;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+}
+
+.track-row-cover {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    overflow: hidden;
+    border-radius: 6px;
+    background: linear-gradient(160deg, #3b3b45, #17171a);
+}
+
+.track-row-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.track-row-cover-fallback {
+    color: var(--muted);
+    font-size: 20px;
+}
+
+.track-row-main {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.track-row-title {
+    overflow: hidden;
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.track-row-meta {
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.track-row-time {
+    color: var(--muted);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.track-row-price {
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
 }
 
 /* ---------- RWD katalogu ---------- */
@@ -525,5 +607,20 @@
     .catalog-filters select,
     .catalog-filters button {
         flex: 1 1 160px;
+    }
+
+    .track-row {
+        grid-template-columns: 36px minmax(0, 1fr) auto auto;
+        gap: 8px;
+        padding: 9px 10px;
+    }
+
+    .track-row-cover {
+        width: 36px;
+        height: 36px;
+    }
+
+    .track-row-price {
+        font-size: 12px;
     }
 }
