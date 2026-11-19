@@ -238,5 +238,6 @@
         <span>Gdańsk, ul. Rajska 4 · 10:00–18:00</span>
     </div>
 </footer>
+<script src="assets/js/script_filmy.js"></script>
 </body>
 </html>

@@ -51,7 +51,6 @@
     }
 
     $czyAdmin = isset($_SESSION['czy_admin']) && (int) $_SESSION['czy_admin'] === 1;
-    $czyUlubiony = !empty($utwor['czy_ulubiony']); // jeśli dodasz kolumnę czy_ulubiony w tabeli utwory
     $active = 'utwory';
     $pageTitle = $utwor['tytul'];
     $cena = $utwor['cena'] !== null
@@ -95,6 +94,7 @@
 
     <div class="detail-breadcrumb">
         <a href="utwory.php">Utwory</a> /
+        <a href="album.php?id=<?= (int) $utwor['album_id'] ?>"><?= htmlspecialchars($utwor['album_tytul']) ?></a> /
         <?= htmlspecialchars($utwor['tytul']) ?>
     </div>
 
@@ -131,6 +131,10 @@
 
             <div class="detail-meta-grid">
                 <div class="meta-item">
+                    <span>Album</span>
+                    <strong><?= htmlspecialchars($utwor['album_tytul']) ?></strong>
+                </div>
+                <div class="meta-item">
                     <span>Wykonawca</span>
                     <strong><?= htmlspecialchars($utwor['wykonawca'] ?: '—') ?></strong>
                 </div>
@@ -146,26 +150,32 @@
                     <span>Gatunek</span>
                     <strong><?= htmlspecialchars($utwor['album_gatunek'] ?: '—') ?></strong>
                 </div>
-                <div class="meta-item">
-                    <span>Cena utworu</span>
-                    <strong><?= $cena ?></strong>
+            </div>
+
+            <div class="detail-price-row">
+                <div class="detail-price">
+                    <?= $cena ?>
+                    <small>za 15 dni wypożyczenia</small>
+                </div>
+
+                <div class="detail-actions">
+                    <button type="button" class="btn btn-primary">Wypożycz teraz</button>
+
+                    <button type="button" class="btn btn-secondary">
+                        <span>♡</span>
+                        Dodaj do ulubionych
+                    </button>
+
+                    <button type="button" class="btn btn-secondary">Discogs</button>
                 </div>
             </div>
 
-            <div class="detail-actions">
-                <form method="post" action="wypozycz_utwor.php" style="display: inline;">
-                    <input type="hidden" name="utwor_id" value="<?= (int) $utwor['id'] ?>">
-                    <button type="submit" class="btn btn-primary">Wypożycz utwór</button>
-                </form>
-
-                <a class="btn btn-secondary" href="ulubione_utwor.php?id=<?= (int) $utwor['id'] ?>">
-                    <span style="color: <?= $czyUlubiony ? '#ff6b81' : 'inherit' ?>;">
-                        <?= $czyUlubiony ? '♥' : '♡' ?>
-                    </span>
-                    <?= $czyUlubiony ? 'Usuń z ulubionych' : 'Dodaj do ulubionych' ?>
-                </a>
-
-                <a class="btn btn-secondary" href="utwory.php">← Wróć do utworów</a>
+            <div class="detail-admin-actions">
+                <?php if ($czyAdmin): ?>
+                    <button type="button" class="btn btn-secondary">Edytuj utwór</button>
+                    <button type="button" class="btn btn-danger">Usuń</button>
+                <?php endif; ?>
+                <a class="btn btn-secondary" href="utwory.php">Wróć do utworów</a>
             </div>
         </div>
     </div>
