@@ -10,11 +10,13 @@
                 throw new Exception(mysqli_connect_errno());
             }
 
-            $nazwa = $_POST['nazwa'] ?? '';
+            $polaczenie -> set_charset("utf8mb4");
+
+            $nazwa_lub_email = $_POST['nazwa_lub_email'] ?? '';
             $haslo = $_POST['haslo'] ?? '';
 
-            $stmt = $polaczenie->prepare("SELECT id, nazwa, haslo, czy_admin, portfel FROM uzytkownicy WHERE nazwa = ?");
-            $stmt->bind_param("s", $nazwa);
+            $stmt = $polaczenie->prepare("SELECT id, nazwa, haslo, czy_admin, portfel FROM uzytkownicy WHERE nazwa = ? OR email = ?");
+            $stmt->bind_param("ss", $nazwa_lub_email, $nazwa_lub_email);
             $stmt->execute();
             $result = $stmt->get_result();
 
@@ -42,6 +44,9 @@
             exit();
 
         } catch(Exception $e) {
+            if (isset($polaczenie) && $polaczenie instanceof mysqli && !$polaczenie->connect_errno) {
+                $polaczenie->close();
+            }
             $_SESSION['blad'] = '<span style="color: red">Błąd serwera</span>';
             header('Location: logowanie.php');
             exit();
@@ -84,8 +89,8 @@
         <div class="login-box">
             <h2>Zaloguj się</h2>
             <form method="post">
-                <label for="nazwa">Nazwa użytkownika:</label><br>
-                <input type="text" name="nazwa" id="nazwa"><br>
+                <label for="nazwa_lub_email">Nazwa użytkownika lub adres e-mail:</label><br>
+                <input type="text" name="nazwa_lub_email" id="nazwa"><br>
 
                 <label for="haslo">Hasło:</label><br>
                 <div class="password-container">
@@ -98,9 +103,7 @@
                 <button type="submit">Zaloguj się</button>
             </form>
 
-            <div class="register-link">
-                Nie masz konta? <a href="rejestracja.php">Zarejestruj się</a>
-            </div>
+            <div class="register-link">Nie masz konta? <a href="rejestracja.php">Zarejestruj się</a></div>
 
             <?php
                 if (isset($_SESSION['blad'])) {

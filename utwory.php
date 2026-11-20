@@ -120,6 +120,7 @@
         // Strona pokaże stan pusty, jeśli baza jest niedostępna.
     }
 
+    $czyAdmin = isset($_SESSION['czy_admin']) && (int) $_SESSION['czy_admin'] === 1;
     $active = 'utwory';
     $pageTitle = 'Utwory';
     $wyswietlono = count($utwory);
@@ -134,6 +135,7 @@
     <link rel="stylesheet" href="assets/css/style_filmy.css">
     <link rel="icon" type="image/x-icon" href="assets/img/icon.ico">
 </head>
+
 <body>
 <header class="site-header">
     <div class="header-top">
@@ -159,6 +161,18 @@
 </header>
 <main class="page">
 
+<?php
+        if (!empty($_SESSION['usunieto_utwor'])) {
+            echo '<div class="sukces">Utwór został usunięty.</div>';
+            unset($_SESSION['usunieto_utwor']);
+        }
+        
+        if (!empty($_SESSION['wypozycz_utwor_blad'])) {
+            echo '<div class="error">' . htmlspecialchars($_SESSION['wypozycz_utwor_blad']) . '</div>';
+            unset($_SESSION['wypozycz_utwor_blad']);
+        }
+    ?>
+
     <section class="catalog-head">
         <div>
             <h1>Utwory</h1>
@@ -169,7 +183,13 @@
                     <?= $total ?> utworów w katalogu
                 <?php endif; ?>
             </p>
+            <?php if ($czyAdmin): ?>
+                <p class="admin-note">Widok administratora - serduszka i ikony edycji są ukryte dla klientów.</p>
+            <?php endif; ?>
         </div>
+        <?php if ($czyAdmin): ?>
+            <a class="btn btn-primary" href="dodawanie_utwor.php">+ Dodaj utwór</a>
+        <?php endif; ?>
     </section>
 
     <form method="GET" action="utwory.php" class="catalog-filters">
@@ -234,8 +254,7 @@
 </main>
 <footer class="site-footer">
     <div class="footer-inner">
-        <span>&copy; <?= date('Y') ?> Wypożyczalnia filmów — filmy DVD i muzyka CD</span>
-        <span>Gdańsk, ul. Rajska 4 · 10:00–18:00</span>
+        <p>2026 - Przemysław Gałęziowski oraz Filip Klein</p>
     </div>
 </footer>
 <script src="assets/js/script_filmy.js"></script>

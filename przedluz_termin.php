@@ -3,9 +3,9 @@
 
     $typ = $_GET['typ'] ?? '';
     $id = (int) ($_GET['id'] ?? 0);
-    $uzytkownik_id = $_SESSION['id'];
+    $uzytkownik_id = (int) $_SESSION['id'];
 
-    if ($id <= 0 || !in_array($typ, ['film', 'muzyka'], true)) {
+    if ($id <= 0 || !in_array($typ, ['film', 'muzyka', 'utwor'], true)) {
         header('Location: index.php');
         exit();
     }
@@ -42,10 +42,19 @@
             $tabela_typ = "filmy";
             $kolumna_id = "film_id";
             $dni = 10;
-        } else {
+        } 
+
+        elseif ($typ == 'muzyka') {
             $tabela_wypożyczeń = "wypozyczenia_muzyka";
             $tabela_typ = "muzyka";
             $kolumna_id = "muzyka_id";
+            $dni = 15;
+        }
+
+        else {
+            $tabela_wypożyczeń = "wypozyczenia_utwory";
+            $tabela_typ = "utwory";
+            $kolumna_id = "utwor_id";
             $dni = 15;
         }
 

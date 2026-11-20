@@ -15,7 +15,7 @@
                 "SELECT u.id, u.album_id, u.tytul, u.czas,
                         a.tytul AS album_tytul, a.wykonawca, a.rok AS album_rok,
                         a.gatunek AS album_gatunek, a.okladka, a.discogs_uri,
-                        m.cena, m.ilosc_dostepnych
+                        u.cena, u.ilosc_dostepnych, u.czy_ulubiony
                  FROM utwory u
                  INNER JOIN albumy a ON a.id = u.album_id
                  LEFT JOIN (
@@ -67,7 +67,9 @@
     <link rel="stylesheet" href="assets/css/style_filmy.css">
     <link rel="icon" type="image/x-icon" href="assets/img/icon.ico">
 </head>
+
 <body>
+<script src="assets/js/script_muzyka.js"></script>
 <header class="site-header">
     <div class="header-top">
         <a href="index.php" class="brand">
@@ -90,6 +92,7 @@
         <a href="kontakt.php">Kontakt</a>
     </nav>
 </header>
+
 <main class="page">
 
     <div class="detail-breadcrumb">
@@ -99,14 +102,29 @@
     </div>
 
     <?php
+        if (!empty($_SESSION['rent_sukces'])) {
+            echo '<div class="sukces">' . htmlspecialchars($_SESSION['rent_sukces']) . '</div>';
+            unset($_SESSION['rent_sukces']);
+        }
+
         if (!empty($_SESSION['wypozycz_utwor_sukces'])) {
             echo '<div class="sukces">' . htmlspecialchars($_SESSION['wypozycz_utwor_sukces']) . '</div>';
             unset($_SESSION['wypozycz_utwor_sukces']);
         }
 
+        if (!empty($_SESSION['rent_blad'])) {
+            echo '<div class="error">' . htmlspecialchars($_SESSION['rent_blad']) . '</div>';
+            unset($_SESSION['rent_blad']);
+        }
+
         if (!empty($_SESSION['wypozycz_utwor_blad'])) {
             echo '<div class="error">' . htmlspecialchars($_SESSION['wypozycz_utwor_blad']) . '</div>';
             unset($_SESSION['wypozycz_utwor_blad']);
+        }
+
+        if (!empty($_SESSION['ulubione_komunikat'])) {
+            echo '<div class="sukces">' . htmlspecialchars($_SESSION['ulubione_komunikat']) . '</div>';
+            unset($_SESSION['ulubione_komunikat']);
         }
 
         if (!empty($_SESSION['ulubione_utwor_komunikat'])) {
@@ -136,19 +154,19 @@
                 </div>
                 <div class="meta-item">
                     <span>Wykonawca</span>
-                    <strong><?= htmlspecialchars($utwor['wykonawca'] ?: '—') ?></strong>
+                    <strong><?= htmlspecialchars($utwor['wykonawca'] ?: '-') ?></strong>
                 </div>
                 <div class="meta-item">
                     <span>Czas trwania</span>
-                    <strong><?= htmlspecialchars($utwor['czas'] ?: '—') ?></strong>
+                    <strong><?= htmlspecialchars($utwor['czas'] ?: '-') ?></strong>
                 </div>
                 <div class="meta-item">
                     <span>Rok wydania</span>
-                    <strong><?= !empty($utwor['album_rok']) ? (int) $utwor['album_rok'] : '—' ?></strong>
+                    <strong><?= !empty($utwor['album_rok']) ? (int) $utwor['album_rok'] : '-' ?></strong>
                 </div>
                 <div class="meta-item">
                     <span>Gatunek</span>
-                    <strong><?= htmlspecialchars($utwor['album_gatunek'] ?: '—') ?></strong>
+                    <strong><?= htmlspecialchars($utwor['album_gatunek'] ?: '-') ?></strong>
                 </div>
             </div>
 
@@ -159,21 +177,27 @@
                 </div>
 
                 <div class="detail-actions">
-                    <button type="button" class="btn btn-primary">Wypożycz teraz</button>
+                    <a class="btn btn-primary" href="wypozycz.php?typ=utwor&amp;id=<?= (int) $utwor['id'] ?>">Wypożycz teraz</a>
 
-                    <button type="button" class="btn btn-secondary">
-                        <span>♡</span>
-                        Dodaj do ulubionych
-                    </button>
+                    <?php if ($czyAdmin): ?>
+                        <a class="btn btn-secondary" href="ulubione_utwor.php?id=<?= (int) $utwor['id'] ?>&amp;powrot=utwor">
+                            <span style="color: <?= !empty($utwor['czy_ulubiony']) ? '#ff6b81' : 'inherit' ?>;">
+                                <?= !empty($utwor['czy_ulubiony']) ? '♥' : '♡' ?>
+                            </span>
+                            <?= !empty($utwor['czy_ulubiony']) ? 'Usuń z ulubionych' : 'Dodaj do ulubionych' ?>
+                        </a>
+                    <?php endif; ?>
 
-                    <button type="button" class="btn btn-secondary">Discogs</button>
+                    <?php if (!empty($utwor['discogs_uri'])): ?>
+                        <a class="btn btn-secondary" href="<?= htmlspecialchars($utwor['discogs_uri'], ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener noreferrer">Discogs</a>
+                    <?php endif; ?>
                 </div>
             </div>
 
             <div class="detail-admin-actions">
                 <?php if ($czyAdmin): ?>
-                    <button type="button" class="btn btn-secondary">Edytuj utwór</button>
-                    <button type="button" class="btn btn-danger">Usuń</button>
+                    <a class="btn btn-secondary" href="edytuj_utwor.php?id=<?= (int) $utwor['id'] ?>">Edytuj utwór</a>
+                    <a class="btn btn-danger" href="usun_utwor.php?id=<?= (int) $utwor['id'] ?>" onclick="return confirm('Czy na pewno usunąć ten utwór?');">Usuń</a>
                 <?php endif; ?>
                 <a class="btn btn-secondary" href="utwory.php">Wróć do utworów</a>
             </div>
@@ -181,10 +205,10 @@
     </div>
 
 </main>
+
 <footer class="site-footer">
     <div class="footer-inner">
-        <span>&copy; <?= date('Y') ?> Wypożyczalnia filmów — filmy DVD i muzyka CD</span>
-        <span>Gdańsk, ul. Rajska 4 · 10:00–18:00</span>
+        <p>2026 - Przemysław Gałęziowski oraz Filip Klein</p>
     </div>
 </footer>
 </body>

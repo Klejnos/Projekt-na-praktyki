@@ -179,10 +179,10 @@
 
             <div class="detail-admin-actions">
                 <?php if ($czyAdmin): ?>
-                    <a class="btn btn-secondary" href="edytuj_film.php?id=<?= (int) $film['id'] ?>">✎ Edytuj film</a>
-                    <a class="btn btn-danger" href="usun_film.php?id=<?= (int) $film['id'] ?>" onclick="return confirm('Czy na pewno usunąć ten film?');">🗑 Usuń</a>
+                    <a class="btn btn-secondary" href="edytuj_film.php?id=<?= (int) $film['id'] ?>">Edytuj film</a>
+                    <a class="btn btn-danger" href="usun_film.php?id=<?= (int) $film['id'] ?>" onclick="return confirm('Czy na pewno usunąć ten film?');">Usuń</a>
                 <?php endif; ?>
-                <a class="btn btn-secondary" href="filmy.php">← Wróć do katalogu</a>
+                <a class="btn btn-secondary" href="filmy.php">Wróć do katalogu</a>
             </div>
         </div>
     </div>
@@ -190,8 +190,7 @@
 </main>
 <footer class="site-footer">
     <div class="footer-inner">
-        <span>&copy; <?= date('Y') ?> Wypożyczalnia filmów — filmy DVD i muzyka CD</span>
-        <span>Gdańsk, ul. Rajska 4 · 10:00–18:00</span>
+        <p>2026 - Przemysław Gałęziowski oraz Filip Klein</p>
     </div>
 </footer>
 </body>

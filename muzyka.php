@@ -140,7 +140,7 @@
                 <?= (int) $statystyki['total'] ?> albumów w katalogu · <?= (int) $statystyki['available'] ?> dostępnych od ręki
             </p>
             <?php if ($czyAdmin): ?>
-                <p class="admin-note">Widok administratora — serduszka i ikony edycji są ukryte dla klientów.</p>
+                <p class="admin-note">Widok administratora - serduszka i ikony edycji są ukryte dla klientów.</p>
             <?php endif; ?>
         </div>
 

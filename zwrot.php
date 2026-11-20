@@ -13,10 +13,12 @@
         
         $typ = $_GET['typ'] ?? '';
         $id = (int)($_GET['id'] ?? 0);
-        $uzytkownik_id = $_SESSION['id'];
+        $uzytkownik_id = (int)$_SESSION['id'];
 
         if ($id <= 0) {
-            throw new Exception("Nieprawidłowe ID");
+            $_SESSION['e_konto_komunikat'] = 'Nieprawidłowy identyfikator wypożyczenia.';
+            header('Location: konto.php');
+            exit();
         }
 
         $polaczenie -> begin_transaction();
@@ -48,7 +50,7 @@
         }
 
         elseif ($typ == 'muzyka') {
-            $q_d_m = $polaczenie -> prepare("DELETE FROM wypozyczenia_muzyka WHERE film_id = ? AND uzytkownicy_id = ?");
+            $q_d_m = $polaczenie -> prepare("DELETE FROM wypozyczenia_muzyka WHERE muzyka_id = ? AND uzytkownicy_id = ?");
             $q_d_m -> bind_param("ii", $id, $uzytkownik_id);
             $q_d_m -> execute();
 
@@ -67,6 +69,32 @@
                 $q_d_m -> close();
                 $polaczenie -> rollback();
                 $_SESSION['e_konto_komunikat'] = 'Nie znaleziono takiego aktywnego wypożyczenia albumu.';
+            }
+
+            header('Location: konto.php');
+            exit();
+        }
+
+        elseif($typ == 'utwor') {
+            $q_d_u = $polaczenie -> prepare("DELETE FROM wypozyczenia_utwory WHERE utwor_id = ? AND uzytkownicy_id = ?");
+            $q_d_u -> bind_param("ii", $id, $uzytkownik_id);
+            $q_d_u -> execute();
+
+            if ($q_d_u -> affected_rows > 0) {
+                $q_d_u -> close();
+
+                $q_u_u = $polaczenie -> prepare("UPDATE utwory SET ilosc_dostepnych = ilosc_dostepnych + 1 WHERE id = ?");
+                $q_u_u -> bind_param("i", $id);
+                $q_u_u -> execute();
+                $q_u_u -> close();
+
+                $polaczenie -> commit();
+                $_SESSION['konto_komunikat'] = 'Utwór został zwrócony.';
+            }
+            else {
+                $q_d_u -> close();
+                $polaczenie -> rollback();
+                $_SESSION['e_konto_komunikat'] = 'Nie znaleziono takiego aktywnego wypożyczenia utworu.';
             }
 
             header('Location: konto.php');

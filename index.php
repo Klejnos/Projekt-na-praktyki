@@ -5,6 +5,7 @@
 
     $polecaneFilmy = [];
     $polecaneAlbumy = [];
+    $polecaneUtwory = [];
     $typy = [];
 
     try {
@@ -51,6 +52,24 @@
             if ($wynik) {
                 while ($row = $wynik->fetch_assoc()) {
                     $polecaneAlbumy[] = $row;
+                }
+                $wynik->free();
+            }
+
+            $wynik = $polaczenie->query(
+                "SELECT u.id, u.tytul, a.rok, a.gatunek, u.cena, u.ilosc_dostepnych,
+                        a.wykonawca, a.okladka, t.nazwa AS typ
+                 FROM utwory u
+                 LEFT JOIN albumy a ON u.album_id = a.id
+                 LEFT JOIN typy_plyt t ON a.typ_plyty_id = t.id
+                 WHERE u.czy_ulubiony = 1
+                 ORDER BY u.id DESC
+                 LIMIT 6"
+            );
+
+            if ($wynik) {
+                while ($row = $wynik->fetch_assoc()) {
+                    $polecaneUtwory[] = $row;
                 }
                 $wynik->free();
             }
@@ -118,8 +137,8 @@
                 <?php
                     $typ = $typy[(int) ($film['typ_plyty_id'] ?? 0)] ?? 'DVD';
                     $dostepne = $film['ilosc_dostepnych'] !== null ? (int) $film['ilosc_dostepnych'] : 0;
-                    $ocena = $film['ocena'] !== null ? number_format((float) $film['ocena'], 1, ',', '') : '—';
-                    $cena = $film['cena'] !== null ? number_format((float) $film['cena'], 2, ',', ' ') . ' zł' : '—';
+                    $ocena = $film['ocena'] !== null ? number_format((float) $film['ocena'], 1, ',', '') : '-';
+                    $cena = $film['cena'] !== null ? number_format((float) $film['cena'], 2, ',', ' ') . ' zł' : '-';
                     $url = 'film.php?id=' . (int) $film['id'];
                 ?>
                 <article class="catalog-card">
@@ -178,7 +197,7 @@
                 <?php
                     $typ = $album['typ'] ?: 'CD';
                     $dostepne = $album['ilosc_dostepnych'] !== null ? (int) $album['ilosc_dostepnych'] : 0;
-                    $cena = $album['cena'] !== null ? number_format((float) $album['cena'], 2, ',', ' ') . ' zł' : '—';
+                    $cena = $album['cena'] !== null ? number_format((float) $album['cena'], 2, ',', ' ') . ' zł' : '-';
                     $url = 'album.php?id=' . (int) $album['id'];
                 ?>
                 <article class="catalog-card">
@@ -216,6 +235,64 @@
 
                         <div class="catalog-actions">
                             <a class="btn btn-primary" href="wypozycz.php?typ=muzyka&amp;id=<?= (int) $album['id'] ?>">Wypożycz</a>
+                        </div>
+                    </div>
+                </article>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if (count($polecaneUtwory) > 0): ?>
+        <section class="catalog-head" style="margin-top: 34px;">
+            <div>
+                <h2>Polecane Utwory</h2>
+                <p class="catalog-meta">Utwory oznaczone serduszkiem przez administratora.</p>
+            </div>
+        </section>
+
+        <div class="catalog-grid">
+            <?php foreach ($polecaneUtwory as $utwor): ?>
+                <?php
+                    $typ = $utwor['typ'] ?: 'CD';
+                    $dostepne = $utwor['ilosc_dostepnych'] !== null ? (int) $utwor['ilosc_dostepnych'] : 0;
+                    $cena = $utwor['cena'] !== null ? number_format((float) $utwor['cena'], 2, ',', ' ') . ' zł' : '-';
+                    $url = 'utwor.php?id=' . (int) $utwor['id'];
+                ?>
+                <article class="catalog-card">
+                    <div class="catalog-poster">
+                        <a href="<?= $url ?>">
+                            <?php if (!empty($utwor['okladka'])): ?>
+                                <img src="<?= htmlspecialchars($utwor['okladka']) ?>" alt="Okładka utworu <?= htmlspecialchars($utwor['tytul']) ?>">
+                            <?php else: ?>
+                                <div class="poster-fallback"></div>
+                            <?php endif; ?>
+                        </a>
+                        <span class="media-badge"><?= htmlspecialchars($typ) ?></span>
+                    </div>
+
+                    <div class="catalog-body">
+                        <h3 class="catalog-title"><a href="<?= $url ?>"><?= htmlspecialchars($utwor['tytul']) ?></a></h3>
+
+                        <?php if (!empty($utwor['wykonawca'])): ?>
+                            <p class="catalog-original"><?= htmlspecialchars($utwor['wykonawca']) ?></p>
+                        <?php endif; ?>
+
+                        <p class="catalog-meta">
+                            <span><?= htmlspecialchars($utwor['gatunek'] ?: 'Muzyka') ?></span>
+                            <?php if (!empty($utwor['rok'])): ?>
+                                <span>· <?= (int) $utwor['rok'] ?></span>
+                            <?php endif; ?>
+                        </p>
+
+                        <div class="catalog-bottom">
+                            <span class="availability <?= $dostepne > 0 ? '' : 'out' ?>">
+                                <?= $dostepne > 0 ? 'Dostępne: ' . $dostepne : 'Brak na stanie' ?>
+                            </span>
+                            <span class="price"><?= $cena ?></span>
+                        </div>
+
+                        <div class="catalog-actions">
+                            <a class="btn btn-primary" href="wypozycz.php?typ=muzyka&amp;id=<?= (int) $utwor['id'] ?>">Wypożycz</a>
                         </div>
                     </div>
                 </article>
