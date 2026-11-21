@@ -89,9 +89,13 @@
                 <?php if($czy_admin): ?>
                     <a class="przycisk btn-primary" href="dodawanie_filmow.php">Dodaj film</a>
                     <a class="przycisk btn-primary" href="dodawanie_muzyka.php">Dodaj muzykę</a>
+                    <a class="przycisk btn-primary" href="dodawanie_utwor.php">Dodaj utwór</a>
                 <?php endif; ?>
-                <a class="przycisk" href="filmy.php">Przeglądaj filmy</a>
-                <a class="przycisk" href="muzyka.php">Przeglądaj muzykę</a>
+                <div>
+                    <a class="przycisk" href="filmy.php">Przeglądaj filmy</a>
+                    <a class="przycisk" href="muzyka.php">Przeglądaj muzykę</a>
+                    <a class="przycisk" href="utwory.php">Przeglądaj utwory</a>
+                </div>
             </div>
         </div>
 
@@ -161,7 +165,7 @@
         </section>
 
         <section class="rentals-section">
-            <h2>Twoje wypożyczenia - muzyka:</h2>
+            <h2>Twoje wypożyczenia - albumy:</h2>
             <?php
                 $q_muzyka = $polaczenie -> query("SELECT m.*, a.wykonawca, a.okladka, w.data_wypozyczenia, w.data_zwrotu, w.muzyka_id 
                 FROM muzyka m LEFT JOIN albumy a ON m.album_id = a.id 
@@ -196,6 +200,54 @@
                                 <div class="rental-buttons">
                                     <a class="przycisk" href="zwrot.php?id=<?= (int) $wiersz_m['muzyka_id'] ?>&amp;typ=<?= $typ ?>">Zwróć muzykę</a>
                                     <a class="przycisk" href="przedluz_termin.php?id=<?= (int) $wiersz_m['muzyka_id'] ?>&amp;typ=<?= $typ ?>">Przedłuż termin zwrotu</a>
+                                </div>
+                            </div>
+                        </div>
+                        <?php
+                    }
+                }
+                else {
+                    echo "<p class='empty-state'>Nie masz wypożyczonych żadnych albumów muzycznych</p>";
+                }
+            ?>
+        </section>
+
+        <section class="rentals-section">
+            <h2>Twoje wypożyczenia - utwory:</h2>
+            <?php
+                $q_utwor = $polaczenie -> query("SELECT u.*, a.wykonawca, a.gatunek, a.rok, a.okladka, w.data_wypozyczenia, w.data_zwrotu, w.utwor_id 
+                FROM utwory u LEFT JOIN albumy a ON u.album_id = a.id 
+                JOIN wypozyczenia_utwory w ON w.utwor_id = u.id WHERE w.uzytkownicy_id = '$id'");
+                $typ = 'utwor';
+                if ($q_utwor && $q_utwor -> num_rows > 0) {
+                    while ($wiersz_u = $q_utwor -> fetch_assoc()) {
+                        ?>
+                        <div class="film-page">
+                            <?php if (!empty($wiersz_u['okladka'])): ?>
+                                <img class="film-page-cover" src="<?= htmlspecialchars($wiersz_u['okladka']) ?>" alt="Okładka albumu <?= htmlspecialchars($wiersz_u['tytul']) ?>">
+                            <?php else: ?>
+                                <div class="film-page-cover film-cover--empty"><span>Brak okładki</span></div>
+                            <?php endif; ?>
+                            
+                            <div class="film-page-info">
+                                <h3><?= htmlspecialchars($wiersz_u['tytul']) ?></h3>
+
+                                <div class="film-meta-list">
+                                    <?php
+                                        if (!empty($wiersz_u['wykonawca'])) {
+                                            pole('Wykonawca', $wiersz_u['wykonawca']);
+                                        }
+                                        pole('Gatunek', $wiersz_u['gatunek']);
+                                        pole('Rok', $wiersz_u['rok']);
+                                        pole('Data wypożyczenia', $wiersz_u['data_wypozyczenia']);
+                                        pole('Termin zwrotu', $wiersz_u['data_zwrotu']);
+                                        pole('Cena', $wiersz_u['cena'] !== null ? number_format((float) $wiersz_u['cena'], 2, ',', ' ') . ' zł' : null);
+                                    ?>
+                                </div>
+
+                                <div class="rental-buttons">
+                                    <a class="przycisk" href="zwrot.php?id=<?= (int) $wiersz_u['utwor_id'] ?>&amp;typ=<?= $typ ?>">Zwróć utwór</a>
+                                    <a class="przycisk" href="przedluz_termin.php?id=<?= (int) $wiersz_u['utwor_id'] ?>&amp;typ=<?= $typ ?>">Przedłuż termin zwrotu</a>
                                 </div>
                             </div>
                         </div>

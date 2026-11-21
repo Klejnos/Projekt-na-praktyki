@@ -5,6 +5,7 @@
 
     $sort = $_GET['sort'] ?? 'default';
     $search = trim($_GET['q'] ?? '');
+    $wybraneGatunki = isset($_GET['gatunki']) && is_array($_GET['gatunki']) ? array_values(array_unique(array_filter(array_map('trim', $_GET['gatunki']), fn($g) => $g !== ''))) : [];
 
     switch ($sort) {
         case 'tytul':
@@ -40,6 +41,7 @@
     $utwory = [];
     $total = 0;
     $znaleziono = 0;
+    $dostepneGatunki = [];
 
     try {
         $polaczenie = new mysqli($host, $db_user, $db_password, $db_name);
@@ -49,16 +51,72 @@
 
         $polaczenie->set_charset("utf8mb4");
 
-        $wynik = $polaczenie->query("SELECT COUNT(*) AS total FROM utwory");
-        if ($wynik) {
-            $total = (int) $wynik->fetch_assoc()['total'];
-            $wynik->free();
+        $wynikGatunki = $polaczenie->query(
+            "SELECT DISTINCT a.gatunek
+             FROM utwory u
+             INNER JOIN albumy a ON a.id = u.album_id
+             WHERE a.gatunek IS NOT NULL AND a.gatunek <> ''"
+        );
+        if ($wynikGatunki) {
+            $unikalneGatunki = [];
+            while ($row = $wynikGatunki->fetch_assoc()) {
+                $czesci = preg_split('/\s*[,;\/|]\s*/u', (string) $row['gatunek']);
+                foreach ($czesci as $czesc) {
+                    $czesc = trim($czesc);
+                    if ($czesc !== '') {
+                        $klucz = mb_strtolower($czesc, 'UTF-8');
+                        if (!isset($unikalneGatunki[$klucz])) {
+                            $unikalneGatunki[$klucz] = $czesc;
+                        }
+                    }
+                }
+            }
+            $wynikGatunki->free();
+            natcasesort($unikalneGatunki);
+            $dostepneGatunki = array_values($unikalneGatunki);
         }
 
-        $where = '';
-        if ($search !== '') {
-            $where = " WHERE u.tytul LIKE ? OR a.tytul LIKE ? OR a.wykonawca LIKE ?";
+        $wynikTotal = $polaczenie->query("SELECT COUNT(*) AS total FROM utwory");
+        if ($wynikTotal) {
+            $total = (int) $wynikTotal->fetch_assoc()['total'];
+            $wynikTotal->free();
         }
+
+        $warunki = [];
+        $typyParametrow = '';
+        $parametry = [];
+
+        if ($search !== '') {
+            $warunki[] = "(u.tytul LIKE ? OR a.tytul LIKE ? OR a.wykonawca LIKE ?)";
+            $param = '%' . $search . '%';
+            $typyParametrow .= 'sss';
+            $parametry[] = $param;
+            $parametry[] = $param;
+            $parametry[] = $param;
+        }
+
+        if (!empty($wybraneGatunki)) {
+            $warunkiGatunkow = [];
+            foreach ($wybraneGatunki as $gatunek) {
+                $warunkiGatunkow[] = "a.gatunek LIKE ?";
+                $typyParametrow .= 's';
+                $parametry[] = '%' . $gatunek . '%';
+            }
+            $warunki[] = "(" . implode(" AND ", $warunkiGatunkow) . ")";
+        }
+
+        $where = !empty($warunki) ? " WHERE " . implode(" AND ", $warunki) : '';
+
+        // $wynik = $polaczenie->query("SELECT COUNT(*) AS total FROM utwory");
+        // if ($wynik) {
+        //     $total = (int) $wynik->fetch_assoc()['total'];
+        //     $wynik->free();
+        // }
+
+        // $where = '';
+        // if ($search !== '') {
+        //     $where = " WHERE u.tytul LIKE ? OR a.tytul LIKE ? OR a.wykonawca LIKE ?";
+        // }
 
         $countSql = "SELECT COUNT(*) AS total
                      FROM utwory u
@@ -66,9 +124,13 @@
         $countStmt = $polaczenie->prepare($countSql);
 
         if ($countStmt) {
-            if ($search !== '') {
-                $param = '%' . $search . '%';
-                $countStmt->bind_param("sss", $param, $param, $param);
+            // if ($search !== '') {
+            //     $param = '%' . $search . '%';
+            //     $countStmt->bind_param("sss", $param, $param, $param);
+            // }
+
+            if ($typyParametrow !== '') {
+                $countStmt->bind_param($typyParametrow, ...$parametry);
             }
 
             $countStmt->execute();
@@ -97,9 +159,13 @@
         $stmt = $polaczenie->prepare($sql);
 
         if ($stmt) {
-            if ($search !== '') {
-                $param = '%' . $search . '%';
-                $stmt->bind_param("sss", $param, $param, $param);
+            // if ($search !== '') {
+            //     $param = '%' . $search . '%';
+            //     $stmt->bind_param("sss", $param, $param, $param);
+            // }
+
+            if ($typyParametrow !== '') {
+                $stmt->bind_param($typyParametrow, ...$parametry);
             }
 
             $stmt->execute();
@@ -134,6 +200,50 @@
     <title>Wypożyczalnia filmów</title>
     <link rel="stylesheet" href="assets/css/style_filmy.css">
     <link rel="icon" type="image/x-icon" href="assets/img/icon.ico">
+    <style>
+        .dropdown-filter {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            min-width: 220px;
+            max-height: 260px;
+            overflow-y: auto;
+            padding: 8px;
+            border-radius: 8px;
+            background: #1c2029;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+            z-index: 50;
+        }
+
+        .dropdown-menu.open {
+            display: block;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .dropdown-item input[type="checkbox"] {
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body>
@@ -177,7 +287,7 @@
         <div>
             <h1>Utwory</h1>
             <p class="catalog-meta">
-                <?php if ($search !== ''): ?>
+                <?php if ($search !== '' || !empty($wybraneGatunki)): ?>
                     Znaleziono <?= $wyswietlono ?> z <?= $total ?> utworów
                 <?php else: ?>
                     <?= $total ?> utworów w katalogu
@@ -195,6 +305,29 @@
     <form method="GET" action="utwory.php" class="catalog-filters">
         <div class="search-field">
             <input type="text" id="wyszukiwarka" name="q" placeholder="Szukaj utworu, wykonawcy lub albumu..." value="<?= htmlspecialchars($search) ?>">
+        </div>
+
+        <div class="dropdown-filter" id="gatunkiDropdown">
+            <button type="button" class="btn btn-secondary dropdown-toggle" id="gatunkiBtn" aria-expanded="false">
+                <span id="gatunkiLabel">
+                    <?= !empty($wybraneGatunki) ? 'Gatunki (' . count($wybraneGatunki) . ')' : 'Gatunki' ?>
+                </span>
+            </button>
+
+            <div class="dropdown-menu" id="gatunkiMenu">
+                <?php foreach ($dostepneGatunki as $gatunek): ?>
+                    <?php $zaznaczony = in_array($gatunek, $wybraneGatunki, true); ?>
+                    <label class="dropdown-item">
+                        <input
+                            type="checkbox"
+                            name="gatunki[]"
+                            value="<?= htmlspecialchars($gatunek) ?>"
+                            <?= $zaznaczony ? 'checked' : '' ?>
+                        >
+                        <span><?= htmlspecialchars($gatunek) ?></span>
+                    </label>
+                <?php endforeach; ?>
+            </div>
         </div>
 
         <select id="sortowanie" name="sort">
@@ -245,18 +378,19 @@
                 </a>
             <?php endforeach; ?>
         </div>
-    <?php elseif ($search !== ''): ?>
-        <p class="empty-state">Brak utworów pasujących do wyszukiwania.</p>
+    <?php elseif ($search !== '' || !empty($wybraneGatunki)): ?>
+        <p class="empty-state">Brak utworów spełniających kryteria.</p>
     <?php else: ?>
         <p class="empty-state">Brak utworów w katalogu.</p>
     <?php endif; ?>
-
+    
+    <script src="assets/js/script_filmy.js"></script>
+    <script src="assets/js/lista_gatunki.js"></script>
 </main>
-<footer class="site-footer">
+<br><footer class="site-footer">
     <div class="footer-inner">
         <p>2026 - Przemysław Gałęziowski oraz Filip Klein</p>
     </div>
 </footer>
-<script src="assets/js/script_filmy.js"></script>
 </body>
 </html>

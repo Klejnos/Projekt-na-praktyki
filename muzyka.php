@@ -5,6 +5,7 @@
 
     $sort = $_GET['sort'] ?? 'default';
     $search = trim($_GET['q'] ?? '');
+    $wybraneGatunki = isset($_GET['gatunki']) && is_array($_GET['gatunki']) ? array_values(array_unique(array_filter(array_map('trim', $_GET['gatunki']), fn($g) => $g !== ''))) : [];
 
     switch ($sort) {
         case 'cena-rosnaco':
@@ -34,6 +35,7 @@
 
     $albumy = [];
     $statystyki = ['total' => 0, 'available' => 0];
+    $dostepneGatunki = [];
 
     try {
         $polaczenie = new mysqli($host, $db_user, $db_password, $db_name);
@@ -42,6 +44,35 @@
         }
 
         $polaczenie->set_charset("utf8mb4");
+
+        $wynik = $polaczenie->query(
+            "SELECT m.gatunek AS m_gatunek, a.gatunek AS a_gatunek
+             FROM muzyka m
+             LEFT JOIN albumy a ON m.album_id = a.id"
+        );
+        if ($wynik) {
+            $unikalneGatunki = [];
+            while ($row = $wynik->fetch_assoc()) {
+                foreach ([$row['m_gatunek'] ?? '', $row['a_gatunek'] ?? ''] as $zrodloGatunku) {
+                    if ($zrodloGatunku === '') {
+                        continue;
+                    }
+                    $czesci = preg_split('/\s*[,;\/|]\s*/u', (string) $zrodloGatunku);
+                    foreach ($czesci as $czesc) {
+                        $czesc = trim($czesc);
+                        if ($czesc !== '') {
+                            $klucz = mb_strtolower($czesc, 'UTF-8');
+                            if (!isset($unikalneGatunki[$klucz])) {
+                                $unikalneGatunki[$klucz] = $czesc;
+                            }
+                        }
+                    }
+                }
+            }
+            $wynik->free();
+            natcasesort($unikalneGatunki);
+            $dostepneGatunki = array_values($unikalneGatunki);
+        }
 
         $wynik = $polaczenie->query("SELECT COUNT(*) AS total, COALESCE(SUM(ilosc_dostepnych > 0), 0) AS available FROM muzyka");
         if ($wynik) {
@@ -52,43 +83,74 @@
         $sql = "SELECT m.id, m.tytul, m.gatunek, m.rok, m.ilosc_dostepnych, m.cena, m.czy_ulubiony,
                        a.wykonawca, a.okladka, a.discogs_uri, t.nazwa AS typ";
 
+        $typyParametrow = '';
+        $parametry = [];
+
         if ($search !== '') {
             $sql .= ", (SELECT u.tytul FROM utwory u
                         WHERE u.album_id = a.id AND u.tytul LIKE ?
                         ORDER BY u.id LIMIT 1) AS pasujacy_utwor";
+            $param = '%' . $search . '%';
+            $typyParametrow .= 's';
+            $parametry[] = $param;
         }
 
         $sql .= " FROM muzyka m
                 LEFT JOIN albumy a ON m.album_id = a.id
                 LEFT JOIN typy_plyt t ON a.typ_plyty_id = t.id";
 
+        $warunki = [];
+
         if ($search !== '') {
-            $sql .= " WHERE m.tytul LIKE ? OR a.wykonawca LIKE ? OR EXISTS (
-                        SELECT 1 FROM utwory u
-                        WHERE u.album_id = a.id AND u.tytul LIKE ?
-                      )";
+            $warunki[] = "(m.tytul LIKE ? OR a.wykonawca LIKE ? OR EXISTS (
+                            SELECT 1 FROM utwory u
+                            WHERE u.album_id = a.id AND u.tytul LIKE ?
+                          ))";
+            $param = '%' . $search . '%';
+            $typyParametrow .= 'sss';
+            $parametry[] = $param;
+            $parametry[] = $param;
+            $parametry[] = $param;
+        }
+
+        if (!empty($wybraneGatunki)) {
+            $warunkiGatunkow = [];
+            foreach ($wybraneGatunki as $gatunek) {
+                $warunkiGatunkow[] = "(COALESCE(m.gatunek, '') LIKE ? OR COALESCE(a.gatunek, '') LIKE ?)";
+                $typyParametrow .= 'ss';
+                $gatunekLike = '%' . $gatunek . '%';
+                $parametry[] = $gatunekLike;
+                $parametry[] = $gatunekLike;
+            }
+            $warunki[] = "(" . implode(" AND ", $warunkiGatunkow) . ")";
+        }
+
+        if (!empty($warunki)) {
+            $sql .= " WHERE " . implode(" AND ", $warunki);
         }
 
         $sql .= " ORDER BY $orderBy";
 
         $stmt = $polaczenie->prepare($sql);
-
-        if ($search !== '') {
-            $param = '%' . $search . '%';
-            $stmt->bind_param("ssss", $param, $param, $param, $param);
-        }
-
-        $stmt->execute();
-        $wynik = $stmt->get_result();
-
-        if ($wynik) {
-            while ($row = $wynik->fetch_assoc()) {
-                $albumy[] = $row;
+        
+        if ($stmt) {
+            if ($typyParametrow !== '') {
+                $stmt->bind_param($typyParametrow, ...$parametry);
             }
-            $wynik->free();
+
+            $stmt->execute();
+            $wynik = $stmt->get_result();
+
+            if ($wynik) {
+                while ($row = $wynik->fetch_assoc()) {
+                    $albumy[] = $row;
+                }
+                $wynik->free();
+            }
+
+            $stmt->close();
         }
 
-        $stmt->close();
         $polaczenie->close();
     } catch (Exception $e) {
         // Strona pokaże stan pusty, jeśli baza jest niedostępna.
@@ -107,6 +169,50 @@
     <title>Wypożyczalnia filmów</title>
     <link rel="stylesheet" href="assets/css/style_filmy.css">
     <link rel="icon" type="image/x-icon" href="assets/img/icon.ico">
+    <style>
+        .dropdown-filter {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            min-width: 220px;
+            max-height: 260px;
+            overflow-y: auto;
+            padding: 8px;
+            border-radius: 8px;
+            background: #1c2029;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+            z-index: 50;
+        }
+
+        .dropdown-menu.open {
+            display: block;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .dropdown-item input[type="checkbox"] {
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
 <header class="site-header">
@@ -137,7 +243,7 @@
         <div>
             <h1>Muzyka</h1>
             <p class="catalog-meta">
-                <?= (int) $statystyki['total'] ?> albumów w katalogu · <?= (int) $statystyki['available'] ?> dostępnych od ręki
+                <?= (int) $statystyki['total'] ?> albumów w katalogu - <?= (int) $statystyki['available'] ?> dostępnych od ręki
             </p>
             <?php if ($czyAdmin): ?>
                 <p class="admin-note">Widok administratora - serduszka i ikony edycji są ukryte dla klientów.</p>
@@ -171,7 +277,30 @@
 
     <form method="GET" action="muzyka.php" class="catalog-filters">
         <div class="search-field">
-            <input type="text" id="wyszukiwarka" name="q" placeholder="Szukaj albumu, wykonawcy lub utworu..." value="<?= htmlspecialchars($_GET['q'] ?? '') ?>">
+            <input type="text" id="wyszukiwarka" name="q" placeholder="Szukaj albumu, wykonawcy lub utworu..." value="<?= htmlspecialchars($search) ?>">
+        </div>
+
+        <div class="dropdown-filter" id="gatunkiDropdown">
+            <button type="button" class="btn btn-secondary dropdown-toggle" id="gatunkiBtn" aria-expanded="false">
+                <span id="gatunkiLabel">
+                    <?= !empty($wybraneGatunki) ? 'Gatunki (' . count($wybraneGatunki) . ')' : 'Gatunki' ?>
+                </span>
+            </button>
+
+            <div class="dropdown-menu" id="gatunkiMenu">
+                <?php foreach ($dostepneGatunki as $gatunek): ?>
+                    <?php $zaznaczony = in_array($gatunek, $wybraneGatunki, true); ?>
+                    <label class="dropdown-item">
+                        <input
+                            type="checkbox"
+                            name="gatunki[]"
+                            value="<?= htmlspecialchars($gatunek) ?>"
+                            <?= $zaznaczony ? 'checked' : '' ?>
+                        >
+                        <span><?= htmlspecialchars($gatunek) ?></span>
+                    </label>
+                <?php endforeach; ?>
+            </div>
         </div>
 
         <select id="sortowanie" name="sort">
@@ -261,11 +390,11 @@
     <?php endif; ?>
 
     <script src="assets/js/script_filmy.js"></script>
+    <script src="assets/js/lista_gatunki.js"></script>
 </main>
-<footer class="site-footer">
+<br><footer class="site-footer">
     <div class="footer-inner">
-        <span>&copy; <?= date('Y') ?> Wypożyczalnia filmów — filmy DVD i muzyka CD</span>
-        <span>Gdańsk, ul. Rajska 4 · 10:00–18:00</span>
+        <p>2026 - Przemysław Gałęziowski i Filip Klein</p>
     </div>
 </footer>
 </body>

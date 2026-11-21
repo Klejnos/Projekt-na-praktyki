@@ -197,8 +197,7 @@
 </main>
 <footer class="site-footer">
     <div class="footer-inner">
-        <span>&copy; <?= date('Y') ?> Wypożyczalnia filmów — filmy DVD i muzyka CD</span>
-        <span>Gdańsk, ul. Rajska 4 · 10:00–18:00</span>
+        <p>2026 - Przemysław Gałęziowski i Filip Klein</p>
     </div>
 </footer>
 </body>

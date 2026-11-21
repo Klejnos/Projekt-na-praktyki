@@ -301,7 +301,7 @@
     <?php endif; ?>
 
 </main>
-<footer class="site-footer">
+<br><footer class="site-footer">
     <div class="footer-inner">
         <p>2026 - Przemysław Gałęziowski i Filip Klein</p>
     </div>

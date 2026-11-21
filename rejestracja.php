@@ -103,14 +103,17 @@
                         $mail -> Password = $mail_pass;
                         $mail -> SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
                         $mail -> Port = $mail_port;
-                        $mail -> Charset = 'UTF-8';
+                        $mail->CharSet = 'UTF-8';
+                        $mail->Encoding = 'base64';
+                        $mail->isHTML(true);
+                        $mail->ContentType = 'text/html';
 
-                        $mail -> setFrom($mail_user, 'Wypozyczalnia filmow i muzyki');
+                        $mail -> setFrom($mail_user, 'Wypożyczalnia filmów i muzyki');
                         $mail -> addAddress($email_uzytkownika, $nazwa);
                         $link_aktywacyjny = $base_url."witam.php?token=".$token;
 
                         $mail -> isHTML(true);
-                        $mail -> Subject = 'Potwierdzenie zalozenia konta';
+                        $mail -> Subject = 'Potwierdzenie założenia konta';
                         $mail -> Body = "Dzień dobry ".htmlspecialchars($nazwa, ENT_QUOTES, 'UTF-8').",<br>Dziękujemy za założenie konta. 
                         Aby aktywować konto, kliknij w poniższy link:<br><a href='".htmlspecialchars($link_aktywacyjny, ENT_QUOTES, 'UTF-8')."'>Aktywuj konto</a><br><br>Życzymy miłego dnia.";
                         $mail -> send();
@@ -172,6 +175,7 @@
         <a href="index.php">Strona główna</a> 
         <a href="filmy.php">Filmy</a>
         <a href="muzyka.php">Muzyka</a>
+        <a href="utwory.php">Utwory</a>
         <a href="kontakt.php">Kontakt</a>
     </nav>
 

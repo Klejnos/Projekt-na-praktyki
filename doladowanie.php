@@ -25,7 +25,7 @@
         if ($q -> execute()) {
             if ($q -> affected_rows > 0) {
                 $polaczenie -> commit();
-                $_SESSION['konto_komunikat'] = "Portfel został doładowany kwotą '$kwota' zł.";
+                $_SESSION['konto_komunikat'] = "Portfel został doładowany kwotą $kwota zł.";
             }
             else {
                 $polaczenie -> rollback();
