@@ -2,6 +2,6 @@ Projekt tworzony za pomocą XAMPP, nazwa stworzonej bazy danych w phpmyadmin to 
 
 Plik sql jaki należy wrzucić znajduje się w folderze assets -> config -> database.sql
 
-Proszę równierz określić swoją ścieżkę do plików strony w folderze assets -> congih -> rejestracja_config.php
+Proszę równierz określić swoją ścieżkę do plików strony w folderze assets -> config -> rejestracja_config.php
 
 Repozytorium, z biblioteką do obsługi wysyłania e-maili: https://github.com/PHPMailer/PHPMailer

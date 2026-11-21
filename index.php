@@ -1,4 +1,8 @@
 <?php
+// index.php — strona główna.
+// Wyświetla polecane filmy, albumy i utwory oraz skróty do katalogów.
+
+
     require_once "czy_zalogowany.php";
 
     require_once "polaczenie.php";
@@ -14,6 +18,7 @@
         if (!$polaczenie->connect_errno) {
             $polaczenie->set_charset("utf8mb4");
 
+            // Mapa typów płyt (ID -> nazwa) używana na kartach.
             $wynik = $polaczenie->query("SELECT id, nazwa FROM typy_plyt");
             if ($wynik) {
                 while ($row = $wynik->fetch_assoc()) {
@@ -22,6 +27,7 @@
                 $wynik->free();
             }
 
+            // Polecane filmy oznaczone serduszkiem.
             $wynik = $polaczenie->query(
                 "SELECT id, tytul, tytul_oryginalny, gatunek, rok, ocena, cena,
                         ilosc_dostepnych, okladka, typ_plyty_id
@@ -38,6 +44,7 @@
                 $wynik->free();
             }
 
+            // Polecane albumy muzyczne.
             $wynik = $polaczenie->query(
                 "SELECT m.id, m.tytul, m.rok, m.gatunek, m.cena, m.ilosc_dostepnych,
                         a.wykonawca, a.okladka, t.nazwa AS typ
@@ -56,6 +63,7 @@
                 $wynik->free();
             }
 
+            // Polecane utwory; cena pochodzi z utwory.cena.
             $wynik = $polaczenie->query(
                 "SELECT u.id, u.tytul, a.rok, a.gatunek, u.cena, u.ilosc_dostepnych,
                         a.wykonawca, a.okladka, t.nazwa AS typ
@@ -80,8 +88,6 @@
         // Strona pokaże się bez sekcji polecanych.
     }
 
-    $active = 'index';
-    $pageTitle = 'Strona główna';
     ?>
 <!DOCTYPE html>
 <html lang="pl">
@@ -120,7 +126,7 @@
     <section class="catalog-head">
         <div>
             <h1>Witamy w wypożyczalni</h1>
-            <p class="catalog-meta">Filmy DVD, Blu-ray i VHS oraz muzyka CD — wszystko w jednym miejscu.</p>
+            <p class="catalog-meta">Filmy DVD, Blu-ray i VHS oraz muzyka CD - wszystko w jednym miejscu.</p>
         </div>
     </section>
 

@@ -1,3 +1,6 @@
+// script_api.js — podpowiedzi filmów w formularzu dodawania.
+// Pobiera dane z api_film.php (TMDB/OMDb) i uzupełnia pola formularza.
+
 const API_URL = "api_film.php";
 
 const tytul = document.getElementById("tytul");
@@ -45,6 +48,7 @@ tytul.addEventListener("input", function () {
 
     opoznienie = setTimeout(async function () {
 
+        // zapytanie leci dopiero po krótkiej przerwie w pisaniu.
         try {
 
             let odpowiedz = await fetch(
@@ -59,6 +63,7 @@ tytul.addEventListener("input", function () {
                 return;
             }
 
+            // Renderowanie pojedynczej podpowiedzi filmu.
             dane.results.forEach(function (film) {
 
                 let element = document.createElement("div");
@@ -99,7 +104,8 @@ tytul.addEventListener("input", function () {
 });
 
 
-// Pobieranie informacji o wybranym filmie
+// Pobieranie informacji o wybranym filmie.
+// Uzupełnia formularz danymi z TMDB oraz nagrodami z OMDb.
 async function pobierzFilm(id) {
 
     try {
@@ -139,8 +145,7 @@ async function pobierzFilm(id) {
         ustawWartosc("ilosc_dostepnych", "");
         ustawWartosc("cena", "");
 
-        // Wyświetlanie okładki filmu
-
+        // Wyświetlanie okładki filmu (adres trafia też do ukrytego pola formularza).
         let okladka = document.getElementById("okladka");
 
         let okladkaUrl = film.okladka || "";

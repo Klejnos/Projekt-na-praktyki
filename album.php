@@ -1,4 +1,8 @@
 <?php
+// album.php — szczegóły albumu muzycznego.
+// Pokazuje dane albumu, listę utworów oraz akcje dostępne dla administratora.
+
+
     require_once "czy_zalogowany.php";
 
     require_once "polaczenie.php";
@@ -13,6 +17,7 @@
         if (!$polaczenie->connect_errno) {
             $polaczenie->set_charset("utf8mb4");
 
+            // Pobranie albumu wraz z danymi wykonawcy, okładką i typem płyty.
             $stmt = $polaczenie->prepare(
                 "SELECT m.*, a.wykonawca, a.okladka, a.discogs_uri, a.rok AS album_rok, a.gatunek AS album_gatunek, t.nazwa AS typ
                  FROM muzyka m
@@ -35,6 +40,7 @@
             }
 
             if ($album) {
+                // Utwory przypisane do tego albumu.
                 $stmtUtwory = $polaczenie->prepare(
                     "SELECT tytul, czas FROM utwory WHERE album_id = ? ORDER BY id"
                 );
@@ -69,9 +75,8 @@
     }
 
     $czyAdmin = isset($_SESSION['czy_admin']) && (int) $_SESSION['czy_admin'] === 1;
-    $active = 'muzyka';
-    $pageTitle = $album['tytul'];
 
+    // Dane przygotowane do wyświetlenia w nagłówku i panelu ceny.
     $dostepne = $album['ilosc_dostepnych'] !== null ? (int) $album['ilosc_dostepnych'] : 0;
     $cena = $album['cena'] !== null ? number_format((float) $album['cena'], 2, ',', ' ') . ' zł' : '—';
     $rok = $album['album_rok'] ?: $album['rok'];

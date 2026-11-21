@@ -1,4 +1,8 @@
 <?php
+// utwor.php — strona szczegółów utworu.
+// Pokazuje album, niezależną cenę utworu, wypożyczenie i akcje administratora.
+
+
     require_once "czy_zalogowany.php";
     require_once "polaczenie.php";
 
@@ -11,11 +15,12 @@
         if (!$polaczenie->connect_errno) {
             $polaczenie->set_charset("utf8mb4");
 
+            // Pobranie utworu wraz z danymi albumu i okładką.
             $stmt = $polaczenie->prepare(
                 "SELECT u.id, u.album_id, u.tytul, u.czas,
                         a.tytul AS album_tytul, a.wykonawca, a.rok AS album_rok,
                         a.gatunek AS album_gatunek, a.okladka, a.discogs_uri,
-                        u.cena, u.ilosc_dostepnych, u.czy_ulubiony
+                        u.cena, u.czy_ulubiony
                  FROM utwory u
                  INNER JOIN albumy a ON a.id = u.album_id
                  WHERE u.id = ?
@@ -46,8 +51,8 @@
     }
 
     $czyAdmin = isset($_SESSION['czy_admin']) && (int) $_SESSION['czy_admin'] === 1;
-    $active = 'utwory';
     $pageTitle = $utwor['tytul'];
+    // Cena utworu jest niezależna od ceny albumu.
     $cena = $utwor['cena'] !== null
         ? number_format((float) $utwor['cena'], 2, ',', ' ') . ' zł'
         : '—';
@@ -101,29 +106,14 @@
             unset($_SESSION['rent_sukces']);
         }
 
-        if (!empty($_SESSION['wypozycz_utwor_sukces'])) {
-            echo '<div class="sukces">' . htmlspecialchars($_SESSION['wypozycz_utwor_sukces']) . '</div>';
-            unset($_SESSION['wypozycz_utwor_sukces']);
-        }
-
         if (!empty($_SESSION['rent_blad'])) {
             echo '<div class="error">' . htmlspecialchars($_SESSION['rent_blad']) . '</div>';
             unset($_SESSION['rent_blad']);
         }
 
-        if (!empty($_SESSION['wypozycz_utwor_blad'])) {
-            echo '<div class="error">' . htmlspecialchars($_SESSION['wypozycz_utwor_blad']) . '</div>';
-            unset($_SESSION['wypozycz_utwor_blad']);
-        }
-
         if (!empty($_SESSION['ulubione_komunikat'])) {
             echo '<div class="sukces">' . htmlspecialchars($_SESSION['ulubione_komunikat']) . '</div>';
             unset($_SESSION['ulubione_komunikat']);
-        }
-
-        if (!empty($_SESSION['ulubione_utwor_komunikat'])) {
-            echo '<div class="sukces">' . htmlspecialchars($_SESSION['ulubione_utwor_komunikat']) . '</div>';
-            unset($_SESSION['ulubione_utwor_komunikat']);
         }
     ?>
 

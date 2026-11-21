@@ -1,6 +1,7 @@
+/* kontakt.css — style strony kontaktowej. */
+
 @import url("style.css");
 
-/* GŁÓWNA TREŚĆ - zwarta, elegancka karta (jak logowanie i rejestracja) */
 main {
     background-color: var(--bg-3);
     border: 1px solid var(--border);

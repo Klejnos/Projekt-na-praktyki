@@ -1,6 +1,11 @@
 <?php
+// logowanie.php — logowanie użytkownika.
+// Weryfikuje hasło i tworzy sesję po poprawnym logowaniu.
+
+
     session_start();
     
+    // Logowanie obsługujemy tylko po wysłaniu formularza.
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         require_once "polaczenie.php";
         
@@ -15,19 +20,21 @@
             $nazwa_lub_email = $_POST['nazwa_lub_email'] ?? '';
             $haslo = $_POST['haslo'] ?? '';
 
-            $stmt = $polaczenie->prepare("SELECT id, nazwa, haslo, czy_admin, portfel FROM uzytkownicy WHERE nazwa = ? OR email = ?");
+            // Konto można znaleźć po nazwie użytkownika albo adresie e-mail.
+            $stmt = $polaczenie->prepare("SELECT id, nazwa, haslo, czy_admin FROM uzytkownicy WHERE nazwa = ? OR email = ?");
             $stmt->bind_param("ss", $nazwa_lub_email, $nazwa_lub_email);
             $stmt->execute();
             $result = $stmt->get_result();
 
             if ($result->num_rows == 1) {
                 $wiersz = $result->fetch_assoc();
+
+                // Hasło w bazie jest hashem, więc porównujemy przez password_verify.
                 if (password_verify($haslo, $wiersz['haslo'])) {
                     $_SESSION['zalogowany'] = true;
                     $_SESSION['id'] = $wiersz['id'];
                     $_SESSION['nazwa'] = $wiersz['nazwa'];
                     $_SESSION['czy_admin'] = $wiersz['czy_admin'];
-                    $_SESSION['portfel'] = $wiersz['portfel'];
 
                     $stmt->close();
                     $polaczenie->close();
@@ -37,6 +44,7 @@
                 }
             }
             
+            // Ten sam komunikat dla złego loginu i złego hasła (bez zdradzania, co jest błędne).
             $_SESSION['blad'] = '<span style="color: red">Nieprawidłowy login lub hasło</span>';
             $stmt->close();
             $polaczenie->close();

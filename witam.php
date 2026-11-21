@@ -1,6 +1,11 @@
 <?php
+// witam.php — potwierdzenie rejestracji.
+// Aktywuje konto tokenem z maila lub pokazuje podziękowanie po rejestracji.
+
+
     session_start();
 
+    // Wejście tylko po rejestracji albo z linkiem aktywacyjnym.
     if (!isset($_SESSION['udana_rejestracja']) && !isset($_GET['token'])) {
         header('Location: index.php');
         exit();
@@ -10,11 +15,13 @@
     $komunikat = "";
     $pokaz_dziekujemy = false;
 
+    // Wariant 1: użytkownik właśnie założył konto.
     if (isset($_SESSION['udana_rejestracja'])) {
         $pokaz_dziekujemy = true;
         unset($_SESSION['udana_rejestracja']);
     }
 
+    // Wariant 2: kliknięcie linku aktywacyjnego z tokenem.
     elseif (isset($_GET['token'])) {
         $token = $_GET['token'];
 
@@ -24,12 +31,14 @@
                 throw new Exception($polaczenie -> connect_errno);
             }
 
+            // Token musi istnieć i konto nie może być jeszcze aktywne.
             $q_s = $polaczenie -> prepare("SELECT id FROM uzytkownicy WHERE token = ? AND czy_potwierdzony = 0");
             $q_s -> bind_param("s", $token);
             $q_s -> execute();
             $result = $q_s -> get_result();
 
             if ($result -> num_rows == 1) {
+                // Aktywacja konta i unieważnienie tokenu.
                 $q_u = $polaczenie -> prepare("UPDATE uzytkownicy SET czy_potwierdzony = 1, token = NULL WHERE token = ?");
                 $q_u -> bind_param("s", $token);
 

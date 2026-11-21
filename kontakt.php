@@ -1,4 +1,7 @@
 <?php
+// kontakt.php — strona kontaktowa.
+
+
     require_once "czy_zalogowany.php";
 ?>
 

@@ -1,4 +1,8 @@
 <?php
+// doladowanie.php — doładowanie portfela użytkownika.
+// Akceptuje tylko kwoty z listy dozwolonych wartości.
+
+
     require_once "czy_zalogowany.php";
 
     require_once "polaczenie.php";
@@ -11,12 +15,14 @@
         $kwota = (int) ($_GET['k'] ?? 0);
         $uzytkownik_id = $_SESSION['id'];
 
+        // Doładowanie tylko kwotami z góry ustalonej listy.
         $kwoty = [10, 20, 35, 50];
         if (!in_array($kwota, $kwoty)) {
             header('Location: index.php');
             exit();
         }
 
+        // Zwiększenie portfela w transakcji.
         $polaczenie -> begin_transaction();
 
         $q = $polaczenie -> prepare("UPDATE uzytkownicy SET portfel = portfel + ? WHERE id = ?");
@@ -24,10 +30,12 @@
 
         if ($q -> execute()) {
             if ($q -> affected_rows > 0) {
+                // Sukces: zatwierdzamy i pokazujemy komunikat na koncie.
                 $polaczenie -> commit();
                 $_SESSION['konto_komunikat'] = "Portfel został doładowany kwotą $kwota zł.";
             }
             else {
+                // Brak zmienionego wiersza oznacza, że portfel nie został zasilony.
                 $polaczenie -> rollback();
                 $_SESSION['e_konto_komunikat'] = 'Nie udało się doładować konta.';
             }

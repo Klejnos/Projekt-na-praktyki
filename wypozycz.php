@@ -1,9 +1,14 @@
 <?php
+// wypozycz.php — obsługa wypożyczenia filmu, albumu lub utworu.
+// Sprawdza dostępność i portfel, zapisuje wypożyczenie i zmniejsza stan.
+
+
     require_once "czy_zalogowany.php";
 
     $typ = $_GET['typ'] ?? '';
     $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 
+    // Bezpieczeństwo: tylko znane typy zasobów i poprawne ID.
     if (!in_array($typ, ['film', 'muzyka', 'utwor'], true) || $id <= 0) {
         header('Location: index.php');
         exit();
@@ -11,6 +16,7 @@
 
     require_once "polaczenie.php";
 
+    // Adres powrotu zależy od tego, co wypożyczamy.
     $uzytkownikId = (int) $_SESSION['id'];
     if ($typ === 'film') {
         $powrot = 'film.php?id='.$id;
@@ -32,8 +38,11 @@
         }
 
         $polaczenie->set_charset("utf8mb4");
+
+        // Cała operacja jest transakcją: portfel, wypożyczenie i stan muszą zmienić się razem.
         $polaczenie -> begin_transaction();
 
+        // Blokada wiersza użytkownika chroni portfel przed równoległym zapisem.
         $q = $polaczenie -> prepare("SELECT portfel FROM uzytkownicy WHERE id = ? FOR UPDATE");
         $q -> bind_param("i", $uzytkownikId);
         $q -> execute();
@@ -48,6 +57,7 @@
         $portfel_stan = (float) $dane_uzytkownika['portfel'];
 
         if ($typ === 'film') {
+            // Wypożyczenie filmu.
             $stmt = $polaczenie -> prepare("SELECT tytul, ilosc_dostepnych, cena FROM filmy WHERE id = ? LIMIT 1");
             $stmt -> bind_param("i", $id);
             $stmt -> execute();
@@ -120,6 +130,7 @@
         } 
         
         elseif ($typ === "muzyka") {
+            // Wypożyczenie całego albumu.
             $stmt = $polaczenie -> prepare("SELECT tytul, ilosc_dostepnych, cena FROM muzyka WHERE id = ? LIMIT 1");
             $stmt -> bind_param("i", $id);
             $stmt -> execute();
@@ -192,6 +203,7 @@
         }
 
         else {
+            // Wypożyczenie pojedynczego utworu (cena z utwory.cena).
             $stmt = $polaczenie -> prepare("SELECT tytul, ilosc_dostepnych, cena FROM utwory WHERE id = ? LIMIT 1");
             $stmt -> bind_param("i", $id);
             $stmt -> execute();

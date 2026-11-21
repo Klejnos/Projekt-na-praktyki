@@ -1,7 +1,12 @@
 <?php
+// konto.php — panel użytkownika.
+// Pokazuje portfel oraz wypożyczone filmy, albumy i utwory.
+
+
     require_once "czy_zalogowany.php";
 
     $czy_admin = true;
+    // Informacja, czy pokazywać elementy administracyjne.
     if (!isset($_SESSION['czy_admin']) || (int) $_SESSION['czy_admin'] !== 1) {
         $czy_admin = false;
     }
@@ -9,6 +14,8 @@
     require_once "polaczenie.php";
     try {
         $polaczenie = new mysqli($host, $db_user, $db_password, $db_name);
+
+        // Aktualny stan portfela użytkownika.
         $id_u = $_SESSION['id'];
         $q_u = $polaczenie -> prepare("SELECT portfel FROM uzytkownicy WHERE id = ?");
         $q_u -> bind_param ("i", $id_u);
@@ -25,6 +32,7 @@
         echo "Błąd serwera";
     }
 
+    // Pomocnicze wypisanie pola tylko wtedy, gdy ma wartość.
     function pole(string $etykieta, $wartosc): void
     {
         if ($wartosc !== null && $wartosc !== '') {
@@ -113,6 +121,7 @@
         <section class="rentals-section">
             <h2>Twoje wypożyczenia - filmy:</h2>
             <?php
+                // Wypożyczone filmy użytkownika wraz z datami.
                 $id = $_SESSION['id'];
                 $q = $polaczenie -> query("SELECT f.*, t.nazwa AS nazwa_typu, w.* FROM filmy f LEFT JOIN typy_plyt t ON f.typ_plyty_id = t.id JOIN wypozyczenia_filmy w ON w.film_id = f.id WHERE w.uzytkownicy_id = '$id'");
                 $typ = 'film';
@@ -167,6 +176,7 @@
         <section class="rentals-section">
             <h2>Twoje wypożyczenia - albumy:</h2>
             <?php
+                // Wypożyczone albumy muzyczne.
                 $q_muzyka = $polaczenie -> query("SELECT m.*, a.wykonawca, a.okladka, w.data_wypozyczenia, w.data_zwrotu, w.muzyka_id 
                 FROM muzyka m LEFT JOIN albumy a ON m.album_id = a.id 
                 JOIN wypozyczenia_muzyka w ON w.muzyka_id = m.id WHERE w.uzytkownicy_id = '$id'");
@@ -215,6 +225,7 @@
         <section class="rentals-section">
             <h2>Twoje wypożyczenia - utwory:</h2>
             <?php
+                // Wypożyczone utwory; ich cena pochodzi z utwory.cena.
                 $q_utwor = $polaczenie -> query("SELECT u.*, a.wykonawca, a.gatunek, a.rok, a.okladka, w.data_wypozyczenia, w.data_zwrotu, w.utwor_id 
                 FROM utwory u LEFT JOIN albumy a ON u.album_id = a.id 
                 JOIN wypozyczenia_utwory w ON w.utwor_id = u.id WHERE w.uzytkownicy_id = '$id'");

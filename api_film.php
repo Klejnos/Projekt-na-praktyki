@@ -26,6 +26,7 @@ function odpowiedz(array $dane): void
     exit;
 }
 
+// Pobiera pojedynczy JSON z zewnętrznego API.
 function pobierzJson(string $url): ?array
 {
     if (function_exists('curl_init')) {
@@ -73,6 +74,9 @@ function pobierzJson(string $url): ?array
 
 $action = $_GET['action'] ?? '';
 
+// Endpointy:
+// - search  -> podpowiedzi filmów z TMDB,
+// - details -> szczegóły filmu z TMDB i OMDb (nagrody, ocena IMDb, brakujące dane).
 if ($action === 'search') {
     $q = trim($_GET['q'] ?? '');
 
@@ -96,6 +100,7 @@ if ($action === 'search') {
 
     $wyniki = [];
 
+    // Mapowanie wyników TMDB na format używany przez formularz.
     foreach (array_slice($dane['results'], 0, 8) as $film) {
         $rok = !empty($film['release_date']) ? substr($film['release_date'], 0, 4) : '';
 
@@ -136,14 +141,17 @@ if ($action === 'details') {
 
     $imdbId = $dane['imdb_id'] ?? '';
 
+    // IMDb ID bywa w polu głównym albo w external_ids.
     if ($imdbId === '' && !empty($dane['external_ids']['imdb_id'])) {
         $imdbId = $dane['external_ids']['imdb_id'];
     }
 
+    // Podstawowe dane z TMDB.
     $gatunek = implode(', ', array_column($dane['genres'] ?? [], 'name'));
     $jezyk = implode(', ', array_column($dane['spoken_languages'] ?? [], 'name'));
     $produkcja = implode(', ', array_column($dane['production_companies'] ?? [], 'name'));
 
+    // Reżyser jest w napisach końcowych jako osoba z job = Director.
     $rezyser = '';
 
     foreach (($dane['credits']['crew'] ?? []) as $osoba) {
@@ -157,6 +165,7 @@ if ($action === 'details') {
     $ocena = $dane['vote_average'] ?? null;
     $nagrody = '';
 
+    // OMDb uzupełnia nagrody, ocenę IMDb i brakujące dane produkcji.
     if ($imdbId !== '') {
         $omdb = pobierzJson('https://www.omdbapi.com/?' . http_build_query([
             'apikey' => $omdb_api_key,

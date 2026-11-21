@@ -1,3 +1,6 @@
+// script_filmy.js — automatyczne odświeżanie katalogu.
+// Reaguje na zmianę sortowania i zatwierdzenie wyszukiwania Enterem.
+
 document.addEventListener("DOMContentLoaded", function () {
     const sortowanie = document.getElementById("sortowanie");
     const wyszukiwarka = document.getElementById("wyszukiwarka");
@@ -6,9 +9,11 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
+    // Buduje nowy adres na podstawie aktualnych filtrów.
     function zaktualizujURL() {
         const url = new URL(window.location.href);
 
+        // Sortowanie: "default" usuwa parametr z adresu.
         if (sortowanie) {
             if (sortowanie.value === "default") {
                 url.searchParams.delete("sort");
@@ -17,6 +22,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
 
+        // Wyszukiwanie trafia do parametru q.
         if (wyszukiwarka) {
             const query = wyszukiwarka.value.trim();
             if (query === "") {

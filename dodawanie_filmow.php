@@ -1,5 +1,11 @@
 <?php
+// dodawanie_filmow.php — formularz dodawania filmu (tylko administrator).
+// Korzysta z podpowiedzi TMDB/OMDb i zapisuje film wraz z okładką oraz ceną.
+
+
     require_once "czy_zalogowany.php";
+
+    // Dodawanie filmów jest dostępne tylko dla administratora.
     if (!isset($_SESSION['czy_admin']) || $_SESSION['czy_admin'] != 1) {
         header('Location: index.php');
         exit();
@@ -7,6 +13,7 @@
 
     $blad = '';
 
+    // Zapis filmu po wysłaniu formularza.
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
         require_once "polaczenie.php";
         try {
@@ -15,6 +22,7 @@
                 throw new Exception(mysqli_connect_errno());
             }
             else {
+                // Odczyt pól formularza (część może pochodzić z podpowiedzi TMDB/OMDb).
                 $tytul = trim($_POST['tytul'] ?? '');
                 $tytul_oryginalny = trim($_POST['tytul_oryginalny'] ?? '');
                 $gatunek = trim($_POST['gatunek'] ?? '');
@@ -39,6 +47,7 @@
                 }
 
                 else {
+                    // Zapis nowego filmu wraz z metadanymi z TMDB/OMDb.
                     $q_i = $polaczenie -> prepare("INSERT INTO filmy (tytul, tytul_oryginalny, gatunek, rok, ocena, rezyser, czas_trwania, jezyk, ilosc_dostepnych, budzet, produkcja, nagrody, cena, opis, okladka, tmdb_id, imdb_id, typ_plyty_id) 
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 
@@ -74,8 +83,6 @@
 ?>
 
 <?php
-    $active = 'filmy';
-    $pageTitle = 'Dodawanie filmu';
     ?>
 <!DOCTYPE html>
 <html lang="pl">
@@ -115,6 +122,7 @@
             <div class="error"><?= htmlspecialchars($blad) ?></div>
         <?php endif; ?>
             <form method="POST">
+                <!-- Pole tytułu ma podpowiedzi TMDB; wybór uzupełnia pozostałe pola. -->
                 <div class="search-box">
                     <label for="tytul">Tytuł:</label>
                     <input type="text" name="tytul" id="tytul" autocomplete="off" placeholder="Zacznij wpisywać tytuł filmu...">

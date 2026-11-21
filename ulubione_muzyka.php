@@ -1,6 +1,10 @@
 <?php
+// ulubione_muzyka.php — dodanie/usunięcie albumu z ulubionych (tylko administrator).
+
+
     require_once "czy_zalogowany.php";
 
+    // Ulubione może zmieniać tylko administrator.
     if (!isset($_SESSION['czy_admin']) || (int) $_SESSION['czy_admin'] !== 1) {
         header('Location: muzyka.php');
         exit();
@@ -18,6 +22,7 @@
             if (!$polaczenie->connect_errno) {
                 $polaczenie->set_charset("utf8mb4");
 
+                // Przełączenie stanu ulubionego (0 <-> 1).
                 $stmt = $polaczenie->prepare("UPDATE muzyka SET czy_ulubiony = 1 - czy_ulubiony WHERE id = ?");
 
                 if ($stmt) {
@@ -26,6 +31,7 @@
                     $stmt->close();
                 }
 
+                // Odczyt nowego stanu i komunikat dla użytkownika.
                 $stmt = $polaczenie->prepare("SELECT czy_ulubiony FROM muzyka WHERE id = ? LIMIT 1");
 
                 if ($stmt) {
@@ -50,6 +56,7 @@
         }
     }
 
+    // Powrót na stronę, z której przyszło kliknięcie.
     if ($powrot === 'album') {
         header('Location: album.php?id=' . $id);
     } else {

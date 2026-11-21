@@ -1,3 +1,5 @@
+// lista_gatunki.js — obsługa rozwijanego filtra gatunków w katalogach.
+
 document.addEventListener("DOMContentLoaded", function () {
             const dropdown = document.getElementById("gatunkiDropdown");
             const btn = document.getElementById("gatunkiBtn");
@@ -10,11 +12,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const checkboxes = menu.querySelectorAll('input[type="checkbox"]');
 
+            // Etykieta pokazuje liczbę zaznaczonych gatunków.
             function odswiezEtykiete() {
                 const ile = Array.from(checkboxes).filter(cb => cb.checked).length;
                 label.textContent = ile > 0 ? `Gatunki (${ile})` : "Gatunki";
             }
 
+            // Otwieranie i zamykanie listy gatunków.
             btn.addEventListener("click", function (e) {
                 e.stopPropagation();
                 const isOpen = menu.classList.toggle("open");
@@ -29,6 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 cb.addEventListener("change", odswiezEtykiete);
             });
 
+            // Kliknięcie poza menu zamyka listę.
             document.addEventListener("click", function () {
                 menu.classList.remove("open");
                 btn.setAttribute("aria-expanded", "false");

@@ -1,4 +1,8 @@
 <?php
+// rejestracja.php — rejestracja nowego użytkownika.
+// Waliduje dane i wysyła maila aktywacyjnego.
+
+
     session_start();
 
     if (isset($_SESSION['zalogowany']) && $_SESSION['zalogowany'] == true) {
@@ -6,11 +10,13 @@
         exit();
     }
     
+    // Rejestracja uruchamiana po wysłaniu formularza.
     if (isset($_POST['nazwa'])) {
         $ok = true;
         $nazwa = $_POST['nazwa'];
         $nazwa = htmlentities($nazwa, ENT_QUOTES, "UTF-8");
 
+        // Walidacja nazwy użytkownika.
         if ((strlen($nazwa) < 3) || (strlen($nazwa) > 20)) {
             $ok = false;
             $_SESSION['e_nazwa'] = "Nazwa musi posiadać od 3 do 20 znaków";
@@ -21,6 +27,7 @@
             $_SESSION['e_nazwa'] = "Nazwa może składać się tylko z liter i cyfr (bez polskich znaków)";
         }
 
+        // Walidacja adresu e-mail.
         $email = $_POST['email'];
         $email2 = filter_var($email, FILTER_SANITIZE_EMAIL);
         if ((filter_var($email2, FILTER_VALIDATE_EMAIL) == false) || ($email2 != $email)) {
@@ -28,6 +35,7 @@
             $_SESSION['e_email'] = "Podaj poprawny adres e-mail";
         }
 
+        // Walidacja hasła i jego potwierdzenia.
         $haslo1 = $_POST['haslo1'] ?? ''; 
         $haslo2 = $_POST['haslo2'] ?? '';
         $haslo1 = htmlentities($haslo1, ENT_QUOTES, "UTF-8");
@@ -47,6 +55,7 @@
 
         require_once "assets/config/rejestracja_config.php";
 
+        // Opcjonalny kod administratora nadaje uprawnienia admina.
         $czy_admin = 0;
         if (!empty($_POST['klucz_admin'])) {
             if ($_POST['klucz_admin'] == $klucz_admin) {
@@ -65,6 +74,7 @@
                 throw new Exception(mysqli_connect_errno());
             }
 
+            // Sprawdzenie, czy nazwa i e-mail nie są już zajęte.
             $q_sprawdzenie = $polaczenie -> prepare("SELECT nazwa, email FROM uzytkownicy WHERE nazwa = ? OR email = ?");
             $q_sprawdzenie -> bind_param("ss", $nazwa, $email2);
             $q_sprawdzenie -> execute();
@@ -83,6 +93,7 @@
             $q_sprawdzenie -> close();
 
             if ($ok) {
+                // Konto powstaje jako nieaktywne; token trafia do maila.
                 $token = bin2hex(random_bytes(32));
                 $stmt_insert = $polaczenie -> prepare("INSERT INTO uzytkownicy (nazwa, email, haslo, czy_admin, token, czy_potwierdzony) VALUES (?, ?, ?, ?, ?, 0)");
                 $stmt_insert -> bind_param("sssis", $nazwa, $email2, $haslo_hash, $czy_admin, $token);
@@ -96,6 +107,7 @@
                     $mail = new PHPMailer\PHPMailer\PHPMailer(true);
 
                     try {
+                        // Konfiguracja SMTP i treść maila aktywacyjnego.
                         $mail -> isSMTP();
                         $mail -> Host = $mail_host;
                         $mail -> SMTPAuth = true;

@@ -1,4 +1,8 @@
 <?php
+// muzyka.php — katalog albumów muzycznych.
+// Obsługuje wyszukiwanie, filtr gatunków i sortowanie.
+
+
     require_once "czy_zalogowany.php";
 
     require_once "polaczenie.php";
@@ -7,6 +11,7 @@
     $search = trim($_GET['q'] ?? '');
     $wybraneGatunki = isset($_GET['gatunki']) && is_array($_GET['gatunki']) ? array_values(array_unique(array_filter(array_map('trim', $_GET['gatunki']), fn($g) => $g !== ''))) : [];
 
+    // Sortowanie wybrane z listy w katalogu.
     switch ($sort) {
         case 'cena-rosnaco':
             $orderBy = 'm.cena IS NULL ASC, m.cena ASC';
@@ -45,6 +50,7 @@
 
         $polaczenie->set_charset("utf8mb4");
 
+        // Gatunki bierzemy zarówno z muzyka, jak i z powiązanego albumu.
         $wynik = $polaczenie->query(
             "SELECT m.gatunek AS m_gatunek, a.gatunek AS a_gatunek
              FROM muzyka m
@@ -74,12 +80,14 @@
             $dostepneGatunki = array_values($unikalneGatunki);
         }
 
+        // Statystyki nagłówka katalogu.
         $wynik = $polaczenie->query("SELECT COUNT(*) AS total, COALESCE(SUM(ilosc_dostepnych > 0), 0) AS available FROM muzyka");
         if ($wynik) {
             $statystyki = $wynik->fetch_assoc();
             $wynik->free();
         }
 
+        // Podstawowe pola albumu; przy wyszukiwaniu dochodzi dopasowany utwór.
         $sql = "SELECT m.id, m.tytul, m.gatunek, m.rok, m.ilosc_dostepnych, m.cena, m.czy_ulubiony,
                        a.wykonawca, a.okladka, a.discogs_uri, t.nazwa AS typ";
 
@@ -101,6 +109,7 @@
 
         $warunki = [];
 
+        // Wyszukiwanie obejmuje album, wykonawcę i tytuły utworów.
         if ($search !== '') {
             $warunki[] = "(m.tytul LIKE ? OR a.wykonawca LIKE ? OR EXISTS (
                             SELECT 1 FROM utwory u
@@ -131,6 +140,7 @@
 
         $sql .= " ORDER BY $orderBy";
 
+        // Pobranie przefiltrowanej i posortowanej listy albumów.
         $stmt = $polaczenie->prepare($sql);
         
         if ($stmt) {
@@ -157,8 +167,6 @@
     }
 
     $czyAdmin = isset($_SESSION['czy_admin']) && (int) $_SESSION['czy_admin'] === 1;
-    $active = 'muzyka';
-    $pageTitle = 'Muzyka';
     ?>
 
 <!DOCTYPE html>

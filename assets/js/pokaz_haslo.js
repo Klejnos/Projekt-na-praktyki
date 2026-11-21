@@ -1,3 +1,5 @@
+// pokaz_haslo.js — pokazywanie i ukrywanie hasła w formularzach.
+
 document.addEventListener("DOMContentLoaded", function() {
     poleHaslo1 = document.getElementById("haslo1");
     poleHaslo2 = document.getElementById("haslo2");
@@ -5,6 +7,7 @@ document.addEventListener("DOMContentLoaded", function() {
     zdjecie = document.getElementById("img_pokaz_haslo");
 
     if (przycisk) {
+        // Formularz logowania: jedno pole hasła.
         let pojedynczeHaslo = document.getElementById("haslo");
         if (pojedynczeHaslo) {
             przycisk.addEventListener("mousedown", function() {
@@ -24,6 +27,7 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         }
 
+        // Formularz rejestracji: hasło i jego potwierdzenie.
         if (poleHaslo1 && poleHaslo2) {
             przycisk.addEventListener("mousedown", function() {
                 poleHaslo1.type = "text";

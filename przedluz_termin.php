@@ -1,10 +1,15 @@
 <?php
+// przedluz_termin.php — przedłużenie wypożyczenia.
+// Obsługuje film, album i utwór oraz pobiera opłatę z portfela.
+
+
     require_once "czy_zalogowany.php";
 
     $typ = $_GET['typ'] ?? '';
     $id = (int) ($_GET['id'] ?? 0);
     $uzytkownik_id = (int) $_SESSION['id'];
 
+    // Obsługujemy tylko znane typy zasobów.
     if ($id <= 0 || !in_array($typ, ['film', 'muzyka', 'utwor'], true)) {
         header('Location: index.php');
         exit();
@@ -18,8 +23,10 @@
             throw new Exception("Błąd połączenia z bazą");
         }
 
+        // Pobranie opłaty i zmiana terminu muszą być atomowe.
         $polaczenie -> begin_transaction();
 
+        // Blokada portfela użytkownika.
         $q_u = $polaczenie -> prepare("SELECT portfel FROM uzytkownicy WHERE id = ? FOR UPDATE");
         $q_u -> bind_param("i", $uzytkownik_id);
         $q_u -> execute();
@@ -37,6 +44,7 @@
         $kolumna_id = "";
         $dni = 0;
 
+        // Mapowanie typu na tabele wypożyczeń, tabelę zasobu i liczbę dni.
         if ($typ == 'film') {
             $tabela_wypożyczeń = "wypozyczenia_filmy";
             $tabela_typ = "filmy";
@@ -58,6 +66,7 @@
             $dni = 15;
         }
 
+        // Aktywne wypożyczenie, którego jeszcze nie przedłużano.
         $q_w = $polaczenie -> prepare("SELECT * FROM $tabela_wypożyczeń WHERE $kolumna_id = ? AND uzytkownicy_id = ? AND czy_byl_przedluzany = 0");
         $q_w -> bind_param("ii", $id, $uzytkownik_id);
         $q_w -> execute();
@@ -72,6 +81,7 @@
         }
         $q_w -> close();
 
+        // Cena przedłużenia pochodzi z tabeli właściwego zasobu.
         $q_t = $polaczenie->prepare("SELECT cena FROM $tabela_typ WHERE id = ?");
         $q_t -> bind_param("i", $id);
         $q_t -> execute();
@@ -85,12 +95,14 @@
         $q_t -> close();
 
         if ($portfel < $cena) {
+            // Brak środków: cała transakcja zostaje wycofana.
             $polaczenie -> rollback();
             $_SESSION['e_konto_komunikat'] = 'Brak wystarczających środków w portfelu aby przedłużyć wypożyczenie.';
             header('Location: konto.php');
             exit();
         }
 
+        // Przesunięcie daty zwrotu i oznaczenie, że przedłużenie wykorzystano.
         $q_up_w = $polaczenie->prepare("UPDATE $tabela_wypożyczeń SET data_zwrotu = DATE_ADD(data_zwrotu, INTERVAL ? DAY), czy_byl_przedluzany = 1 WHERE uzytkownicy_id = ? AND $kolumna_id = ?");
         $q_up_w -> bind_param("iii", $dni, $uzytkownik_id, $id);
         $q_up_w -> execute();

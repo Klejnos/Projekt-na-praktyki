@@ -1,4 +1,8 @@
 <?php
+// dodawanie_utwor.php — formularz dodawania utworu (tylko administrator).
+// Podpowiedzi uzupełniają album i okładkę; istniejący album jest ponownie używany.
+
+
     require_once "czy_zalogowany.php";
     if (!isset($_SESSION['czy_admin']) || (int) $_SESSION['czy_admin'] !== 1) {
         header('Location: index.php');
@@ -19,10 +23,13 @@
         $polaczenie->set_charset("utf8mb4");
 
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            // Odczyt pól formularza i przygotowanie danych do zapisu.
             $tytul = trim($_POST['tytul'] ?? '');
             $numer = trim($_POST['numer'] ?? '');
             $czas = trim($_POST['czas'] ?? '');
             $albumTytul = trim($_POST['album_tytul'] ?? '');
+            // album_id pochodzi z lokalnej podpowiedzi i pozwala użyć istniejącego albumu.
+            $albumIdWyboru = (($_POST['album_id'] ?? '') !== '') ? (int) $_POST['album_id'] : null;
             $wykonawca = trim($_POST['wykonawca'] ?? '');
             $rok = (($_POST['rok'] ?? '') !== '') ? (int) $_POST['rok'] : null;
             $gatunek = trim($_POST['gatunek'] ?? '');
@@ -49,7 +56,22 @@
 
                 $albumId = null;
 
-                if ($discogsId !== null) {
+                // 1. Utwór wybrany z lokalnej podpowiedzi — użyj istniejącego albumu.
+                if ($albumIdWyboru !== null && $albumIdWyboru > 0) {
+                    $stmt = $polaczenie->prepare("SELECT id FROM albumy WHERE id = ? LIMIT 1");
+                    if ($stmt) {
+                        $stmt->bind_param("i", $albumIdWyboru);
+                        $stmt->execute();
+                        $wynik = $stmt->get_result();
+                        if ($wynik && $wynik->num_rows === 1) {
+                            $albumId = (int) $wynik->fetch_assoc()['id'];
+                        }
+                        $stmt->close();
+                    }
+                }
+
+                // 2. W przeciwnym razie spróbuj dopasować album po discogs_id.
+                if ($albumId === null && $discogsId !== null) {
                     $stmt = $polaczenie->prepare("SELECT id FROM albumy WHERE discogs_id = ? LIMIT 1");
                     if (!$stmt) {
                         throw new Exception("Błąd sprawdzania albumu po ID zewnętrznym.");
@@ -65,6 +87,7 @@
 
                 $nazwaAlbumuDoZapisu = $albumTytul !== '' ? $albumTytul : ($wykonawca !== '' ? $wykonawca . ' — Single' : 'Single / Utwory');
 
+                // 3. Jeśli album nadal nie istnieje, utwórz go z danych formularza.
                 if ($albumId === null && ($albumTytul !== '' || $wykonawca !== '' || $okladka !== '' || $rok !== null || $gatunek !== '' || $typPlyty !== null)) {
                     $stmt = $polaczenie->prepare(
                         "INSERT INTO albumy
@@ -94,6 +117,7 @@
                     $stmt->close();
                 }
 
+                // 4. Ostateczność: wspólny album "Utwory".
                 if ($albumId === null) {
                     $domyslnyTytul = 'Utwory';
                     $stmt = $polaczenie->prepare("SELECT id FROM albumy WHERE tytul = ? AND wykonawca IS NULL LIMIT 1");
@@ -123,6 +147,18 @@
                     }
                 }
 
+                // Gdy utwór podpinamy do istniejącego albumu, można zaktualizować jego okładkę.
+                if ($albumId !== null && $okladka !== '') {
+                    $stmtOkladka = $polaczenie->prepare("UPDATE albumy SET okladka = ? WHERE id = ?");
+
+                    if ($stmtOkladka) {
+                        $stmtOkladka->bind_param("si", $okladka, $albumId);
+                        $stmtOkladka->execute();
+                        $stmtOkladka->close();
+                    }
+                }
+
+                // 5. Zapis utworu. Cena jest własną ceną utworu, niezależną od albumu.
                 $stmtUtwor = $polaczenie->prepare(
                     "INSERT INTO utwory (album_id, numer, tytul, czas, cena, ilosc_dostepnych)
                      VALUES (?, ?, ?, ?, ?, ?)"
@@ -144,7 +180,6 @@
                 $polaczenie->commit();
                 $polaczenie->close();
 
-                $_SESSION['dodano_utwor'] = true;
                 header("Location: utwor.php?id=" . $nowyUtworId);
                 exit();
             }
@@ -167,7 +202,6 @@
         $blad = 'Błąd serwera. Spróbuj ponownie później.';
     }
 
-    $active = 'utwory';
     $pageTitle = 'Dodawanie utworu';
 ?>
 <!DOCTYPE html>
@@ -211,6 +245,7 @@
     <?php endif; ?>
 
     <form method="POST">
+        <!-- Podpowiedzi działają po wpisaniu tytułu; wybór uzupełnia też album i okładkę. -->
         <div class="search-box">
             <label for="tytul">Tytuł utworu *:</label>
             <input type="text" name="tytul" id="tytul" required autocomplete="off" placeholder="Zacznij wpisywać nazwę utworu...">
@@ -226,9 +261,15 @@
         <label for="album_tytul">Album / wydawnictwo:</label>
         <input type="text" name="album_tytul" id="album_tytul" autocomplete="off" placeholder="Uzupełni się po wybraniu utworu lub wpisz ręcznie...">
 
+        <!-- album_id = istniejący album, discogs_id = powiązanie z Discogs. -->
+        <input type="hidden" name="album_id" id="album_id" value="">
         <input type="hidden" name="discogs_id" id="discogs_id" value="">
-        <input type="hidden" name="okladka" id="okladka_url" value="">
         <input type="hidden" name="discogs_uri" id="discogs_uri" value="">
+
+        <!-- Okładkę można też wpisać ręcznie, gdy Discogs nie odpowiada. -->
+        <label for="okladka_url">Okładka albumu (adres URL, opcjonalnie):</label>
+        <input type="text" name="okladka" id="okladka_url" placeholder="https://..."><br>
+
         <div id="podgladOkladki">
             <img id="okladka" src="" alt="Okładka albumu">
         </div>

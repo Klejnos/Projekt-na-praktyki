@@ -1,5 +1,10 @@
 <?php
+// edytuj_utwor.php — edycja utworu (tylko administrator).
+
+
     require_once "czy_zalogowany.php";
+
+    // Edycja utworów jest dostępna tylko dla administratora.
     if (!isset($_SESSION['czy_admin']) || (int) $_SESSION['czy_admin'] !== 1) {
         header('Location: index.php');
         exit();
@@ -25,6 +30,7 @@
 
         $polaczenie -> set_charset("utf8mb4");
 
+        // Pobranie utworu i danych albumu do formularza.
         $stmt = $polaczenie -> prepare(
             "SELECT u.*, a.wykonawca, a.okladka, a.typ_plyty_id, a.rok AS album_rok, a.gatunek AS album_gatunek
              FROM utwory u
@@ -52,6 +58,7 @@
         }
 
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            // Odczyt nowych danych utworu z formularza.
             $tytul = trim($_POST['tytul'] ?? '');
             $numer = trim($_POST['numer'] ?? '');
             $czas = trim($_POST['czas'] ?? '');
@@ -66,9 +73,11 @@
             if ($tytul === '') {
                 $blad = 'Tytuł utworu jest wymagany.';
             } else {
+                // Aktualizacja utworu
                 $polaczenie -> begin_transaction();
 
                 $stmtUpdUtwor = $polaczenie -> prepare(
+                    // Cena dotyczy tylko tego utworu; album ma własną cenę w tabeli muzyka.
                     "UPDATE utwory
                      SET tytul = ?, numer = ?, czas = ?, ilosc_dostepnych = ?, cena = ?
                      WHERE id = ?"
@@ -106,7 +115,6 @@
                 $polaczenie -> commit();
                 $polaczenie -> close();
 
-                $_SESSION['edytowano_utwor'] = true;
                 header("Location: utwor.php?id=" . $id);
                 exit();
             }
@@ -129,7 +137,6 @@
         $blad = 'Błąd serwera. Spróbuj ponownie później.';
     }
 
-    $active = 'utwory';
     $pageTitle = 'Edycja utworu';
 ?>
 

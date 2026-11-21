@@ -1,5 +1,11 @@
 <?php
+// edytuj_muzyka.php — edycja albumu muzycznego (tylko administrator).
+// Zmienia dane albumu oraz jego cenę wypożyczenia.
+
+
     require_once "czy_zalogowany.php";
+
+    // Edycja albumów jest dostępna tylko dla administratora.
     if (!isset($_SESSION['czy_admin']) || (int) $_SESSION['czy_admin'] !== 1) {
         header('Location: index.php');
         exit();
@@ -21,6 +27,7 @@
 
         $polaczenie->set_charset("utf8mb4");
 
+        // Ustalenie albumu powiązanego z wpisem muzyka.
         $stmt = $polaczenie->prepare("SELECT album_id FROM muzyka WHERE id = ? LIMIT 1");
 
         if ($stmt) {
@@ -36,6 +43,7 @@
         }
 
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            // Odczyt nowych danych albumu z formularza.
             $tytul = trim($_POST['tytul'] ?? '');
             $wykonawca = trim($_POST['wykonawca'] ?? '');
             $rok = (($_POST['rok'] ?? '') !== '') ? (int) $_POST['rok'] : null;
@@ -48,6 +56,7 @@
             if ($tytul === '') {
                 $blad = 'Tytuł albumu jest wymagany.';
             } else {
+                // Najpierw aktualizujemy dane albumu (jeśli istnieje).
                 if ($albumId !== null) {
                     $stmt = $polaczenie->prepare(
                         "UPDATE albumy SET tytul = ?, wykonawca = ?, rok = ?, gatunek = ?, okladka = ?, typ_plyty_id = ? WHERE id = ?"
@@ -146,8 +155,6 @@
 ?>
 
 <?php
-    $active = 'muzyka';
-    $pageTitle = 'Edycja muzyki';
     ?>
 <!DOCTYPE html>
 <html lang="pl">

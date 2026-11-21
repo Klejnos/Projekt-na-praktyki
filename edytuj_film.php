@@ -1,5 +1,11 @@
 <?php
+// edytuj_film.php — edycja filmu (tylko administrator).
+// Zmienia dane filmu, okładkę, typ płyty i cenę wypożyczenia.
+
+
     require_once "czy_zalogowany.php";
+
+    // Edycja filmów jest dostępna tylko dla administratora.
     if (!isset($_SESSION['czy_admin']) || (int) $_SESSION['czy_admin'] !== 1) {
         header('Location: index.php');
         exit();
@@ -21,6 +27,7 @@
         $polaczenie->set_charset("utf8mb4");
 
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            // Odczyt nowych danych filmu z formularza.
             $tytul = trim($_POST['tytul'] ?? '');
             $tytulOryginalny = trim($_POST['tytul_oryginalny'] ?? '');
             $gatunek = trim($_POST['gatunek'] ?? '');
@@ -88,6 +95,7 @@
             }
         }
 
+        // Pobranie aktualnych danych filmu do formularza.
         $stmt = $polaczenie->prepare("SELECT * FROM filmy WHERE id = ? LIMIT 1");
 
         if ($stmt) {
@@ -102,6 +110,7 @@
             $stmt->close();
         }
 
+        // Lista typów płyt do pola wyboru.
         $wynik = $polaczenie->query("SELECT id, nazwa FROM typy_plyt ORDER BY nazwa ASC");
 
         if ($wynik) {
@@ -123,8 +132,6 @@
 ?>
 
 <?php
-    $active = 'filmy';
-    $pageTitle = 'Edycja filmu';
     ?>
 <!DOCTYPE html>
 <html lang="pl">

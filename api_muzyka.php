@@ -1,6 +1,13 @@
 <?php
-// Łącznik między formularzem muzyki a API Discogs.
+// Łącznik między formularzami muzyki/utworów a API Discogs.
 // Discogs wymaga nagłówka User-Agent. Klucz tokena jest opcjonalny.
+//
+// Najważniejsze zasady działania:
+// - odpowiedzi Discogs są cache'owane, żeby nie przekraczać limitu zapytań,
+// - po błędzie 429/403 włączany jest krótki cooldown,
+// - podpowiedzi utworów zawsze uzupełniamy danymi z lokalnej bazy,
+//   więc formularz działa także wtedy, gdy Discogs nie odpowiada,
+// - okładki albumów dociągamy tylko w granicach pozostałego limitu.
 
 require_once __DIR__ . '/assets/config/klucze.php';
 
@@ -14,6 +21,9 @@ if (!isset($_SESSION['zalogowany']) || $_SESSION['zalogowany'] != true) {
     exit;
 }
 
+// Pozostały limit zapytań Discogs, odczytywany z nagłówka odpowiedzi.
+$discogs_limit_remaining = null;
+
 function odpowiedz(array $dane): void
 {
     // Usuwa ewentualne przypadkowe wyjście (np. whitespace/komentarz z dołączanego pliku),
@@ -26,20 +36,54 @@ function odpowiedz(array $dane): void
     exit;
 }
 
+// Krótka przerwa po błędzie Discogs, żeby nie blokować formularzy kolejnymi zapytaniami.
+function plikCooldownDiscogs(): string
+{
+    return sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'wypozyczalnia_discogs_cooldown.txt';
+}
+
+function discogsWCoolownie(): bool
+{
+    $plik = plikCooldownDiscogs();
+
+    return is_file($plik) && (int) @file_get_contents($plik) > time();
+}
+
+function ustawCooldownDiscogs(int $sekundy = 60): void
+{
+    @file_put_contents(plikCooldownDiscogs(), (string) (time() + $sekundy), LOCK_EX);
+}
+
+// Pobiera pojedynczy JSON z Discogs.
+// Zwraca null, gdy Discogs jest w cooldownie, zwróci błąd lub nie odpowie.
 function pobierzJson(string $url): ?array
 {
     global $discogs_user_agent;
 
+    // Po ostatnim 429/403 nie zamawiamy kolejnych zapytań przez jakiś czas.
+    if (discogsWCoolownie()) {
+        return null;
+    }
+
+    // Podstawowa ścieżka: cURL dostępny w XAMPP.
     if (function_exists('curl_init')) {
         $ch = curl_init($url);
 
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 20,
-            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_TIMEOUT => 8,
+            CURLOPT_CONNECTTIMEOUT => 4,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_USERAGENT => $discogs_user_agent,
             CURLOPT_HTTPHEADER => ['Accept: application/json'],
+            // Zapamiętujemy pozostały limit, żeby nie dociągać zbyt wielu okładek.
+            CURLOPT_HEADERFUNCTION => function ($ch, $naglowek) {
+                if (stripos($naglowek, 'x-discogs-ratelimit-remaining:') === 0) {
+                    $GLOBALS['discogs_limit_remaining'] = (int) trim(substr($naglowek, 30));
+                }
+
+                return strlen($naglowek);
+            },
         ]);
 
         $odpowiedz = curl_exec($ch);
@@ -47,6 +91,13 @@ function pobierzJson(string $url): ?array
         curl_close($ch);
 
         if ($odpowiedz === false || $kod < 200 || $kod >= 300) {
+            // 429/403 oznacza wyczerpany limit; przy błędzie sieci pauza jest krótsza.
+            if ($kod === 429 || $kod === 403) {
+                ustawCooldownDiscogs(60);
+            } elseif ($odpowiedz === false) {
+                ustawCooldownDiscogs(30);
+            }
+
             return null;
         }
 
@@ -55,18 +106,38 @@ function pobierzJson(string $url): ?array
         return is_array($json) ? $json : null;
     }
 
+    // Wariant awaryjny dla serwerów bez cURL.
     $kontekst = stream_context_create([
         'http' => [
             'method' => 'GET',
             'header' => "Accept: application/json\r\nUser-Agent: " . $discogs_user_agent . "\r\n",
-            'timeout' => 20,
+            'timeout' => 8,
         ],
     ]);
 
     $odpowiedz = @file_get_contents($url, false, $kontekst);
 
     if ($odpowiedz === false) {
+        if (isset($http_response_header)) {
+            foreach ($http_response_header as $naglowek) {
+                if (preg_match('#^HTTP/\S+\s+(429|403)#', $naglowek)) {
+                    ustawCooldownDiscogs(60);
+                }
+            }
+        } else {
+            ustawCooldownDiscogs(30);
+        }
+
         return null;
+    }
+
+    // W wariancie awaryjnym nagłówki są dostępne w tablicy $http_response_header.
+    if (isset($http_response_header)) {
+        foreach ($http_response_header as $naglowek) {
+            if (stripos($naglowek, 'x-discogs-ratelimit-remaining:') === 0) {
+                $GLOBALS['discogs_limit_remaining'] = (int) trim(substr($naglowek, 30));
+            }
+        }
     }
 
     $json = json_decode($odpowiedz, true);
@@ -79,6 +150,12 @@ function pobierzJsonWiele(array $adresy): array
 {
     global $discogs_user_agent;
 
+    // W cooldownie nie wykonujemy żadnych zapytań — od razu same null-e.
+    if (discogsWCoolownie()) {
+        return array_map(static fn () => null, $adresy);
+    }
+
+    // Awaryjnie pobieramy po kolei, jeśli serwer nie ma curl_multi.
     if (!function_exists('curl_multi_init')) {
         $wynik = [];
 
@@ -92,6 +169,7 @@ function pobierzJsonWiele(array $adresy): array
     $multi = curl_multi_init();
     $uchwyty = [];
 
+    // Każde wydanie to osobny uchwyt cURL dodany do wspólnej puli.
     foreach ($adresy as $klucz => $url) {
         $ch = curl_init($url);
 
@@ -102,8 +180,8 @@ function pobierzJsonWiele(array $adresy): array
 
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 20,
-            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_TIMEOUT => 8,
+            CURLOPT_CONNECTTIMEOUT => 4,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_USERAGENT => $discogs_user_agent,
             CURLOPT_HTTPHEADER => ['Accept: application/json'],
@@ -113,6 +191,7 @@ function pobierzJsonWiele(array $adresy): array
         $uchwyty[$klucz] = $ch;
     }
 
+    // Czekamy na zakończenie wszystkich równoległych zapytań.
     do {
         $status = curl_multi_exec($multi, $aktywne);
 
@@ -123,6 +202,7 @@ function pobierzJsonWiele(array $adresy): array
 
     $wynik = [];
 
+    // Odczytujemy odpowiedzi i od razu wykrywamy wyczerpany limit Discogs.
     foreach ($uchwyty as $klucz => $ch) {
         if ($ch === null) {
             $wynik[$klucz] = null;
@@ -133,6 +213,10 @@ function pobierzJsonWiele(array $adresy): array
         $kod = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_multi_remove_handle($multi, $ch);
         curl_close($ch);
+
+        if ($kod === 429 || $kod === 403) {
+            ustawCooldownDiscogs(60);
+        }
 
         $json = null;
 
@@ -207,21 +291,65 @@ function pobierzUtwory(array $album): array
     return $utwory;
 }
 
-// Prosty cache danych wydania (okładka + utwory), żeby nie odpytywać Discogs przy każdym wyszukiwaniu.
-function plikCacheOkladek(): string
+// Cache pełnych danych wydań Discogs (okładka, utwory, wykonawca itd.).
+function plikCacheDiscogs(): string
 {
-    return sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'wypozyczalnia_discogs_okladki.json';
+    return sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'wypozyczalnia_discogs.json';
 }
 
-function pobierzDaneDiscogs(array $ids): array
+// Buduje pełne dane albumu na podstawie odpowiedzi Discogs.
+// Zwraca dokładnie taki format, jakiego oczekuje frontend (details).
+function zbudujAlbumDiscogs(array $dane): array
+{
+    // Discogs podaje wykonawców i gatunki jako tablice.
+    $wykonawca = implode(', ', array_column($dane['artists'] ?? [], 'name'));
+    $gatunek = implode(', ', array_slice(array_merge($dane['genres'] ?? [], $dane['styles'] ?? []), 0, 4));
+
+    // Format sklejamy z nazwy nośnika i jego opisów (np. CD, Album, Reissue).
+    $formaty = [];
+
+    foreach (($dane['formats'] ?? []) as $format) {
+        if (!empty($format['name'])) {
+            $formaty[] = $format['name'];
+        }
+
+        foreach (array_slice($format['descriptions'] ?? [], 0, 3) as $opis) {
+            $formaty[] = $opis;
+        }
+    }
+
+    // Discogs zwraca link względny, a aplikacja potrzebuje pełnego adresu.
+    $discogsUri = $dane['uri'] ?? '';
+
+    if ($discogsUri !== '' && strpos($discogsUri, 'http') !== 0) {
+        $discogsUri = 'https://www.discogs.com' . $discogsUri;
+    }
+
+    return [
+        'discogs_id' => (int) $dane['id'],
+        'tytul' => $dane['title'] ?? '',
+        'wykonawca' => $wykonawca,
+        'rok' => !empty($dane['year']) ? (int) $dane['year'] : '',
+        'gatunek' => $gatunek,
+        'format' => implode(', ', array_slice(array_unique($formaty), 0, 4)),
+        'okladka' => znajdzOkladke($dane),
+        'utwory' => pobierzUtwory($dane),
+        'discogs_uri' => $discogsUri,
+    ];
+}
+
+// Pobiera pełne dane wydań Discogs, korzystając z cache i równoległych zapytań.
+// Zwraca tablicę [id_wydania => dane_albumu|null].
+function pobierzAlbumyDiscogs(array $ids): array
 {
     global $discogs_token;
 
-    $ttl = 60 * 60 * 24 * 30;
+    $ttl = 60 * 60 * 24 * 30; // 30 dni
     $teraz = time();
+    $plik = plikCacheDiscogs();
     $cache = [];
-    $plik = plikCacheOkladek();
 
+    // 1. Odczyt zapisanych wcześniej wydań.
     if (is_file($plik)) {
         $zapisany = json_decode((string) @file_get_contents($plik), true);
 
@@ -233,18 +361,16 @@ function pobierzDaneDiscogs(array $ids): array
     $wynik = [];
     $doPobrania = [];
 
+    // 2. Rozdzielenie na wpisy z cache i te, które trzeba pobrać.
     foreach (array_unique(array_map('intval', $ids)) as $id) {
         if ($id <= 0) {
             continue;
         }
 
-        if (isset($cache[$id]['ts'], $cache[$id]['utwory']) && ($teraz - (int) $cache[$id]['ts']) < $ttl) {
-            $wpis = $cache[$id];
-
-            $wynik[$id] = [
-                'okladka' => (string) ($wpis['okladka'] ?? $wpis['url'] ?? ''),
-                'utwory' => is_array($wpis['utwory'] ?? null) ? $wpis['utwory'] : [],
-            ];
+        if (isset($cache[$id]['ts'], $cache[$id]['album'])
+            && ($teraz - (int) $cache[$id]['ts']) < $ttl
+            && is_array($cache[$id]['album'])) {
+            $wynik[$id] = $cache[$id]['album'];
         } else {
             $doPobrania[$id] = $id;
         }
@@ -256,6 +382,7 @@ function pobierzDaneDiscogs(array $ids): array
 
     $adresy = [];
 
+    // 3. Przygotowanie adresów; token jest opcjonalny.
     foreach ($doPobrania as $id) {
         $url = 'https://api.discogs.com/releases/' . $id;
 
@@ -266,20 +393,24 @@ function pobierzDaneDiscogs(array $ids): array
         $adresy[$id] = $url;
     }
 
+    // 4. Równoległe pobranie brakujących wydań.
     foreach (pobierzJsonWiele($adresy) as $id => $dane) {
-        if (!is_array($dane)) {
-            $wynik[$id] = ['okladka' => '', 'utwory' => []];
+        if (!is_array($dane) || empty($dane['id'])) {
+            $wynik[$id] = null;
             continue;
         }
 
-        $okladka = znajdzOkladke($dane);
-        $utwory = pobierzUtwory($dane);
-
-        $wynik[$id] = ['okladka' => $okladka, 'utwory' => $utwory];
-        $cache[$id] = ['okladka' => $okladka, 'utwory' => $utwory, 'ts' => $teraz];
+        $album = zbudujAlbumDiscogs($dane);
+        $wynik[$id] = $album;
+        $cache[$id] = ['album' => $album, 'ts' => $teraz];
     }
 
+    // 5. Zapis cache z limitem 200 wpisów, żeby plik nie rósł bez końca.
     if ($cache) {
+        if (count($cache) > 200) {
+            $cache = array_slice($cache, -200, null, true);
+        }
+
         @file_put_contents($plik, json_encode($cache, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), LOCK_EX);
     }
 
@@ -292,16 +423,26 @@ function podpowiedziUtworow(array $wyniki, string $q): array
 {
     $wydania = [];
 
-    foreach (array_slice($wyniki, 0, 10) as $album) {
+    foreach ($wyniki as $album) {
         $id = (int) ($album['id'] ?? 0);
 
         if ($id <= 0) {
             continue;
         }
 
+        // Discogs zwraca tytuł w formacie "Wykonawca - Album".
+        // Formularz ma osobne pola, więc rozdzielamy go już tutaj.
+        $albumTytul = $album['title'] ?? '';
+        $wykonawca = '';
+
+        if (strpos($albumTytul, ' - ') !== false) {
+            [$wykonawca, $albumTytul] = explode(' - ', $albumTytul, 2);
+        }
+
         $wydania[$id] = [
-            'album_tytul' => $album['title'] ?? '',
-            'rok' => $album['year'] ?? '',
+            'album_tytul' => $albumTytul,
+            'wykonawca' => $wykonawca,
+            'rok' => !empty($album['year']) ? (int) $album['year'] : '',
             'gatunek' => implode(', ', array_slice(array_merge($album['genre'] ?? [], $album['style'] ?? []), 0, 4)),
             'okladka' => $album['cover_image'] ?? ($album['thumb'] ?? ''),
             'discogs_uri' => !empty($album['uri'])
@@ -310,16 +451,19 @@ function podpowiedziUtworow(array $wyniki, string $q): array
         ];
     }
 
-    $daneWydan = $wydania ? pobierzDaneDiscogs(array_keys($wydania)) : [];
+    // Pełne dane wydań (w tym lista utworów) pobieramy równolegle i cache'ujemy.
+    $daneWydan = $wydania ? pobierzAlbumyDiscogs(array_keys($wydania)) : [];
     $podpowiedzi = [];
     $widziane = [];
 
     foreach ($wydania as $id => $album) {
+        // Jeżeli szczegóły mają lepszą okładkę, zastępujemy nią wynik z wyszukiwania.
         if (!empty($daneWydan[$id]['okladka'])) {
             $album['okladka'] = $daneWydan[$id]['okladka'];
         }
 
         foreach (($daneWydan[$id]['utwory'] ?? []) as $utwor) {
+            // Pokazujemy tylko utwory pasujące do wpisanej frazy.
             if (mb_stripos($utwor['tytul'], $q, 0, 'UTF-8') === false) {
                 continue;
             }
@@ -338,6 +482,7 @@ function podpowiedziUtworow(array $wyniki, string $q): array
                 'numer' => $utwor['numer'] ?? '',
                 'czas' => $utwor['czas'] ?? '',
                 'album_tytul' => $album['album_tytul'],
+                'wykonawca' => $album['wykonawca'],
                 'rok' => $album['rok'],
                 'gatunek' => $album['gatunek'],
                 'okladka' => $album['okladka'],
@@ -350,8 +495,104 @@ function podpowiedziUtworow(array $wyniki, string $q): array
     return $podpowiedzi;
 }
 
+// Podpowiedzi utworów z lokalnej bazy — działają także wtedy, gdy Discogs nie odpowiada.
+// Format wyniku jest taki sam jak dla Discogs, plus album_id potrzebne do ponownego użycia albumu.
+function pobierzLokalneUtwory(string $q): array
+{
+    require __DIR__ . '/polaczenie.php';
+
+    try {
+        $db = new mysqli($host, $db_user, $db_password, $db_name);
+
+        if ($db->connect_errno) {
+            return [];
+        }
+
+        $db->set_charset('utf8mb4');
+
+        // Szukamy po tytule utworu, albumie i wykonawcy; najlepiej dopasowane tytuły są pierwsze.
+        $stmt = $db->prepare(
+            "SELECT u.album_id, u.tytul, u.numer, u.czas,
+                    a.tytul AS album_tytul, a.wykonawca, a.rok, a.gatunek,
+                    a.okladka, a.discogs_id, a.discogs_uri
+             FROM utwory u
+             INNER JOIN albumy a ON a.id = u.album_id
+             WHERE u.tytul LIKE ? OR a.tytul LIKE ? OR a.wykonawca LIKE ?
+             ORDER BY (u.tytul LIKE ?) DESC, u.id ASC
+             LIMIT 5"
+        );
+
+        if (!$stmt) {
+            $db->close();
+            return [];
+        }
+
+        $parametr = '%' . $q . '%';
+        $stmt->bind_param('ssss', $parametr, $parametr, $parametr, $parametr);
+        $stmt->execute();
+        $wynik = $stmt->get_result();
+        $utwory = [];
+
+        while ($row = $wynik->fetch_assoc()) {
+            $utwory[] = [
+                'album_id' => (int) $row['album_id'],
+                'tytul' => $row['tytul'],
+                'numer' => $row['numer'] ?? '',
+                'czas' => $row['czas'] ?? '',
+                'album_tytul' => $row['album_tytul'],
+                'wykonawca' => $row['wykonawca'] ?? '',
+                'rok' => !empty($row['rok']) ? (int) $row['rok'] : '',
+                'gatunek' => $row['gatunek'] ?? '',
+                'okladka' => $row['okladka'] ?? '',
+                'discogs_id' => !empty($row['discogs_id']) ? (int) $row['discogs_id'] : null,
+                'discogs_uri' => $row['discogs_uri'] ?? '',
+            ];
+        }
+
+        $stmt->close();
+        $db->close();
+
+        return $utwory;
+    } catch (Throwable $e) {
+        // Baza może być chwilowo niedostępna — wtedy po prostu nie ma podpowiedzi lokalnych.
+        return [];
+    }
+}
+
+// Łączy podpowiedzi z Discogs i z bazy, usuwając duplikaty.
+// Wyniki z Discogs mają pierwszeństwo, lokalne uzupełniają listę.
+function scalPodpowiedziUtworow(array $zdalne, array $lokalne, int $limit = 5): array
+{
+    $wynik = [];
+    $widziane = [];
+
+    foreach (array_merge($zdalne, $lokalne) as $utwor) {
+        // Klucz: tytuł utworu + album (bez wielkości liter).
+        $tytul = mb_strtolower(trim((string) ($utwor['tytul'] ?? '')), 'UTF-8');
+        $album = mb_strtolower(trim((string) ($utwor['album_tytul'] ?? '')), 'UTF-8');
+        $klucz = $tytul . '|' . $album;
+
+        if ($tytul === '' || isset($widziane[$klucz])) {
+            continue;
+        }
+
+        $widziane[$klucz] = true;
+        $wynik[] = $utwor;
+
+        if (count($wynik) >= $limit) {
+            break;
+        }
+    }
+
+    return $wynik;
+}
+
 $action = $_GET['action'] ?? '';
 
+// Endpointy API:
+// - search       -> podpowiedzi albumów (formularz dodawania muzyki),
+// - search_tracks-> podpowiedzi utworów (formularz dodawania utworu),
+// - details      -> pełne dane wybranego albumu.
 if ($action === 'search') {
     $q = trim($_GET['q'] ?? '');
 
@@ -363,7 +604,6 @@ if ($action === 'search') {
         'q' => $q,
         'type' => 'release',
         'per_page' => 8,
-        'page' => 1,
     ];
 
     if (!empty($discogs_token)) {
@@ -378,6 +618,7 @@ if ($action === 'search') {
 
     $wyniki = [];
 
+    // Mapowanie wyników Discogs na pola używane przez formularz.
     foreach (array_slice($dane['results'], 0, 8) as $album) {
         $okladka = $album['cover_image'] ?? '';
 
@@ -387,43 +628,42 @@ if ($action === 'search') {
 
         $gatunek = implode(', ', array_slice(array_merge($album['genre'] ?? [], $album['style'] ?? []), 0, 4));
         $format = implode(', ', array_slice($album['format'] ?? [], 0, 4));
-        $label = implode(', ', array_slice($album['label'] ?? [], 0, 1));
 
         $wyniki[] = [
             'discogs_id' => (int) ($album['id'] ?? 0),
             'tytul' => $album['title'] ?? '',
-            'rok' => $album['year'] ?? '',
+            'rok' => !empty($album['year']) ? (int) $album['year'] : '',
             'gatunek' => $gatunek,
             'format' => $format,
-            'label' => $label,
             'okladka' => $okladka,
-            'utwory' => [],
             'discogs_uri' => !empty($album['uri'])
                 ? 'https://www.discogs.com' . $album['uri']
                 : '',
         ];
     }
 
-    // Discogs nie zwraca w wyszukiwarce ani miniatur, ani listy utworów,
-    // więc dociągamy oba z danych konkretnego wydania.
-    $doPobrania = [];
+    // Discogs często nie zwraca okładek w wynikach wyszukiwania.
+    // Dociągamy je tylko w granicach pozostałego limitu zapytań,
+    // zostawiając zapas na późniejsze wyszukiwania i wybór albumu.
+    $pozostalo = $GLOBALS['discogs_limit_remaining'] ?? null;
+    $ileOkladek = $pozostalo === null ? 4 : max(0, min(count($wyniki), $pozostalo - 2));
 
-    foreach ($wyniki as $indeks => $album) {
-        if ($album['discogs_id'] > 0) {
-            $doPobrania[$indeks] = $album['discogs_id'];
-        }
-    }
+    if ($ileOkladek > 0) {
+        $doOkladek = [];
 
-    if ($doPobrania) {
-        $daneWydan = pobierzDaneDiscogs($doPobrania);
-
-        foreach ($doPobrania as $indeks => $id) {
-            if (!empty($daneWydan[$id]['okladka'])) {
-                $wyniki[$indeks]['okladka'] = $daneWydan[$id]['okladka'];
+        foreach (array_slice($wyniki, 0, $ileOkladek, true) as $indeks => $album) {
+            if (empty($album['okladka']) && (int) $album['discogs_id'] > 0) {
+                $doOkladek[$indeks] = (int) $album['discogs_id'];
             }
+        }
 
-            if (!empty($daneWydan[$id]['utwory'])) {
-                $wyniki[$indeks]['utwory'] = $daneWydan[$id]['utwory'];
+        if ($doOkladek) {
+            $daneWydan = pobierzAlbumyDiscogs(array_values($doOkladek));
+
+            foreach ($doOkladek as $indeks => $id) {
+                if (!empty($daneWydan[$id]['okladka'])) {
+                    $wyniki[$indeks]['okladka'] = $daneWydan[$id]['okladka'];
+                }
             }
         }
     }
@@ -440,8 +680,7 @@ if ($action === 'search_tracks') {
 
     $bazowe = [
         'type' => 'release',
-        'per_page' => 10,
-        'page' => 1,
+        'per_page' => 5,
     ];
 
     if (!empty($discogs_token)) {
@@ -449,14 +688,20 @@ if ($action === 'search_tracks') {
     }
 
     $wyniki = [];
+    // Flaga dla frontendu: czy Discogs w ogóle odpowiedział.
+    $discogsDostepny = false;
 
-    // Najpierw szukamy wydań po tytule utworu.
+    // Najpierw szukamy wydań po tytule utworu (parametr track).
     $dane = pobierzJson('https://api.discogs.com/database/search?' . http_build_query(
         array_merge($bazowe, ['track' => $q])
     ));
 
-    if ($dane && !empty($dane['results'])) {
-        $wyniki = podpowiedziUtworow($dane['results'], $q);
+    if ($dane !== null) {
+        $discogsDostepny = true;
+
+        if (!empty($dane['results'])) {
+            $wyniki = podpowiedziUtworow($dane['results'], $q);
+        }
     }
 
     // Gdy wyszukiwanie po utworze nic nie da, próbujemy zapytania ogólnego.
@@ -465,12 +710,24 @@ if ($action === 'search_tracks') {
             array_merge($bazowe, ['q' => $q])
         ));
 
-        if ($dane && !empty($dane['results'])) {
-            $wyniki = podpowiedziUtworow($dane['results'], $q);
+        if ($dane !== null) {
+            $discogsDostepny = true;
+
+            if (!empty($dane['results'])) {
+                $wyniki = podpowiedziUtworow($dane['results'], $q);
+            }
         }
     }
 
-    odpowiedz(['ok' => true, 'results' => array_slice($wyniki, 0, 8)]);
+    // Zawsze dokładamy podpowiedzi z bazy — mają okładki i działają bez Discogs.
+    $lokalne = pobierzLokalneUtwory($q);
+    $wyniki = scalPodpowiedziUtworow($wyniki, $lokalne, 5);
+
+    odpowiedz([
+        'ok' => true,
+        'results' => $wyniki,
+        'discogs_error' => !$discogsDostepny,
+    ]);
 }
 
 if ($action === 'details') {
@@ -480,65 +737,14 @@ if ($action === 'details') {
         odpowiedz(['ok' => false, 'error' => 'Brak poprawnego ID albumu.']);
     }
 
-    $parametry = [];
+    // Szczegóły są cache'owane, więc ponowny wybór tego samego albumu nie pyta Discogs.
+    $album = pobierzAlbumyDiscogs([$id])[$id] ?? null;
 
-    if (!empty($discogs_token)) {
-        $parametry['token'] = $discogs_token;
-    }
-
-    $url = 'https://api.discogs.com/releases/' . $id;
-
-    if ($parametry) {
-        $url .= '?' . http_build_query($parametry);
-    }
-
-    $dane = pobierzJson($url);
-
-    if (!$dane || empty($dane['id'])) {
+    if ($album === null) {
         odpowiedz(['ok' => false, 'error' => 'Nie udało się pobrać szczegółów albumu z Discogs.']);
     }
 
-    $wykonawca = implode(', ', array_column($dane['artists'] ?? [], 'name'));
-    $gatunek = implode(', ', array_slice(array_merge($dane['genres'] ?? [], $dane['styles'] ?? []), 0, 4));
-
-    $formaty = [];
-
-    foreach (($dane['formats'] ?? []) as $format) {
-        if (!empty($format['name'])) {
-            $formaty[] = $format['name'];
-        }
-
-        foreach (array_slice($format['descriptions'] ?? [], 0, 3) as $opis) {
-            $formaty[] = $opis;
-        }
-    }
-
-    $format = implode(', ', array_slice(array_unique($formaty), 0, 4));
-    $label = implode(', ', array_column(array_slice($dane['labels'] ?? [], 0, 1), 'name'));
-
-    $okladka = znajdzOkladke($dane);
-
-    $discogsUri = $dane['uri'] ?? '';
-
-    if ($discogsUri !== '' && strpos($discogsUri, 'http') !== 0) {
-        $discogsUri = 'https://www.discogs.com' . $discogsUri;
-    }
-
-    odpowiedz([
-        'ok' => true,
-        'album' => [
-            'discogs_id' => (int) $dane['id'],
-            'tytul' => $dane['title'] ?? '',
-            'wykonawca' => $wykonawca,
-            'rok' => $dane['year'] ?? null,
-            'gatunek' => $gatunek,
-            'format' => $format,
-            'label' => $label,
-            'okladka' => $okladka,
-            'utwory' => pobierzUtwory($dane),
-            'discogs_uri' => $discogsUri,
-        ],
-    ]);
+    odpowiedz(['ok' => true, 'album' => $album]);
 }
 
 odpowiedz(['ok' => false, 'error' => 'Nieznana akcja.']);

@@ -1,4 +1,8 @@
 <?php
+// film.php — strona szczegółów filmu.
+// Pokazuje dane, cenę, przycisk wypożyczenia i akcje administratora.
+
+
     require_once "czy_zalogowany.php";
 
     require_once "polaczenie.php";
@@ -12,6 +16,7 @@
         if (!$polaczenie->connect_errno) {
             $polaczenie->set_charset("utf8mb4");
 
+            // Pobranie filmu wraz z nazwą typu płyty.
             $wynik = $polaczenie->query(
                 "SELECT f.*, t.nazwa AS typ
                  FROM filmy f
@@ -36,9 +41,8 @@
     }
 
     $czyAdmin = isset($_SESSION['czy_admin']) && (int) $_SESSION['czy_admin'] === 1;
-    $active = 'filmy';
-    $pageTitle = $film['tytul'];
 
+    // Dane przygotowane do wyświetlenia w szczegółach filmu.
     $dostepne = $film['ilosc_dostepnych'] !== null ? (int) $film['ilosc_dostepnych'] : 0;
     $ocena = $film['ocena'] !== null ? number_format((float) $film['ocena'], 1, ',', '') : '—';
     $cena = $film['cena'] !== null ? number_format((float) $film['cena'], 2, ',', ' ') . ' zł' : '—';

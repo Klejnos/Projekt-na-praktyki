@@ -1,5 +1,8 @@
-// Podpowiedzi tytułów utworów w formularzu dodawania utworu.
-// Wybór podpowiedzi uzupełnia tytuł utworu oraz dane albumu (m.in. okładkę).
+// Obsługa formularza dodawania utworu:
+// - podpowiedzi tytułów utworów z Discogs oraz z lokalnej bazy,
+// - uzupełnianie albumu, wykonawcy, roku i okładki,
+// - zapamiętanie album_id, żeby utwór trafił do istniejącego albumu,
+// - ręczny podgląd okładki wpisanej w polu URL.
 
 const API_URL = "api_muzyka.php";
 
@@ -31,8 +34,10 @@ document.addEventListener("DOMContentLoaded", function () {
         podpowiedzi.innerHTML = "";
     }
 
-    function pokazOkladke(url) {
-        ustawWartosc("okladka_url", url || "");
+    function pokazOkladke(url, ustawPole = true) {
+        if (ustawPole) {
+            ustawWartosc("okladka_url", url || "");
+        }
 
         const okladka = document.getElementById("okladka");
 
@@ -49,6 +54,14 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
+    const poleOkladki = document.getElementById("okladka_url");
+
+    if (poleOkladki) {
+        poleOkladki.addEventListener("input", function () {
+            pokazOkladke(poleOkladki.value.trim(), false);
+        });
+    }
+
     tytul.addEventListener("input", function () {
         clearTimeout(opoznienie);
 
@@ -57,6 +70,7 @@ document.addEventListener("DOMContentLoaded", function () {
         wyczyscPodpowiedzi();
 
         // Ręczna zmiana tytułu odłącza wcześniej wybrany album.
+        ustawWartosc("album_id", "");
         ustawWartosc("discogs_id", "");
         ustawWartosc("discogs_uri", "");
         pokazOkladke("");
@@ -66,6 +80,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         opoznienie = setTimeout(async function () {
+
+            //nie wysyłamy zapytania po każdym znaku.
             try {
                 const odpowiedz = await fetch(
                     `${API_URL}?action=search_tracks&q=${encodeURIComponent(nazwa)}`
@@ -75,19 +91,32 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 wyczyscPodpowiedzi();
 
-                if (!dane.ok || !Array.isArray(dane.results) || dane.results.length === 0) {
+                if (!dane.ok) {
+                    podpowiedzi.innerHTML = '<p class="podpowiedz-info">Discogs chwilowo nie odpowiada. Spróbuj ponownie za chwilę.</p>';
                     return;
                 }
 
+                if (!Array.isArray(dane.results) || dane.results.length === 0) {
+                    if (dane.discogs_error) {
+                        podpowiedzi.innerHTML = '<p class="podpowiedz-info">Discogs nie odpowiada i nie znaleziono pasujących utworów w bazie.</p>';
+                    }
+
+                    return;
+                }
+
+                // Renderowanie listy podpowiedzi (okładka lub placeholder).
                 dane.results.forEach(function (utwor) {
                     const element = document.createElement("div");
                     element.className = "podpowiedz";
 
                     const rok = utwor.rok ? ' • ' + escapeHtml(String(utwor.rok)) : '';
+                    const obraz = utwor.okladka || "";
+                    const obrazHtml = obraz
+                        ? `<img src="${escapeHtml(obraz)}" alt="Okładka albumu" onerror="this.style.display='none'">`
+                        : '<span class="podpowiedz-brak-okladki" aria-hidden="true">♫</span>';
 
                     element.innerHTML = `
-                        <img src="${escapeHtml(utwor.okladka)}" alt="Okładka albumu"
-                         onerror="this.style.display='none'">
+                        ${obrazHtml}
                         <div>
                             <strong>${escapeHtml(utwor.tytul)}</strong>
                             <p>${escapeHtml(utwor.album_tytul)}${rok}</p>
@@ -110,10 +139,13 @@ document.addEventListener("DOMContentLoaded", function () {
         // Tytuł utworu pochodzi z podpowiedzi, a nie z nazwy albumu.
         ustawWartosc("tytul", utwor.tytul);
         ustawWartosc("album_tytul", utwor.album_tytul);
-        ustawWartosc("rok", utwor.rok);
+        ustawWartosc("wykonawca", utwor.wykonawca);
+        ustawWartosc("rok", utwor.rok > 0 ? utwor.rok : "");
         ustawWartosc("gatunek", utwor.gatunek);
         ustawWartosc("numer", utwor.numer);
         ustawWartosc("czas", utwor.czas);
+        // album_id pozwala dodać utwór do istniejącego albumu bez tworzenia duplikatu.
+        ustawWartosc("album_id", utwor.album_id || "");
         ustawWartosc("discogs_id", utwor.discogs_id);
         ustawWartosc("discogs_uri", utwor.discogs_uri);
 
@@ -127,6 +159,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // Dociągamy pełne dane albumu (wykonawca, gatunek, okładka).
+        // Gdy Discogs nie odpowie, zostają dane z podpowiedzi.
         try {
             const odpowiedz = await fetch(
                 `${API_URL}?action=details&id=${encodeURIComponent(albumId)}`
@@ -141,8 +174,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const album = dane.album;
 
             ustawWartosc("album_tytul", album.tytul || utwor.album_tytul);
-            ustawWartosc("wykonawca", album.wykonawca);
-            ustawWartosc("rok", album.rok);
+            ustawWartosc("wykonawca", album.wykonawca || utwor.wykonawca);
+            ustawWartosc("rok", album.rok > 0 ? album.rok : "");
             ustawWartosc("gatunek", album.gatunek);
             ustawWartosc("discogs_id", album.discogs_id);
             ustawWartosc("discogs_uri", album.discogs_uri);

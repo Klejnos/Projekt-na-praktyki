@@ -1,5 +1,11 @@
 <?php
+// dodawanie_muzyka.php — formularz dodawania albumu (tylko administrator).
+// Podpowiedzi pochodzą z Discogs, a lista utworów jest importowana do bazy.
+
+
     require_once "czy_zalogowany.php";
+
+    // Dodawanie albumów jest dostępne tylko dla administratora.
     if (!isset($_SESSION['czy_admin']) || $_SESSION['czy_admin'] != 1) {
         header('Location: index.php');
         exit();
@@ -17,6 +23,7 @@
         }
 
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            // Odczyt danych albumu z formularza.
             $tytul = trim($_POST['tytul'] ?? '');
             $wykonawca = trim($_POST['wykonawca'] ?? '');
             $rok = (($_POST['rok'] ?? '') !== '') ? (int) $_POST['rok'] : null;
@@ -28,6 +35,7 @@
             $okladka = trim($_POST['okladka'] ?? '');
             $discogsUri = trim($_POST['discogs_uri'] ?? '');
 
+            // Lista utworów przekazana z podpowiedzi Discogs (max 300).
             $utworyZPosta = json_decode($_POST['utwory'] ?? '[]', true);
             $utwory = is_array($utworyZPosta) ? array_slice($utworyZPosta, 0, 300) : [];
 
@@ -42,6 +50,7 @@
             } else {
                 $albumId = null;
 
+                // Jeśli album już istnieje (to samo discogs_id), używamy go ponownie.
                 if ($discogsId !== null) {
                     $stmt = $polaczenie->prepare("SELECT id FROM albumy WHERE discogs_id = ? LIMIT 1");
 
@@ -59,6 +68,7 @@
                 }
 
                 if ($albumId === null) {
+                    // Nowy album na podstawie danych z formularza/Discogs.
                     $stmt = $polaczenie->prepare(
                         "INSERT INTO albumy
                             (tytul, wykonawca, rok, gatunek, okladka, discogs_id, discogs_uri, typ_plyty_id)
@@ -91,6 +101,7 @@
                 }
 
                 // Nazwy utworów pobrane z Discogs zapisujemy przy albumie.
+                // Najpierw usuwamy starą listę, żeby uniknąć duplikatów.
                 if ($blad === '' && $albumId !== null && $utwory) {
                     $tabelaUtworow = $polaczenie->query("SHOW TABLES LIKE 'utwory'");
 
@@ -117,6 +128,7 @@
                                     continue;
                                 }
 
+                                // Nowe utwory startują z ceną albumu; później można zmienić ją niezależnie.
                                 $stmtUtwor->bind_param("isssd", $albumId, $numer, $tytulUtworu, $czas, $cena);
                                 $stmtUtwor->execute();
                             }
@@ -127,6 +139,7 @@
                 }
 
                 if ($blad === '' && $albumId !== null) {
+                    // Wpis w katalogu muzyki (cena albumu, stan, powiązanie z albumem).
                     $stmt = $polaczenie->prepare(
                         "INSERT INTO muzyka (tytul, gatunek, rok, ilosc_dostepnych, cena, album_id)
                          VALUES (?, ?, ?, ?, ?, ?)"
@@ -152,6 +165,7 @@
             }
         }
 
+        // Lista typów płyt do pola wyboru w formularzu.
         $wynik = $polaczenie->query("SELECT id, nazwa FROM typy_plyt ORDER BY nazwa ASC");
 
         if ($wynik) {
@@ -168,8 +182,6 @@
 ?>
 
 <?php
-    $active = 'muzyka';
-    $pageTitle = 'Dodawanie muzyki';
     ?>
 <!DOCTYPE html>
 <html lang="pl">
@@ -212,6 +224,7 @@
         <?php endif; ?>
 
         <form method="POST">
+            <!-- Podpowiedzi albumów z Discogs; przy braku odpowiedzi pola można wypełnić ręcznie. -->
             <div class="search-box">
                 <label for="tytul">Album / wykonawca:</label>
                 <input type="text" name="tytul" id="tytul" autocomplete="off" placeholder="Zacznij wpisywać nazwę albumu lub wykonawcę...">
@@ -219,9 +232,13 @@
             </div>
 
             <input type="hidden" name="discogs_id" id="discogs_id" value="">
-            <input type="hidden" name="okladka" id="okladka_url" value="">
             <input type="hidden" name="discogs_uri" id="discogs_uri" value="">
             <input type="hidden" name="utwory" id="utwory_json" value="[]">
+
+            <!-- Ręczny adres okładki przydaje się, gdy Discogs nie odpowiada. -->
+            <label for="okladka_url">Okładka (adres URL, opcjonalnie):</label>
+            <input type="text" name="okladka" id="okladka_url" placeholder="https://..."><br>
+
             <div id="podgladOkladki">
                 <img id="okladka" src="" alt="Okładka albumu">
             </div>

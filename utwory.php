@@ -1,4 +1,8 @@
 <?php
+// utwory.php — katalog utworów.
+// Obsługuje wyszukiwanie, filtr gatunków i sortowanie 
+
+
     require_once "czy_zalogowany.php";
 
     require_once "polaczenie.php";
@@ -7,6 +11,7 @@
     $search = trim($_GET['q'] ?? '');
     $wybraneGatunki = isset($_GET['gatunki']) && is_array($_GET['gatunki']) ? array_values(array_unique(array_filter(array_map('trim', $_GET['gatunki']), fn($g) => $g !== ''))) : [];
 
+    // Sortowanie wybrane z listy; cena dotyczy utwory.cena, nie albumu.
     switch ($sort) {
         case 'tytul':
             $orderBy = 'u.tytul ASC, u.id ASC';
@@ -40,7 +45,6 @@
 
     $utwory = [];
     $total = 0;
-    $znaleziono = 0;
     $dostepneGatunki = [];
 
     try {
@@ -51,6 +55,7 @@
 
         $polaczenie->set_charset("utf8mb4");
 
+        // Gatunki pochodzą z albumów powiązanych z utworami.
         $wynikGatunki = $polaczenie->query(
             "SELECT DISTINCT a.gatunek
              FROM utwory u
@@ -76,12 +81,14 @@
             $dostepneGatunki = array_values($unikalneGatunki);
         }
 
+        // Łączna liczba utworów w katalogu (bez filtrów).
         $wynikTotal = $polaczenie->query("SELECT COUNT(*) AS total FROM utwory");
         if ($wynikTotal) {
             $total = (int) $wynikTotal->fetch_assoc()['total'];
             $wynikTotal->free();
         }
 
+        // Warunki dynamiczne: tytuł utworu, album lub wykonawca + gatunki.
         $warunki = [];
         $typyParametrow = '';
         $parametry = [];
@@ -107,27 +114,7 @@
 
         $where = !empty($warunki) ? " WHERE " . implode(" AND ", $warunki) : '';
 
-        $countSql = "SELECT COUNT(*) AS total
-                     FROM utwory u
-                     INNER JOIN albumy a ON a.id = u.album_id" . $where;
-        $countStmt = $polaczenie->prepare($countSql);
-
-        if ($countStmt) {
-            if ($typyParametrow !== '') {
-                $countStmt->bind_param($typyParametrow, ...$parametry);
-            }
-
-            $countStmt->execute();
-            $countWynik = $countStmt->get_result();
-
-            if ($countWynik) {
-                $znaleziono = (int) $countWynik->fetch_assoc()['total'];
-                $countWynik->free();
-            }
-
-            $countStmt->close();
-        }
-
+        // Lista utworów wraz z danymi albumu; cena pochodzi z utwory.cena.
         $sql = "SELECT u.id, u.album_id, u.tytul, u.czas, u.cena,
                        a.tytul AS album_tytul, a.wykonawca, a.rok, a.gatunek, a.okladka
                 FROM utwory u
@@ -160,8 +147,6 @@
     }
 
     $czyAdmin = isset($_SESSION['czy_admin']) && (int) $_SESSION['czy_admin'] === 1;
-    $active = 'utwory';
-    $pageTitle = 'Utwory';
     $wyswietlono = count($utwory);
 ?>
 
@@ -205,11 +190,6 @@
         if (!empty($_SESSION['usunieto_utwor'])) {
             echo '<div class="sukces">Utwór został usunięty.</div>';
             unset($_SESSION['usunieto_utwor']);
-        }
-        
-        if (!empty($_SESSION['wypozycz_utwor_blad'])) {
-            echo '<div class="error">' . htmlspecialchars($_SESSION['wypozycz_utwor_blad']) . '</div>';
-            unset($_SESSION['wypozycz_utwor_blad']);
         }
     ?>
 
@@ -279,6 +259,7 @@
         <div class="tracks-list">
             <?php foreach ($utwory as $utwor): ?>
                 <?php
+                    // Cena pochodzi z utwory.cena, a nie z ceny albumu.
                     $cena = $utwor['cena'] !== null
                         ? number_format((float) $utwor['cena'], 2, ',', ' ') . ' zł'
                         : '—';

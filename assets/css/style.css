@@ -1,3 +1,6 @@
+/* style.css — globalny motyw
+   Zmienne CSS, nagłówek, stopka, formularze, podpowiedzi i style wspólne. */
+
 :root {
     --bg: #0b0b0d;
     --bg-2: #121214;
@@ -565,6 +568,20 @@ button[type="reset"] {
     flex-shrink: 0;
 }
 
+/* Placeholder zastępujący okładkę, gdy Discogs nie zwrócił obrazka. */
+.podpowiedz-brak-okladki {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 62px;
+    border-radius: 4px;
+    background: var(--bg-2);
+    color: var(--muted);
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
 .podpowiedz strong {
     display: block;
     font-size: 14px;
@@ -576,11 +593,12 @@ button[type="reset"] {
     font-size: 12px;
 }
 
-.podpowiedz p.podpowiedz-utwor {
-    color: var(--accent);
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
+/* Komunikat inline zamiast alertu (np. chwilowy brak Discogs). */
+.podpowiedz-info {
+    margin: 0;
+    padding: 12px 14px;
+    color: var(--muted);
+    font-size: 13px;
 }
 
 /* ---------- RWD ---------- */

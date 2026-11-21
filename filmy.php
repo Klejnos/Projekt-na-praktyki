@@ -1,4 +1,8 @@
 <?php
+// filmy.php — katalog filmów.
+// Obsługuje wyszukiwanie, filtr gatunków i sortowanie listy.
+
+
     require_once "czy_zalogowany.php";
 
     require_once "polaczenie.php";
@@ -7,6 +11,7 @@
     $search = trim($_GET['q'] ?? '');
     $wybraneGatunki = isset($_GET['gatunki']) && is_array($_GET['gatunki']) ? array_values(array_unique(array_filter(array_map('trim', $_GET['gatunki']), fn($g) => $g !== ''))) : [];
 
+    // Sortowanie wybrane z listy w katalogu.
     switch ($sort) {
         case 'cena-rosnaco':
             $orderBy = 'cena IS NULL ASC, cena ASC';
@@ -54,6 +59,7 @@
 
         $polaczenie->set_charset("utf8mb4");
 
+        // Typy płyt potrzebne do wyświetlenia etykiet w liście.
         $wynik = $polaczenie->query("SELECT id, nazwa FROM typy_plyt");
         if ($wynik) {
             while ($row = $wynik->fetch_assoc()) {
@@ -62,6 +68,7 @@
             $wynik->free();
         }
 
+        // Lista gatunków do filtra (rozbijamy pola typu "Rock, Pop").
         $wynik = $polaczenie->query("SELECT DISTINCT gatunek FROM filmy WHERE gatunek IS NOT NULL AND gatunek <> ''");
         if ($wynik) {
             $unikalneGatunki = [];
@@ -82,6 +89,7 @@
             $dostepneGatunki = array_values($unikalneGatunki);
         }
 
+        // Statystyki nagłówka katalogu: wszystkie filmy i dostępne egzemplarze.
         $wynik = $polaczenie->query("SELECT COUNT(*) AS total, COALESCE(SUM(ilosc_dostepnych > 0), 0) AS available FROM filmy");
         if ($wynik) {
             $statystyki = $wynik->fetch_assoc();
@@ -92,6 +100,7 @@
                        ilosc_dostepnych, okladka, typ_plyty_id, czy_ulubiony
                 FROM filmy";
 
+        // Warunki budowane dynamicznie: wyszukiwanie + wybrane gatunki.
         $warunki = [];
         $typyParametrow = '';
         $parametry = [];
@@ -120,6 +129,7 @@
 
         $sql .= " ORDER BY $orderBy";
 
+        // Pobranie przefiltrowanej i posortowanej listy filmów.
         $stmt = $polaczenie->prepare($sql);
         if ($stmt) {
             if ($typyParametrow !== '') {
@@ -144,8 +154,6 @@
     }
 
     $czyAdmin = isset($_SESSION['czy_admin']) && (int) $_SESSION['czy_admin'] === 1;
-    $active = 'filmy';
-    $pageTitle = 'Filmy';
     ?>
 <!DOCTYPE html>
 <html lang="pl">

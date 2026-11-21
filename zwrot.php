@@ -1,4 +1,8 @@
 <?php
+// zwrot.php — obsługa zwrotu wypożyczenia.
+// Zapisuje zwrot i przywraca dostępność egzemplarza.
+
+
     require_once "czy_zalogowany.php";
 
     require_once "polaczenie.php";
@@ -15,15 +19,18 @@
         $id = (int)($_GET['id'] ?? 0);
         $uzytkownik_id = (int)$_SESSION['id'];
 
+        // Zwrot musi dotyczyć konkretnego wypożyczenia.
         if ($id <= 0) {
             $_SESSION['e_konto_komunikat'] = 'Nieprawidłowy identyfikator wypożyczenia.';
             header('Location: konto.php');
             exit();
         }
 
+        // Usunięcie wypożyczenia i zwrot egzemplarza
         $polaczenie -> begin_transaction();
 
         if ($typ == 'film') {
+            // Zwrot filmu.
             $q_d_f = $polaczenie -> prepare("DELETE FROM wypozyczenia_filmy WHERE film_id = ? AND uzytkownicy_id = ?");
             $q_d_f -> bind_param("ii", $id, $uzytkownik_id);
             $q_d_f -> execute();
@@ -50,6 +57,7 @@
         }
 
         elseif ($typ == 'muzyka') {
+            // Zwrot albumu.
             $q_d_m = $polaczenie -> prepare("DELETE FROM wypozyczenia_muzyka WHERE muzyka_id = ? AND uzytkownicy_id = ?");
             $q_d_m -> bind_param("ii", $id, $uzytkownik_id);
             $q_d_m -> execute();
@@ -76,6 +84,7 @@
         }
 
         elseif($typ == 'utwor') {
+            // Zwrot pojedynczego utworu.
             $q_d_u = $polaczenie -> prepare("DELETE FROM wypozyczenia_utwory WHERE utwor_id = ? AND uzytkownicy_id = ?");
             $q_d_u -> bind_param("ii", $id, $uzytkownik_id);
             $q_d_u -> execute();
