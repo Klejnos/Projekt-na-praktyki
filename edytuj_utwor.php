@@ -205,7 +205,7 @@
         <label for="ilosc_dostepnych">Ilość dostępnych:</label>
         <input type="text" name="ilosc_dostepnych" id="ilosc_dostepnych" value="<?= htmlspecialchars((string) ($utwor['ilosc_dostepnych'] ?? '')) ?>"><br>
 
-        <label for="cena">Cena za wypożyczenie:</label>
+        <label for="cena">Cena utworu (niezależna od albumu):</label>
         <input type="text" name="cena" id="cena" value="<?= htmlspecialchars((string) ($utwor['cena'] ?? '')) ?>"><br>
 
         <label for="okladka">Okładka (adres URL):</label>

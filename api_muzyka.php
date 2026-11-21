@@ -286,6 +286,70 @@ function pobierzDaneDiscogs(array $ids): array
     return $wynik;
 }
 
+// Zamienia wyniki wyszukiwania Discogs na podpowiedzi konkretnych utworów.
+// W podpowiedzi zwracamy tytuł utworu oraz album, do którego należy.
+function podpowiedziUtworow(array $wyniki, string $q): array
+{
+    $wydania = [];
+
+    foreach (array_slice($wyniki, 0, 10) as $album) {
+        $id = (int) ($album['id'] ?? 0);
+
+        if ($id <= 0) {
+            continue;
+        }
+
+        $wydania[$id] = [
+            'album_tytul' => $album['title'] ?? '',
+            'rok' => $album['year'] ?? '',
+            'gatunek' => implode(', ', array_slice(array_merge($album['genre'] ?? [], $album['style'] ?? []), 0, 4)),
+            'okladka' => $album['cover_image'] ?? ($album['thumb'] ?? ''),
+            'discogs_uri' => !empty($album['uri'])
+                ? 'https://www.discogs.com' . $album['uri']
+                : '',
+        ];
+    }
+
+    $daneWydan = $wydania ? pobierzDaneDiscogs(array_keys($wydania)) : [];
+    $podpowiedzi = [];
+    $widziane = [];
+
+    foreach ($wydania as $id => $album) {
+        if (!empty($daneWydan[$id]['okladka'])) {
+            $album['okladka'] = $daneWydan[$id]['okladka'];
+        }
+
+        foreach (($daneWydan[$id]['utwory'] ?? []) as $utwor) {
+            if (mb_stripos($utwor['tytul'], $q, 0, 'UTF-8') === false) {
+                continue;
+            }
+
+            // Ten sam tytuł w obrębie jednego wydania pokazujemy tylko raz.
+            $klucz = mb_strtolower($utwor['tytul'], 'UTF-8') . '|' . $id;
+
+            if (isset($widziane[$klucz])) {
+                continue;
+            }
+
+            $widziane[$klucz] = true;
+
+            $podpowiedzi[] = [
+                'tytul' => $utwor['tytul'],
+                'numer' => $utwor['numer'] ?? '',
+                'czas' => $utwor['czas'] ?? '',
+                'album_tytul' => $album['album_tytul'],
+                'rok' => $album['rok'],
+                'gatunek' => $album['gatunek'],
+                'okladka' => $album['okladka'],
+                'discogs_id' => $id,
+                'discogs_uri' => $album['discogs_uri'],
+            ];
+        }
+    }
+
+    return $podpowiedzi;
+}
+
 $action = $_GET['action'] ?? '';
 
 if ($action === 'search') {
@@ -365,6 +429,48 @@ if ($action === 'search') {
     }
 
     odpowiedz(['ok' => true, 'results' => $wyniki]);
+}
+
+if ($action === 'search_tracks') {
+    $q = trim($_GET['q'] ?? '');
+
+    if (mb_strlen($q, 'UTF-8') < 2) {
+        odpowiedz(['ok' => true, 'results' => []]);
+    }
+
+    $bazowe = [
+        'type' => 'release',
+        'per_page' => 10,
+        'page' => 1,
+    ];
+
+    if (!empty($discogs_token)) {
+        $bazowe['token'] = $discogs_token;
+    }
+
+    $wyniki = [];
+
+    // Najpierw szukamy wydań po tytule utworu.
+    $dane = pobierzJson('https://api.discogs.com/database/search?' . http_build_query(
+        array_merge($bazowe, ['track' => $q])
+    ));
+
+    if ($dane && !empty($dane['results'])) {
+        $wyniki = podpowiedziUtworow($dane['results'], $q);
+    }
+
+    // Gdy wyszukiwanie po utworze nic nie da, próbujemy zapytania ogólnego.
+    if (!$wyniki) {
+        $dane = pobierzJson('https://api.discogs.com/database/search?' . http_build_query(
+            array_merge($bazowe, ['q' => $q])
+        ));
+
+        if ($dane && !empty($dane['results'])) {
+            $wyniki = podpowiedziUtworow($dane['results'], $q);
+        }
+    }
+
+    odpowiedz(['ok' => true, 'results' => array_slice($wyniki, 0, 8)]);
 }
 
 if ($action === 'details') {

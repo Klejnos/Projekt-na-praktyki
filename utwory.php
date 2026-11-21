@@ -27,10 +27,10 @@
             $orderBy = 'a.rok IS NULL ASC, a.rok ASC, u.id ASC';
             break;
         case 'cena-rosnaco':
-            $orderBy = 'm.cena IS NULL ASC, m.cena ASC, u.id ASC';
+            $orderBy = 'u.cena IS NULL ASC, u.cena ASC, u.id ASC';
             break;
         case 'cena-malejaco':
-            $orderBy = 'm.cena IS NULL ASC, m.cena DESC, u.id ASC';
+            $orderBy = 'u.cena IS NULL ASC, u.cena DESC, u.id ASC';
             break;
         default:
             $sort = 'default';
@@ -128,16 +128,10 @@
             $countStmt->close();
         }
 
-        $sql = "SELECT u.id, u.album_id, u.tytul, u.czas,
-                       a.tytul AS album_tytul, a.wykonawca, a.rok, a.gatunek, a.okladka,
-                       m.cena, m.ilosc_dostepnych
+        $sql = "SELECT u.id, u.album_id, u.tytul, u.czas, u.cena,
+                       a.tytul AS album_tytul, a.wykonawca, a.rok, a.gatunek, a.okladka
                 FROM utwory u
-                INNER JOIN albumy a ON a.id = u.album_id
-                LEFT JOIN (
-                    SELECT album_id, MIN(cena) AS cena, SUM(ilosc_dostepnych) AS ilosc_dostepnych
-                    FROM muzyka
-                    GROUP BY album_id
-                ) m ON m.album_id = a.id" . $where . "
+                INNER JOIN albumy a ON a.id = u.album_id" . $where . "
                 ORDER BY " . $orderBy;
 
         $stmt = $polaczenie->prepare($sql);
@@ -309,7 +303,7 @@
                         </span>
                     </span>
 
-                    <span class="track-row-price" title="Cena albumu"><?= $cena ?></span>
+                    <span class="track-row-price" title="Cena utworu"><?= $cena ?></span>
                     <span class="track-row-time"><?= htmlspecialchars($utwor['czas'] ?: '—') ?></span>
                 </a>
             <?php endforeach; ?>

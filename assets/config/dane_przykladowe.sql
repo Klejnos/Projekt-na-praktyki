@@ -6925,3 +6925,15 @@ INSERT INTO `muzyka` (`id`, `tytul`, `gatunek`, `rok`, `ilosc_dostepnych`, `cena
 (404, 'Dua Lipa', 'Electronic, Hip Hop, Funk / Soul, Pop', 2017, 9, 6.99, 404, 0),
 (405, 'x', 'Hip Hop, Rock, Pop, Acoustic', 2014, 10, 13.99, 405, 0);
 
+
+-- Cena utworu jest niezależna od ceny albumu.
+-- Po imporcie uzupełniamy tylko brakujące wartości początkową ceną albumu.
+UPDATE `utwory` u
+JOIN (
+    SELECT `album_id`, MIN(`cena`) AS `cena`
+    FROM `muzyka`
+    WHERE `album_id` IS NOT NULL
+    GROUP BY `album_id`
+) m ON m.`album_id` = u.`album_id`
+SET u.`cena` = m.`cena`
+WHERE u.`cena` IS NULL;

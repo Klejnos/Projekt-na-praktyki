@@ -18,11 +18,6 @@
                         u.cena, u.ilosc_dostepnych, u.czy_ulubiony
                  FROM utwory u
                  INNER JOIN albumy a ON a.id = u.album_id
-                 LEFT JOIN (
-                     SELECT album_id, MIN(cena) AS cena, SUM(ilosc_dostepnych) AS ilosc_dostepnych
-                     FROM muzyka
-                     GROUP BY album_id
-                 ) m ON m.album_id = a.id
                  WHERE u.id = ?
                  LIMIT 1"
             );
@@ -55,7 +50,7 @@
     $pageTitle = $utwor['tytul'];
     $cena = $utwor['cena'] !== null
         ? number_format((float) $utwor['cena'], 2, ',', ' ') . ' zł'
-        : '-';
+        : '—';
 ?>
 
 <!DOCTYPE html>
@@ -69,7 +64,6 @@
 </head>
 
 <body>
-<script src="assets/js/script_muzyka.js"></script>
 <header class="site-header">
     <div class="header-top">
         <a href="index.php" class="brand">

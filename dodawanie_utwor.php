@@ -211,8 +211,11 @@
     <?php endif; ?>
 
     <form method="POST">
-        <label for="tytul">Tytuł utworu *:</label>
-        <input type="text" name="tytul" id="tytul" required placeholder="Np. Billie Jean"><br>
+        <div class="search-box">
+            <label for="tytul">Tytuł utworu *:</label>
+            <input type="text" name="tytul" id="tytul" required autocomplete="off" placeholder="Zacznij wpisywać nazwę utworu...">
+            <div id="podpowiedzi"></div>
+        </div>
 
         <label for="numer">Numer ścieżki:</label>
         <input type="text" name="numer" id="numer" placeholder="Np. 1 lub A1"><br>
@@ -220,17 +223,14 @@
         <label for="czas">Czas trwania:</label>
         <input type="text" name="czas" id="czas" placeholder="Np. 04:54"><br>
 
-        <div class="search-box">
-            <label for="album_tytul">Album / wydawnictwo:</label>
-            <input type="text" name="album_tytul" id="album_tytul" autocomplete="off" placeholder="Opcjonalnie nazwa albumu lub singla...">
-            <div id="podpowiedzi"></div>
-        </div>
+        <label for="album_tytul">Album / wydawnictwo:</label>
+        <input type="text" name="album_tytul" id="album_tytul" autocomplete="off" placeholder="Uzupełni się po wybraniu utworu lub wpisz ręcznie...">
 
         <input type="hidden" name="discogs_id" id="discogs_id" value="">
         <input type="hidden" name="okladka" id="okladka_url" value="">
         <input type="hidden" name="discogs_uri" id="discogs_uri" value="">
         <div id="podgladOkladki">
-            <img id="okladka" src="" alt="Okładka wydawnictwa">
+            <img id="okladka" src="" alt="Okładka albumu">
         </div>
 
         <label for="wykonawca">Wykonawca:</label>
@@ -253,13 +253,13 @@
         <label for="ilosc_dostepnych">Ilość dostępnych:</label>
         <input type="text" name="ilosc_dostepnych" id="ilosc_dostepnych" value="1"><br>
 
-        <label for="cena">Cena za wypożyczenie:</label>
+        <label for="cena">Cena utworu (niezależna od albumu):</label>
         <input type="text" name="cena" id="cena" placeholder="Np. 4.99"><br>
 
         <button type="submit">Dodaj utwór</button>
         <button type="reset">Wyczyść</button>
     </form>
-    <script src="assets/js/script_muzyka.js"></script>
+    <script src="assets/js/script_utwor.js"></script>
 </main>
 <footer class="site-footer">
     <p>2026 - Przemysław Gałęziowski oraz Filip Klein</p>

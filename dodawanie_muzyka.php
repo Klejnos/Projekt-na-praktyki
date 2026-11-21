@@ -104,7 +104,7 @@
                         }
 
                         $stmtUtwor = $polaczenie->prepare(
-                            "INSERT INTO utwory (album_id, numer, tytul, czas) VALUES (?, ?, ?, ?)"
+                            "INSERT INTO utwory (album_id, numer, tytul, czas, cena) VALUES (?, ?, ?, ?, ?)"
                         );
 
                         if ($stmtUtwor) {
@@ -117,7 +117,7 @@
                                     continue;
                                 }
 
-                                $stmtUtwor->bind_param("isss", $albumId, $numer, $tytulUtworu, $czas);
+                                $stmtUtwor->bind_param("isssd", $albumId, $numer, $tytulUtworu, $czas, $cena);
                                 $stmtUtwor->execute();
                             }
 
