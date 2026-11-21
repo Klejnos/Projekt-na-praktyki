@@ -178,6 +178,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wypożyczalnia filmów</title>
     <link rel="stylesheet" href="assets/css/style_filmy.css">
+    <link rel="stylesheet" href="assets/css/lista.css">
     <link rel="icon" type="image/x-icon" href="assets/img/icon.ico">
 </head>
 
