@@ -107,28 +107,12 @@
 
         $where = !empty($warunki) ? " WHERE " . implode(" AND ", $warunki) : '';
 
-        // $wynik = $polaczenie->query("SELECT COUNT(*) AS total FROM utwory");
-        // if ($wynik) {
-        //     $total = (int) $wynik->fetch_assoc()['total'];
-        //     $wynik->free();
-        // }
-
-        // $where = '';
-        // if ($search !== '') {
-        //     $where = " WHERE u.tytul LIKE ? OR a.tytul LIKE ? OR a.wykonawca LIKE ?";
-        // }
-
         $countSql = "SELECT COUNT(*) AS total
                      FROM utwory u
                      INNER JOIN albumy a ON a.id = u.album_id" . $where;
         $countStmt = $polaczenie->prepare($countSql);
 
         if ($countStmt) {
-            // if ($search !== '') {
-            //     $param = '%' . $search . '%';
-            //     $countStmt->bind_param("sss", $param, $param, $param);
-            // }
-
             if ($typyParametrow !== '') {
                 $countStmt->bind_param($typyParametrow, ...$parametry);
             }
@@ -159,11 +143,6 @@
         $stmt = $polaczenie->prepare($sql);
 
         if ($stmt) {
-            // if ($search !== '') {
-            //     $param = '%' . $search . '%';
-            //     $stmt->bind_param("sss", $param, $param, $param);
-            // }
-
             if ($typyParametrow !== '') {
                 $stmt->bind_param($typyParametrow, ...$parametry);
             }
@@ -200,50 +179,6 @@
     <title>Wypożyczalnia filmów</title>
     <link rel="stylesheet" href="assets/css/style_filmy.css">
     <link rel="icon" type="image/x-icon" href="assets/img/icon.ico">
-    <style>
-        .dropdown-filter {
-            position: relative;
-            display: inline-block;
-        }
-
-        .dropdown-menu {
-            display: none;
-            position: absolute;
-            top: calc(100% + 6px);
-            left: 0;
-            min-width: 220px;
-            max-height: 260px;
-            overflow-y: auto;
-            padding: 8px;
-            border-radius: 8px;
-            background: #1c2029;
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
-            z-index: 50;
-        }
-
-        .dropdown-menu.open {
-            display: block;
-        }
-
-        .dropdown-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 8px;
-            border-radius: 6px;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .dropdown-item:hover {
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .dropdown-item input[type="checkbox"] {
-            cursor: pointer;
-        }
-    </style>
 </head>
 
 <body>
