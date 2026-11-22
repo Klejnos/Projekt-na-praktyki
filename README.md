@@ -6,4 +6,4 @@ Proszę równierz określić swoją ścieżkę do plików strony w folderze asse
 
 Repozytorium, z biblioteką do obsługi wysyłania e-maili: https://github.com/PHPMailer/PHPMailer
 
-API, z którego korzysta projekt to: odmbapi (do filmów) oraz discogs (do muzyki)
+API, z którego korzysta projekt to: omdbapi i tmdbapi (do filmów) oraz discogs (do muzyki)

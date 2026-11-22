@@ -262,7 +262,7 @@
                     // Cena pochodzi z utwory.cena, a nie z ceny albumu.
                     $cena = $utwor['cena'] !== null
                         ? number_format((float) $utwor['cena'], 2, ',', ' ') . ' zł'
-                        : '—';
+                        : '-';
                 ?>
                 <a class="track-row" href="utwor.php?id=<?= (int) $utwor['id'] ?>">
                     <span class="track-row-cover">
@@ -285,7 +285,7 @@
                     </span>
 
                     <span class="track-row-price" title="Cena utworu"><?= $cena ?></span>
-                    <span class="track-row-time"><?= htmlspecialchars($utwor['czas'] ?: '—') ?></span>
+                    <span class="track-row-time"><?= htmlspecialchars($utwor['czas'] ?: '-') ?></span>
                 </a>
             <?php endforeach; ?>
         </div>

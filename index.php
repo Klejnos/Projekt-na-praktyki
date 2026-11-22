@@ -126,7 +126,7 @@
     <section class="catalog-head">
         <div>
             <h1>Witamy w wypożyczalni</h1>
-            <p class="catalog-meta">Filmy DVD, Blu-ray i VHS oraz muzyka CD - wszystko w jednym miejscu.</p>
+            <p class="catalog-meta">Filmy oraz muzyka DVD, Blu-ray, VHS i CD</p>
         </div>
     </section>
 
