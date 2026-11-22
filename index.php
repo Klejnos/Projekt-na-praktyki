@@ -33,8 +33,7 @@
                         ilosc_dostepnych, okladka, typ_plyty_id
                  FROM filmy
                  WHERE czy_ulubiony = 1
-                 ORDER BY id DESC
-                 LIMIT 6"
+                 ORDER BY id DESC"
             );
 
             if ($wynik) {
@@ -52,8 +51,7 @@
                  LEFT JOIN albumy a ON m.album_id = a.id
                  LEFT JOIN typy_plyt t ON a.typ_plyty_id = t.id
                  WHERE m.czy_ulubiony = 1
-                 ORDER BY m.id DESC
-                 LIMIT 6"
+                 ORDER BY m.id DESC"
             );
 
             if ($wynik) {
@@ -71,8 +69,7 @@
                  LEFT JOIN albumy a ON u.album_id = a.id
                  LEFT JOIN typy_plyt t ON a.typ_plyty_id = t.id
                  WHERE u.czy_ulubiony = 1
-                 ORDER BY u.id DESC
-                 LIMIT 6"
+                 ORDER BY u.id DESC"
             );
 
             if ($wynik) {
