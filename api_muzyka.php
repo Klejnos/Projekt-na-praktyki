@@ -8,6 +8,7 @@
 // - podpowiedzi utworów zawsze uzupełniamy danymi z lokalnej bazy,
 //   więc formularz działa także wtedy, gdy Discogs nie odpowiada,
 // - okładki albumów dociągamy tylko w granicach pozostałego limitu.
+//Pomagało EJAJ
 
 require_once __DIR__ . '/assets/config/klucze.php';
 
