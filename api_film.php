@@ -1,7 +1,7 @@
 <?php
 // Łącznik między formularzem a TMDB (dane filmu) i OMDb (nagrody).
 // Klucze API są po stronie serwera, więc przeglądarka ich nie widzi.
-
+// //Pomagało EJAJ
 require_once __DIR__ . '/assets/config/klucze.php';
 
 session_start();
@@ -43,7 +43,7 @@ function pobierzJson(string $url): ?array
         $odpowiedz = curl_exec($ch);
         $kod = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-
+// Sprawdzenie kodu odpowiedzi HTTP.
         if ($odpowiedz === false || $kod < 200 || $kod >= 300) {
             return null;
         }
