@@ -5,3 +5,5 @@ Plik sql jaki należy wrzucić znajduje się w folderze assets -> config -> data
 Proszę równierz określić swoją ścieżkę do plików strony w folderze assets -> config -> rejestracja_config.php
 
 Repozytorium, z biblioteką do obsługi wysyłania e-maili: https://github.com/PHPMailer/PHPMailer
+
+API, z którego korzysta projekt to: odmbapi (do filmów) oraz discogs (do muzyki)

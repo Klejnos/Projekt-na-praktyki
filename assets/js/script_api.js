@@ -1,4 +1,4 @@
-// script_api.js — podpowiedzi filmów w formularzu dodawania.
+// script_api.js -podpowiedzi filmów w formularzu dodawania.
 // Pobiera dane z api_film.php (TMDB/OMDb) i uzupełnia pola formularza.
 
 const API_URL = "api_film.php";

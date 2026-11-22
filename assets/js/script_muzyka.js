@@ -216,7 +216,7 @@ async function pobierzAlbum(albumWyniku) {
     if (album) {
         podpowiedzi.innerHTML = "";
     } else {
-        podpowiedzi.innerHTML = '<p class="podpowiedz-info">Uzupełniono podstawowe dane. Discogs nie zwrócił pełnej listy utworów — spróbuj ponownie później.</p>';
+        podpowiedzi.innerHTML = '<p class="podpowiedz-info">Uzupełniono podstawowe dane. Discogs nie zwrócił pełnej listy utworów - spróbuj ponownie później.</p>';
     }
 
 }

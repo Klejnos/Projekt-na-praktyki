@@ -1,4 +1,4 @@
-// pokaz_haslo.js — pokazywanie i ukrywanie hasła w formularzach.
+// pokaz_haslo.js - pokazywanie i ukrywanie hasła w formularzach.
 
 document.addEventListener("DOMContentLoaded", function() {
     poleHaslo1 = document.getElementById("haslo1");

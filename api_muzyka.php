@@ -150,7 +150,7 @@ function pobierzJsonWiele(array $adresy): array
 {
     global $discogs_user_agent;
 
-    // W cooldownie nie wykonujemy żadnych zapytań — od razu same null-e.
+    // W cooldownie nie wykonujemy żadnych zapytań - od razu same null-e.
     if (discogsWCoolownie()) {
         return array_map(static fn () => null, $adresy);
     }
@@ -495,7 +495,7 @@ function podpowiedziUtworow(array $wyniki, string $q): array
     return $podpowiedzi;
 }
 
-// Podpowiedzi utworów z lokalnej bazy — działają także wtedy, gdy Discogs nie odpowiada.
+// Podpowiedzi utworów z lokalnej bazy - działają także wtedy, gdy Discogs nie odpowiada.
 // Format wyniku jest taki sam jak dla Discogs, plus album_id potrzebne do ponownego użycia albumu.
 function pobierzLokalneUtwory(string $q): array
 {
@@ -554,7 +554,7 @@ function pobierzLokalneUtwory(string $q): array
 
         return $utwory;
     } catch (Throwable $e) {
-        // Baza może być chwilowo niedostępna — wtedy po prostu nie ma podpowiedzi lokalnych.
+        // Baza może być chwilowo niedostępna - wtedy po prostu nie ma podpowiedzi lokalnych.
         return [];
     }
 }
@@ -719,7 +719,7 @@ if ($action === 'search_tracks') {
         }
     }
 
-    // Zawsze dokładamy podpowiedzi z bazy — mają okładki i działają bez Discogs.
+    // Zawsze dokładamy podpowiedzi z bazy - mają okładki i działają bez Discogs.
     $lokalne = pobierzLokalneUtwory($q);
     $wyniki = scalPodpowiedziUtworow($wyniki, $lokalne, 5);
 

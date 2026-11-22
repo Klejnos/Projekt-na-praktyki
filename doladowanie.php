@@ -1,5 +1,5 @@
 <?php
-// doladowanie.php — doładowanie portfela użytkownika.
+// doladowanie.php - doładowanie portfela użytkownika.
 // Akceptuje tylko kwoty z listy dozwolonych wartości.
 
 

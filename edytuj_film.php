@@ -1,5 +1,5 @@
 <?php
-// edytuj_film.php — edycja filmu (tylko administrator).
+// edytuj_film.php - edycja filmu (tylko administrator).
 // Zmienia dane filmu, okładkę, typ płyty i cenę wypożyczenia.
 
 

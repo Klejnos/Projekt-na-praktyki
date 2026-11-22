@@ -1,5 +1,5 @@
 <?php
-// dodawanie_filmow.php — formularz dodawania filmu (tylko administrator).
+// dodawanie_filmow.php - formularz dodawania filmu (tylko administrator).
 // Korzysta z podpowiedzi TMDB/OMDb i zapisuje film wraz z okładką oraz ceną.
 
 

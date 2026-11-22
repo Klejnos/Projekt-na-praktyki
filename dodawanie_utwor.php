@@ -1,5 +1,5 @@
 <?php
-// dodawanie_utwor.php — formularz dodawania utworu (tylko administrator).
+// dodawanie_utwor.php - formularz dodawania utworu (tylko administrator).
 // Podpowiedzi uzupełniają album i okładkę; istniejący album jest ponownie używany.
 
 
@@ -56,7 +56,7 @@
 
                 $albumId = null;
 
-                // 1. Utwór wybrany z lokalnej podpowiedzi — użyj istniejącego albumu.
+                // 1. Utwór wybrany z lokalnej podpowiedzi - użyj istniejącego albumu.
                 if ($albumIdWyboru !== null && $albumIdWyboru > 0) {
                     $stmt = $polaczenie->prepare("SELECT id FROM albumy WHERE id = ? LIMIT 1");
                     if ($stmt) {
@@ -85,7 +85,7 @@
                     $stmt->close();
                 }
 
-                $nazwaAlbumuDoZapisu = $albumTytul !== '' ? $albumTytul : ($wykonawca !== '' ? $wykonawca . ' — Single' : 'Single / Utwory');
+                $nazwaAlbumuDoZapisu = $albumTytul !== '' ? $albumTytul : ($wykonawca !== '' ? $wykonawca . ' - Single' : 'Single / Utwory');
 
                 // 3. Jeśli album nadal nie istnieje, utwórz go z danych formularza.
                 if ($albumId === null && ($albumTytul !== '' || $wykonawca !== '' || $okladka !== '' || $rok !== null || $gatunek !== '' || $typPlyty !== null)) {
@@ -209,7 +209,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($pageTitle) ?> — Wypożyczalnia</title>
+    <title><?= htmlspecialchars($pageTitle) ?> - Wypożyczalnia</title>
     <link rel="stylesheet" href="assets/css/style_filmy.css">
     <link rel="icon" type="image/x-icon" href="assets/img/icon.ico">
 </head>

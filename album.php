@@ -1,5 +1,5 @@
 <?php
-// album.php — szczegóły albumu muzycznego.
+// album.php - szczegóły albumu muzycznego.
 // Pokazuje dane albumu, listę utworów oraz akcje dostępne dla administratora.
 
 
@@ -78,7 +78,7 @@
 
     // Dane przygotowane do wyświetlenia w nagłówku i panelu ceny.
     $dostepne = $album['ilosc_dostepnych'] !== null ? (int) $album['ilosc_dostepnych'] : 0;
-    $cena = $album['cena'] !== null ? number_format((float) $album['cena'], 2, ',', ' ') . ' zł' : '—';
+    $cena = $album['cena'] !== null ? number_format((float) $album['cena'], 2, ',', ' ') . ' zł' : '-';
     $rok = $album['album_rok'] ?: $album['rok'];
     $gatunek = $album['album_gatunek'] ?: $album['gatunek'];
     $dostepnosc = $dostepne > 0 ? $dostepne . ' szt. na stanie' : 'Brak na stanie';
@@ -158,19 +158,19 @@
             <div class="detail-meta-grid">
                 <div class="meta-item">
                     <span>Gatunek</span>
-                    <strong><?= htmlspecialchars($gatunek ?: '—') ?></strong>
+                    <strong><?= htmlspecialchars($gatunek ?: '-') ?></strong>
                 </div>
                 <div class="meta-item">
                     <span>Rok</span>
-                    <strong><?= $rok ? (int) $rok : '—' ?></strong>
+                    <strong><?= $rok ? (int) $rok : '-' ?></strong>
                 </div>
                 <div class="meta-item">
                     <span>Wykonawca</span>
-                    <strong><?= htmlspecialchars($album['wykonawca'] ?: '—') ?></strong>
+                    <strong><?= htmlspecialchars($album['wykonawca'] ?: '-') ?></strong>
                 </div>
                 <div class="meta-item">
                     <span>Typ płyty</span>
-                    <strong><?= htmlspecialchars($album['typ'] ?: '—') ?></strong>
+                    <strong><?= htmlspecialchars($album['typ'] ?: '-') ?></strong>
                 </div>
                 <div class="meta-item">
                     <span>Dostępność</span>

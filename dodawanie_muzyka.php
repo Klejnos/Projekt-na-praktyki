@@ -1,5 +1,5 @@
 <?php
-// dodawanie_muzyka.php — formularz dodawania albumu (tylko administrator).
+// dodawanie_muzyka.php - formularz dodawania albumu (tylko administrator).
 // Podpowiedzi pochodzą z Discogs, a lista utworów jest importowana do bazy.
 
 

@@ -55,7 +55,7 @@
     // Cena utworu jest niezależna od ceny albumu.
     $cena = $utwor['cena'] !== null
         ? number_format((float) $utwor['cena'], 2, ',', ' ') . ' zł'
-        : '—';
+        : '-';
 ?>
 
 <!DOCTYPE html>

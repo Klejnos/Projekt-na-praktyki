@@ -1,4 +1,4 @@
-// script_filmy.js — automatyczne odświeżanie katalogu.
+// script_filmy.js - automatyczne odświeżanie katalogu.
 // Reaguje na zmianę sortowania i zatwierdzenie wyszukiwania Enterem.
 
 document.addEventListener("DOMContentLoaded", function () {

@@ -1,5 +1,5 @@
 <?php
-// film.php — strona szczegółów filmu.
+// film.php - strona szczegółów filmu.
 // Pokazuje dane, cenę, przycisk wypożyczenia i akcje administratora.
 
 
@@ -44,9 +44,9 @@
 
     // Dane przygotowane do wyświetlenia w szczegółach filmu.
     $dostepne = $film['ilosc_dostepnych'] !== null ? (int) $film['ilosc_dostepnych'] : 0;
-    $ocena = $film['ocena'] !== null ? number_format((float) $film['ocena'], 1, ',', '') : '—';
-    $cena = $film['cena'] !== null ? number_format((float) $film['cena'], 2, ',', ' ') . ' zł' : '—';
-    $czas = $film['czas_trwania'] !== null ? (int) $film['czas_trwania'] . ' min' : '—';
+    $ocena = $film['ocena'] !== null ? number_format((float) $film['ocena'], 1, ',', '') : '-';
+    $cena = $film['cena'] !== null ? number_format((float) $film['cena'], 2, ',', ' ') . ' zł' : '-';
+    $czas = $film['czas_trwania'] !== null ? (int) $film['czas_trwania'] . ' min' : '-';
     $dostepnosc = $dostepne > 0 ? $dostepne . ' szt. na stanie' : 'Brak na stanie';
 
     ?>
@@ -124,11 +124,11 @@
             <div class="detail-meta-grid">
                 <div class="meta-item">
                     <span>Gatunek</span>
-                    <strong><?= htmlspecialchars($film['gatunek'] ?: '—') ?></strong>
+                    <strong><?= htmlspecialchars($film['gatunek'] ?: '-') ?></strong>
                 </div>
                 <div class="meta-item">
                     <span>Rok</span>
-                    <strong><?= $film['rok'] ? (int) $film['rok'] : '—' ?></strong>
+                    <strong><?= $film['rok'] ? (int) $film['rok'] : '-' ?></strong>
                 </div>
                 <div class="meta-item">
                     <span>Ocena</span>
@@ -136,7 +136,7 @@
                 </div>
                 <div class="meta-item">
                     <span>Reżyser</span>
-                    <strong><?= htmlspecialchars($film['rezyser'] ?: '—') ?></strong>
+                    <strong><?= htmlspecialchars($film['rezyser'] ?: '-') ?></strong>
                 </div>
                 <div class="meta-item">
                     <span>Czas trwania</span>
@@ -144,11 +144,11 @@
                 </div>
                 <div class="meta-item">
                     <span>Nośnik</span>
-                    <strong><?= htmlspecialchars($film['typ'] ?: '—') ?></strong>
+                    <strong><?= htmlspecialchars($film['typ'] ?: '-') ?></strong>
                 </div>
                 <div class="meta-item">
                     <span>Język</span>
-                    <strong><?= htmlspecialchars($film['jezyk'] ?: '—') ?></strong>
+                    <strong><?= htmlspecialchars($film['jezyk'] ?: '-') ?></strong>
                 </div>
                 <div class="meta-item">
                     <span>Dostępność</span>
